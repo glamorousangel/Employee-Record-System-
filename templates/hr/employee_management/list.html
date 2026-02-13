@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Records</title>
+    <link rel="stylesheet" href="../../../static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar"></div>
+        <div class="main">
+            <div class="header">
+                <h2>Employee Records</h2>
+                <div class="search-add">
+                    <input type="text" id="searchInput" placeholder="Search by Name / ID / Department / Position">
+                    <a href="add_employee.html"><button class="add-btn">Add Employee</button></a>
+                </div>
+            </div>
+
+            <table id="employeeTable">
+                <thead>
+                    <tr>
+                        <th>Employee ID</th>
+                        <th>Full Name</th>
+                        <th>Department</th>
+                        <th>
+                            Position
+                            <select id="filterPosition">
+                                <option value="">All</option>
+                                <option value="Dean">Dean</option>
+                                <option value="Instructor">Instructor</option>
+                                <option value="Admin Staff">Admin Staff</option>
+                            </select>
+                        </th>
+                        <th>
+                            Status
+                            <select id="filterStatus">
+                                <option value="">All</option>
+                                <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
+                                <option value="On Leave">On Leave</option>
+                            </select>
+                        </th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="employeeTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tableBody = document.getElementById('employeeTableBody');
+    const searchInput = document.getElementById('searchInput');
+    const positionSelect = document.getElementById('filterPosition');
+    const statusSelect = document.getElementById('filterStatus');
+
+    let storedEmployees = JSON.parse(localStorage.getItem('addedEmployees')) || [];
+
+    if (storedEmployees.length === 0) {
+        storedEmployees = [{
+            id: "001",
+            fullName: "Dela Cruz, Juan",
+            dept: "College of Computer Studies (CCS)",
+            pos: "Instructor",
+            status: "Active"
+        }];
+        localStorage.setItem('addedEmployees', JSON.stringify(storedEmployees));
+    }
+
+    function renderTable(data) {
+        tableBody.innerHTML = "";
+        data.forEach(emp => {
+            const row = document.createElement('tr');
+            const statusClass = emp.status ? emp.status.toLowerCase().replace(/\s+/g, '_') : "active";
+
+            row.innerHTML = `
+                <td>${emp.id}</td>
+                <td>${emp.fullName}</td>
+                <td>${emp.dept}</td>
+                <td>${emp.pos}</td>
+                <td><span class="status ${statusClass}">${emp.status}</span></td>
+                <td>
+                    <a href="profile_employee.html?id=${emp.id}" class="action-link">View</a> | 
+                    <a href="edit_employee.html?id=${emp.id}&source=list" class="action-link">Edit</a>
+                </td>
+            `;
+            tableBody.appendChild(row);
+        });
+    }
+
+    function applyFilters() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const positionFilter = positionSelect.value.toLowerCase();
+        const statusFilter = statusSelect.value.toLowerCase();
+
+        const filtered = storedEmployees.filter(emp => {
+            // UPDATED SEARCH LOGIC: Checks all major fields
+            const matchesSearch = 
+                emp.fullName.toLowerCase().includes(searchTerm) || 
+                emp.id.toLowerCase().includes(searchTerm) ||
+                emp.dept.toLowerCase().includes(searchTerm) ||
+                emp.pos.toLowerCase().includes(searchTerm);
+
+            const matchesPosition = positionFilter === "" || emp.pos.toLowerCase() === positionFilter;
+            const matchesStatus = statusFilter === "" || emp.status.toLowerCase() === statusFilter;
+            
+            return matchesSearch && matchesPosition && matchesStatus;
+        });
+        renderTable(filtered);
+    }
+
+    renderTable(storedEmployees);
+    searchInput.addEventListener('input', applyFilters);
+    positionSelect.addEventListener('change', applyFilters);
+    statusSelect.addEventListener('change', applyFilters);
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Select the filter elements
+    const searchInput = document.getElementById('searchInput');
+    const positionSelect = document.getElementById('filterPosition');
+    const statusSelect = document.getElementById('filterStatus');
+    
+    // Select all rows in the table body
+    const tableRows = document.querySelectorAll('#employeeTable tbody tr');
+
+    function applyFilters() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const positionFilter = positionSelect.value.toLowerCase();
+        const statusFilter = statusSelect.value.toLowerCase();
+
+        tableRows.forEach(row => {
+            // Index 3 = Position Column, Index 4 = Status Column
+            const rowText = row.textContent.toLowerCase();
+            const rowPosition = row.cells[3].textContent.toLowerCase().trim();
+            const rowStatus = row.cells[4].textContent.toLowerCase().trim();
+
+            // Logic: Does the row match the Search term?
+            const matchesSearch = rowText.includes(searchTerm);
+            
+            // Logic: Does the row match the Position dropdown?
+            const matchesPosition = positionFilter === "" || rowPosition === positionFilter;
+            
+            // Logic: Does the row match the Status dropdown?
+            const matchesStatus = statusFilter === "" || rowStatus === statusFilter;
+
+            // Show row only if it matches ALL active filters
+            if (matchesSearch && matchesPosition && matchesStatus) {
+                row.style.display = "";
+            } else {
+                row.style.display = "none";
+            }
+        });
+    }
+
+    // Add listeners for real-time filtering
+    searchInput.addEventListener('input', applyFilters);
+    positionSelect.addEventListener('change', applyFilters);
+    statusSelect.addEventListener('change', applyFilters);
+});
+</script>
+</body>
+</html>
