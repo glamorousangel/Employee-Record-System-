@@ -58,7 +58,8 @@ body {
     justify-content: center;
     align-items: center;
     transition: margin-left 0.35s ease;
-   
+   position: relative; /* Add this */
+    z-index: 1;
 }
 
 .sidebar.collapsed .logo-wrapper:hover .logo {
@@ -151,6 +152,8 @@ input, select {
     color: white;
     font-size: 18px;
     cursor: pointer;
+    min-width: 30px; /* Ensure a click area */
+    min-height: 30px;
 }
 
 .sidebar.collapsed .close-btn { display: none; }

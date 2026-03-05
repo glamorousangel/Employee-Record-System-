@@ -15,13 +15,13 @@
     <div class="sidebar" id="sidebar">
         <div class="top-section">
             <div class="logo-wrapper" id="logoToggle">
-                <img src="../../static/img/general/uph.png" class="logo">
+                <img src="../../static/img/general/uph.png" class="logo" alt="Logo">
                 <div class="open-icon">
                     <i class="fas fa-chevron-right"></i>
                 </div>
             </div>
 
-            <button class="close-btn" id="closeBtn">
+            <button type="button" class="close-btn" id="closeBtn">
                 <i class="fas fa-chevron-left"></i>
             </button>
         </div>
@@ -40,42 +40,12 @@
                 </a>
             </li>
             <hr>
-            <li>
-                <a href="#" class="menu-item">
-                    <i class="fas fa-user-edit"></i>
-                    <span>Position Change Request</span>
-                </a>
-            </li>
-            <li>
-                <a href="#" class="menu-item">
-                    <i class="fas fa-calendar-check"></i>
-                    <span>Attendance</span>
-                </a>
-            </li>
-            <li>
-                <a href="#" class="menu-item">
-                    <i class="fas fa-plane-departure"></i>
-                    <span>Leave Request</span>
-                </a>
-            </li>
-            <li>
-                <a href="#" class="menu-item">
-                    <i class="fas fa-star"></i>
-                    <span>Performance Evaluation</span>
-                </a>
-            </li>
-            <li>
-                <a href="#" class="menu-item">
-                    <i class="fas fa-folder-open"></i>
-                    <span>Documents</span>
-                </a>
-            </li>
-            <li>
-                <a href="#" class="menu-item">
-                    <i class="fas fa-chalkboard-teacher"></i>
-                    <span>Trainings</span>
-                </a>
-            </li>
+            <li><a href="#" class="menu-item"><i class="fas fa-user-edit"></i><span>Position Change</span></a></li>
+            <li><a href="#" class="menu-item"><i class="fas fa-calendar-check"></i><span>Attendance</span></a></li>
+            <li><a href="#" class="menu-item"><i class="fas fa-plane-departure"></i><span>Leave Request</span></a></li>
+            <li><a href="#" class="menu-item"><i class="fas fa-star"></i><span>Performance</span></a></li>
+            <li><a href="#" class="menu-item"><i class="fas fa-folder-open"></i><span>Documents</span></a></li>
+            <li><a href="#" class="menu-item"><i class="fas fa-chalkboard-teacher"></i><span>Trainings</span></a></li>
         </ul>
 
         <div class="bottom-section">
@@ -84,7 +54,9 @@
                 <span>Log Out</span>
             </a>
         </div>
-    </div> <main class="main-content">
+    </div> 
+
+    <main class="main-content">
         <div class="form-container">
             <div class="form-header">
                 <h2>Applicant Information</h2>
@@ -104,7 +76,7 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label>Email</label>
-                        <input type="email" placeholder="Enter a valid email address" required>
+                        <input type="email" placeholder="Enter email" required>
                     </div>
                     <div class="form-group">
                         <label>Phone Number</label>
@@ -133,8 +105,8 @@
                 <div class="form-group">
                     <label>Tell us about yourself</label>
                     <div class="upload-wrapper">
-                        <button type="button" class="btn-upload" id="uploadBtn">Upload CV</button>
-                        <span id="fileNameDisplay">File_Name.pdf</span>
+                        <label for="cvInput" class="btn-upload" id="uploadBtn">Upload CV</label>
+                        <span id="fileNameDisplay">No file chosen</span>
                         <input type="file" id="cvInput" hidden>
                     </div>
                 </div>
