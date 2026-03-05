@@ -6,54 +6,71 @@ document.addEventListener("DOMContentLoaded", () => {
     const menuItems = document.querySelectorAll(".menu-item");
     
     // Select CV Elements
-    const uploadBtn = document.getElementById("uploadBtn");
-    const cvInput = document.getElementById("cvInput");
-    const fileNameDisplay = document.getElementById("fileNameDisplay");
+    const cvInput = document.getElementById("cv-upload");
+    const fileNameDisplay = document.getElementById("file-name");
 
-    console.log("Script status: Initialized");
+    console.log("Dashboard Script: Initialized");
 
-    // 2. SIDEBAR LOGIC (Safe Mode)
+    // 2. SIDEBAR LOGIC
     if (sidebar && closeBtn && logoToggle) {
+        // Collapses the sidebar when clicking the chevron left
         closeBtn.addEventListener("click", () => {
             sidebar.classList.add("collapsed");
-            console.log("Sidebar Closed");
+            console.log("Sidebar Status: Collapsed");
         });
 
+        // Expands the sidebar when clicking the logo wrapper while collapsed
         logoToggle.addEventListener("click", () => {
             if (sidebar.classList.contains("collapsed")) {
                 sidebar.classList.remove("collapsed");
-                console.log("Sidebar Opened");
+                console.log("Sidebar Status: Expanded");
             }
         });
     }
 
-    // 3. UPLOAD CV LOGIC (Safe Mode)
-    // Check if the button and the hidden input exist before adding listeners
-    if (uploadBtn && cvInput) {
-        uploadBtn.addEventListener("click", (e) => {
-            e.preventDefault(); // Stop form from doing anything weird
-            console.log("Upload button clicked - triggering hidden input");
-            cvInput.click(); // This opens the file window
-        });
-
-        cvInput.addEventListener("change", () => {
-            if (cvInput.files && cvInput.files.length > 0) {
-                const name = cvInput.files[0].name;
-                console.log("File selected:", name);
-                if (fileNameDisplay) {
-                    fileNameDisplay.textContent = name;
-                }
+    // 3. UPLOAD CV LOGIC
+    // Since we used the <label for="cv-upload"> method in the HTML, 
+    // the browser handles the click automatically. We just need to update the text.
+    if (cvInput && fileNameDisplay) {
+        cvInput.addEventListener("change", (e) => {
+            if (e.target.files && e.target.files.length > 0) {
+                const name = e.target.files[0].name;
+                fileNameDisplay.textContent = name;
+                console.log("File Selected:", name);
+            } else {
+                fileNameDisplay.textContent = "File_Name.pdf";
             }
         });
     } else {
-        console.error("CV Elements not found! Check IDs: uploadBtn, cvInput");
+        console.error("CV Upload elements missing. Check IDs: cv-upload, file-name");
     }
 
-    // 4. MENU ACTIVE STATES
+    // 4. MENU ACTIVE STATES & TOOLTIPS
     menuItems.forEach(item => {
-        item.addEventListener("click", () => {
-            document.querySelector(".menu-item.active")?.classList.remove("active");
+        // Set up tooltip text from the span content
+        const spanText = item.querySelector("span")?.innerText;
+        if (spanText) {
+            item.setAttribute("data-text", spanText);
+        }
+
+        item.addEventListener("click", (e) => {
+            // Remove active class from previous item
+            const currentActive = document.querySelector(".menu-item.active");
+            if (currentActive) {
+                currentActive.classList.remove("active");
+            }
+            
+            // Add active class to clicked item
             item.classList.add("active");
         });
     });
+
+    // 5. FORM SUBMISSION PREVENTER (Optional)
+    const applicantForm = document.getElementById("applicantForm");
+    if (applicantForm) {
+        applicantForm.addEventListener("submit", (e) => {
+            e.preventDefault();
+            alert("Application Saved Successfully!");
+        });
+    }
 });

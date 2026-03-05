@@ -57,67 +57,65 @@
     </div> 
 
     <main class="main-content">
-        <div class="form-container">
-            <div class="form-header">
-                <h2>Applicant Information</h2>
+    <div class="form-card">
+        <div class="form-header">Applicant Information</div>
+        <form id="applicantForm" class="form-body">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>First Name</label>
+                    <input type="text" placeholder="Enter first name">
+                </div>
+                <div class="form-group">
+                    <label>Last Name</label>
+                    <input type="text" placeholder="Enter last name">
+                </div>
             </div>
-            <form id="employeeForm" class="form-body">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>First Name</label>
-                        <input type="text" placeholder="Enter first name" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Last Name</label>
-                        <input type="text" placeholder="Enter last name" required>
-                    </div>
-                </div>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Email</label>
-                        <input type="email" placeholder="Enter email" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Phone Number</label>
-                        <input type="tel" placeholder="Enter phone number">
-                    </div>
-                </div>
-
+            <div class="form-row">
                 <div class="form-group">
-                    <label>Department Applying To</label>
-                    <select required>
-                        <option value="" disabled selected>Select department...</option>
-                        <option value="HR">Human Resources</option>
-                        <option value="IT">Information Technology</option>
-                    </select>
+                    <label>Email</label>
+                    <input type="email" placeholder="Enter a valid email address">
                 </div>
-
                 <div class="form-group">
-                    <label>Position Applying For</label>
-                    <select required>
-                        <option value="" disabled selected>Select position...</option>
-                        <option value="Manager">Manager</option>
-                        <option value="Staff">Staff</option>
-                    </select>
+                    <label>Phone Number</label>
+                    <input type="text" placeholder="Enter phone number">
                 </div>
+            </div>
 
-                <div class="form-group">
-                    <label>Tell us about yourself</label>
-                    <div class="upload-wrapper">
-                        <label for="cvInput" class="btn-upload" id="uploadBtn">Upload CV</label>
-                        <span id="fileNameDisplay">No file chosen</span>
-                        <input type="file" id="cvInput" hidden>
-                    </div>
-                </div>
+            <div class="form-group full-width">
+                <label>Department Applying To</label>
+                <select>
+                    <option value="" disabled selected>Select department...</option>
+                    <option>Human Resources</option>
+                    <option>Information Technology</option>
+                </select>
+            </div>
 
-                <div class="form-actions">
-                    <button type="button" class="btn btn-cancel">Cancel</button>
-                    <button type="submit" class="btn btn-save">Save</button>
+            <div class="form-group full-width">
+                <label>Position Applying For</label>
+                <select>
+                    <option value="" disabled selected>Select position...</option>
+                    <option>Manager</option>
+                    <option>Staff</option>
+                </select>
+            </div>
+
+            <div class="form-group full-width">
+                <label>Tell us about yourself</label>
+                <div class="upload-container">
+                    <label for="cv-upload" class="upload-btn" id="uploadBtn">Upload CV</label>
+                    <input type="file" id="cv-upload" hidden>
+                    <span id="file-name">File_Name.pdf</span>
                 </div>
-            </form>
-        </div>
-    </main>
+            </div>
+
+            <div class="form-footer">
+                <button type="button" class="btn-cancel">Cancel</button>
+                <button type="submit" class="btn-save">Save</button>
+            </div>
+        </form>
+    </div>
+</main>
 
     <script src="../../static/js/application/application_info.js"></script>
 </body>

@@ -1,17 +1,18 @@
+/* --- Global Resets --- */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Segoe UI', sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 body {
     height: 100vh;
-    display: flex;
     overflow: hidden;
+    display: flex; /* Allows sidebar and main-content to sit side-by-side */
 }
 
-/* Background */
+/* --- Background Layer --- */
 .background {
     position: fixed;
     inset: 0;
@@ -21,13 +22,13 @@ body {
     z-index: -1;
 }
 
-/* Sidebar Styling */
+/* --- Sidebar Styling --- */
 .sidebar {
     position: fixed;
     top: 20px;
     left: 20px;
     height: calc(100% - 40px);
-    width: 300px; /* widened */
+    width: 300px; 
     padding: 25px;
     border-radius: 20px;
     display: flex;
@@ -36,12 +37,13 @@ body {
     background: rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.15);
-     z-index: 999;
+    z-index: 1000;
     transition: width 0.35s ease;
 }
 
-
-.sidebar.collapsed { width: 90px; }
+.sidebar.collapsed {
+    width: 90px;
+}
 
 .top-section {
     display: flex;
@@ -49,83 +51,10 @@ body {
     justify-content: space-between;
 }
 
-
-/* Main Content Adjustment */
-.main-content {
-    flex: 1;
-    margin-left: 320px; /* Sidebar width + 20px gap */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: margin-left 0.35s ease;
-   position: relative; /* Add this */
-    z-index: 1;
-}
-
-.sidebar.collapsed .logo-wrapper:hover .logo {
-    opacity: 0;
-}
-
-
-.sidebar.collapsed ~ .main-content {
-    margin-left: 110px;
-}
-
-.sidebar.collapsed .logo-wrapper:hover .open-icon {
-    opacity: 1;
-}
-
-/* Form Card Styling */
-.form-container {
-    background: white;
-    width: 90%;
-    max-width: 700px;
-    border-radius: 15px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-    overflow: hidden;
-}
-
-.form-header {
-    background: #EBEBEB;
-    padding: 20px 30px;
-    font-weight: 600;
-    color: #333;
-}
-
-.form-body { padding: 30px 40px; }
-
-.form-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    margin-bottom: 15px;
-}
-
-.form-group { margin-bottom: 20px; }
-
-.form-group label {
-    display: block;
-    font-weight: 700;
-    font-size: 0.9rem;
-    margin-bottom: 8px;
-}
-
-input, select {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #d1d1d1;
-    border-radius: 6px;
-    outline: none;
-}
-
-/* Sidebar Components (Icons/Text) */
 .logo-wrapper {
     width: 45px;
     height: 45px;
     position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     cursor: pointer;
 }
 
@@ -137,8 +66,7 @@ input, select {
 
 .open-icon {
     position: absolute;
-    width: 100%;
-    height: 100%;
+    inset: 0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -146,22 +74,19 @@ input, select {
     color: white;
     transition: 0.3s;
 }
+
+.sidebar.collapsed .logo-wrapper:hover .logo { opacity: 0; }
+.sidebar.collapsed .logo-wrapper:hover .open-icon { opacity: 1; }
+
 .close-btn {
     background: none;
     border: none;
     color: white;
     font-size: 18px;
     cursor: pointer;
-    min-width: 30px; /* Ensure a click area */
-    min-height: 30px;
 }
 
 .sidebar.collapsed .close-btn { display: none; }
-
-.menu a,
-.bottom-section a {
-    text-decoration: none;
-}
 
 .menu {
     list-style: none;
@@ -175,11 +100,11 @@ input, select {
     align-items: center;
     height: 48px;
     color: white;
-    cursor: pointer;
+    text-decoration: none;
     border-radius: 12px;
     transition: background 0.3s;
+    margin-bottom: 5px;
 }
-
 
 .menu-item i {
     width: 50px;
@@ -192,43 +117,152 @@ input, select {
     white-space: nowrap;
     transition: opacity 0.2s ease;
 }
+
 .sidebar.collapsed .menu-item span {
     opacity: 0;
     pointer-events: none;
 }
 
-.menu-item:hover {
-    background: rgba(255,255,255,0.15);
+.menu-item:hover, .menu-item.active {
+    background: rgba(255,255,255,0.2);
 }
 
-
-.menu-item.active {
-    background: rgba(255,255,255,0.25);
-}
-
-.sidebar.collapsed .menu-item:hover::after {
-    content: attr(data-text);
-    position: absolute;
-    left: 80px;
-    background: rgba(20,20,20,0.95);
-    padding: 8px 14px;
-    border-radius: 8px;
-    white-space: nowrap;
-    font-size: 14px;
-}
 hr {
     border: 0.5px solid rgba(255,255,255,0.2);
-    margin: 10px 0;
+    margin: 15px 0;
 }
 
-.bottom-section {
-    margin-top: auto;
+/* --- Main Content (The Centering Magic) --- */
+.main-content {
+    flex: 1;
+    margin-left: 320px; /* Accounts for sidebar + gap */
+    display: flex;
+    justify-content: center; /* Center horizontally */
+    align-items: center;     /* Center vertically */
+    height: 100vh;
+    transition: margin-left 0.35s ease;
 }
 
-/* Buttons */
-.upload-wrapper { display: flex; align-items: center; gap: 15px; }
-.btn-upload { background: #ccc; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: 600; }
-.form-actions { display: flex; justify-content: center; gap: 10px; margin-top: 20px; }
-.btn { padding: 10px 30px; border-radius: 5px; border: none; cursor: pointer; font-weight: 600; }
-.btn-save { background: #5C2D2D; color: white; }
-.btn-cancel { background: #D6D6D6; }
+.sidebar.collapsed ~ .main-content {
+    margin-left: 110px;
+}
+
+/* --- Form Card Styling (Matching your Image) --- */
+.form-card {
+    background: #ffffff;
+    width: 100%;
+    max-width: 600px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    overflow: hidden;
+}
+
+.form-header {
+    background: #f4f4f4;
+    padding: 18px 25px;
+    font-size: 1.2rem;
+    color: #333;
+    font-weight: 500;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.form-body {
+    padding: 30px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+    color: #1a1a1a;
+}
+
+.form-group input, 
+.form-group select {
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    outline: none;
+    font-size: 0.95rem;
+    color: #333;
+}
+
+.form-group input::placeholder {
+    color: #bbb;
+}
+
+/* --- Upload Section --- */
+.upload-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-top: 5px;
+}
+
+.upload-btn {
+    background: #d1d1d1;
+    color: #000;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 700;
+    border: 1px solid #b5b5b5;
+    transition: 0.2s;
+    text-align: center;
+}
+
+.upload-btn:hover {
+    background: #c4c4c4;
+}
+
+#file-name {
+    font-style: italic;
+    color: #555;
+    font-size: 0.9rem;
+}
+
+/* --- Form Actions (Footer) --- */
+.form-footer {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 30px;
+}
+
+.btn-cancel {
+    background: #d6d6d6;
+    color: #333;
+    border: none;
+    padding: 12px 40px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-save {
+    background: #5c2b2b; /* Deep burgundy from image */
+    color: white;
+    border: none;
+    padding: 12px 60px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.btn-save:hover {
+    opacity: 0.9;
+}
