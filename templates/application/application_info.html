@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Employee Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Management System - Add Employee</title>
     <link rel="shortcut icon" type="image/png" href="../../static/img/general/uph.png">
     <link rel="stylesheet" href="../../static/css/application/application_info.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
@@ -14,23 +15,37 @@
     <div class="sidebar" id="sidebar">
         <div class="top-section">
             <div class="logo-wrapper" id="logoToggle">
-                <img src="../../static/img/general/uph.png" class="logo">
+                <img src="../../static/img/general/uph.png" class="logo" alt="Logo">
                 <div class="open-icon">
                     <i class="fas fa-chevron-right"></i>
                 </div>
             </div>
-            <button class="close-btn" id="closeBtn">
+
+            <button type="button" class="close-btn" id="closeBtn">
                 <i class="fas fa-chevron-left"></i>
             </button>
         </div>
 
         <ul class="menu">
-            <li><a href="emp_dash.html" class="menu-item active"><i class="fas fa-border-all"></i><span>Dashboard</span></a></li>
-            <li><a href="#" class="menu-item"><i class="fas fa-user"></i><span>Profile</span></a></li>
+            <li>
+                <a href="emp_dash.html" class="menu-item active">
+                    <i class="fas fa-border-all"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-user"></i>
+                    <span>Profile</span>
+                </a>
+            </li>
             <hr>
-            <li><a href="#" class="menu-item"><i class="fas fa-user-edit"></i><span>Position Request</span></a></li>
+            <li><a href="#" class="menu-item"><i class="fas fa-user-edit"></i><span>Position Change Request</span></a></li>
             <li><a href="#" class="menu-item"><i class="fas fa-calendar-check"></i><span>Attendance</span></a></li>
             <li><a href="#" class="menu-item"><i class="fas fa-plane-departure"></i><span>Leave Request</span></a></li>
+            <li><a href="#" class="menu-item"><i class="fas fa-star"></i><span>Performance Evaluation</span></a></li>
+            <li><a href="#" class="menu-item"><i class="fas fa-folder-open"></i><span>Documents</span></a></li>
+            <li><a href="#" class="menu-item"><i class="fas fa-chalkboard-teacher"></i><span>Trainings</span></a></li>
         </ul>
 
         <div class="bottom-section">
@@ -39,64 +54,66 @@
                 <span>Log Out</span>
             </a>
         </div>
-    </div>
+    </div> 
 
     <main class="main-content">
-        <div class="form-card">
-            <div class="form-header">Applicant Information</div>
-            <form id="applicantForm" class="form-body">
+        <div class="form-container">
+            <div class="form-header">
+                <h2>Applicant Information</h2>
+            </div>
+            <form id="employeeForm" class="form-body">
                 <div class="form-row">
                     <div class="form-group">
                         <label>First Name</label>
-                        <input type="text" placeholder="Enter first name">
+                        <input type="text" placeholder="Enter first name" required>
                     </div>
                     <div class="form-group">
                         <label>Last Name</label>
-                        <input type="text" placeholder="Enter last name">
+                        <input type="text" placeholder="Enter last name" required>
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
                         <label>Email</label>
-                        <input type="email" placeholder="Enter a valid email address">
+                        <input type="email" placeholder="Enter email" required>
                     </div>
                     <div class="form-group">
                         <label>Phone Number</label>
-                        <input type="text" placeholder="Enter phone number">
+                        <input type="tel" placeholder="Enter phone number">
                     </div>
                 </div>
 
-                <div class="form-group full-width">
+                <div class="form-group">
                     <label>Department Applying To</label>
-                    <select>
+                    <select required>
                         <option value="" disabled selected>Select department...</option>
-                        <option>HR</option>
-                        <option>Engineering</option>
+                        <option value="HR">Human Resources</option>
+                        <option value="IT">Information Technology</option>
                     </select>
                 </div>
 
-                <div class="form-group full-width">
+                <div class="form-group">
                     <label>Position Applying For</label>
-                    <select>
+                    <select required>
                         <option value="" disabled selected>Select position...</option>
-                        <option>Manager</option>
-                        <option>Staff</option>
+                        <option value="Manager">Manager</option>
+                        <option value="Staff">Staff</option>
                     </select>
                 </div>
 
-                <div class="form-group full-width">
+                <div class="form-group">
                     <label>Tell us about yourself</label>
-                    <div class="upload-container">
-                        <label for="cv-upload" class="upload-btn">Upload CV</label>
-                        <input type="file" id="cv-upload" hidden>
-                        <span id="file-name">File_Name.pdf</span>
+                    <div class="upload-wrapper">
+                        <label for="cvInput" class="btn-upload" id="uploadBtn">Upload CV</label>
+                        <span id="fileNameDisplay">No file chosen</span>
+                        <input type="file" id="cvInput" hidden>
                     </div>
                 </div>
 
-                <div class="form-footer">
-                    <button type="button" class="btn-cancel">Cancel</button>
-                    <button type="submit" class="btn-save">Save</button>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-cancel">Cancel</button>
+                    <button type="submit" class="btn btn-save">Save</button>
                 </div>
             </form>
         </div>

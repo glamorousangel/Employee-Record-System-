@@ -1,99 +1,234 @@
-/* ... keep your existing sidebar CSS ... */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', sans-serif;
+}
 
-.main-content {
-    margin-left: 300px; /* Sidebar width */
+body {
     height: 100vh;
+    display: flex;
+    overflow: hidden;
+}
+
+/* Background */
+.background {
+    position: fixed;
+    inset: 0;
+    background: url('../../img/general/bg.jpeg') no-repeat center/cover;
+    filter: blur(10px);
+    transform: scale(1.1); 
+    z-index: -1;
+}
+
+/* Sidebar Styling */
+.sidebar {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    height: calc(100% - 40px);
+    width: 300px; /* widened */
+    padding: 25px;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+     z-index: 999;
+    transition: width 0.35s ease;
+}
+
+
+.sidebar.collapsed { width: 90px; }
+
+.top-section {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+
+/* Main Content Adjustment */
+.main-content {
+    flex: 1;
+    margin-left: 320px; /* Sidebar width + 20px gap */
     display: flex;
     justify-content: center;
     align-items: center;
     transition: margin-left 0.35s ease;
+   position: relative; /* Add this */
+    z-index: 1;
 }
+
+.sidebar.collapsed .logo-wrapper:hover .logo {
+    opacity: 0;
+}
+
 
 .sidebar.collapsed ~ .main-content {
-    margin-left: 90px;
+    margin-left: 110px;
 }
 
-/* Form Styling */
-.form-card {
+.sidebar.collapsed .logo-wrapper:hover .open-icon {
+    opacity: 1;
+}
+
+/* Form Card Styling */
+.form-container {
     background: white;
-    width: 500px;
-    border-radius: 8px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    width: 90%;
+    max-width: 700px;
+    border-radius: 15px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
     overflow: hidden;
 }
 
 .form-header {
-    background: #f0f0f0;
-    padding: 15px 20px;
-    font-size: 1.1rem;
-    font-weight: 500;
+    background: #EBEBEB;
+    padding: 20px 30px;
+    font-weight: 600;
     color: #333;
-    border-bottom: 1px solid #ddd;
 }
 
-.form-body { padding: 25px; }
+.form-body { padding: 30px 40px; }
 
 .form-row {
-    display: flex;
-    gap: 15px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
     margin-bottom: 15px;
 }
 
-.form-group { flex: 1; display: flex; flex-direction: column; }
+.form-group { margin-bottom: 20px; }
+
 .form-group label {
-    font-weight: bold;
-    font-size: 0.85rem;
-    margin-bottom: 5px;
+    display: block;
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-bottom: 8px;
 }
 
-.form-group input, .form-group select {
-    padding: 10px;
-    border: 1px solid #ccc;
+input, select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #d1d1d1;
     border-radius: 6px;
     outline: none;
-    font-size: 0.9rem;
 }
 
-.full-width { margin-bottom: 15px; }
-
-/* Upload Section */
-.upload-container {
+/* Sidebar Components (Icons/Text) */
+.logo-wrapper {
+    width: 45px;
+    height: 45px;
+    position: relative;
     display: flex;
     align-items: center;
-    gap: 15px;
-}
-
-.upload-btn {
-    background: #d3d3d3;
-    padding: 10px 20px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: bold;
-    border: 1px solid #bbb;
-}
-
-#file-name {
-    font-style: italic;
-    color: #555;
-    font-size: 0.9rem;
-}
-
-/* Footer Buttons */
-.form-footer {
-    display: flex;
     justify-content: center;
-    gap: 15px;
-    margin-top: 25px;
-}
-
-.btn-cancel, .btn-save {
-    padding: 12px 40px;
-    border-radius: 8px;
-    border: none;
     cursor: pointer;
-    font-weight: bold;
-    font-size: 0.95rem;
 }
 
-.btn-cancel { background: #d3d3d3; }
-.btn-save { background: #5a2d2d; color: white; }
+.logo {
+    width: 100%;
+    border-radius: 50%;
+    transition: 0.3s;
+}
+
+.open-icon {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    color: white;
+    transition: 0.3s;
+}
+.close-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    min-width: 30px; /* Ensure a click area */
+    min-height: 30px;
+}
+
+.sidebar.collapsed .close-btn { display: none; }
+
+.menu a,
+.bottom-section a {
+    text-decoration: none;
+}
+
+.menu {
+    list-style: none;
+    margin-top: 30px;
+    flex: 1;
+}
+
+.menu-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 48px;
+    color: white;
+    cursor: pointer;
+    border-radius: 12px;
+    transition: background 0.3s;
+}
+
+
+.menu-item i {
+    width: 50px;
+    text-align: center;
+}
+
+.menu-item span {
+    position: absolute;
+    left: 60px;
+    white-space: nowrap;
+    transition: opacity 0.2s ease;
+}
+.sidebar.collapsed .menu-item span {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.menu-item:hover {
+    background: rgba(255,255,255,0.15);
+}
+
+
+.menu-item.active {
+    background: rgba(255,255,255,0.25);
+}
+
+.sidebar.collapsed .menu-item:hover::after {
+    content: attr(data-text);
+    position: absolute;
+    left: 80px;
+    background: rgba(20,20,20,0.95);
+    padding: 8px 14px;
+    border-radius: 8px;
+    white-space: nowrap;
+    font-size: 14px;
+}
+hr {
+    border: 0.5px solid rgba(255,255,255,0.2);
+    margin: 10px 0;
+}
+
+.bottom-section {
+    margin-top: auto;
+}
+
+/* Buttons */
+.upload-wrapper { display: flex; align-items: center; gap: 15px; }
+.btn-upload { background: #ccc; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: 600; }
+.form-actions { display: flex; justify-content: center; gap: 10px; margin-top: 20px; }
+.btn { padding: 10px 30px; border-radius: 5px; border: none; cursor: pointer; font-weight: 600; }
+.btn-save { background: #5C2D2D; color: white; }
+.btn-cancel { background: #D6D6D6; }
