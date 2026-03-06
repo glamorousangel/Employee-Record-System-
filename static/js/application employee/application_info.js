@@ -5,18 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const closeBtn = document.getElementById("closeBtn");
     const menuItems = document.querySelectorAll(".menu-item");
     
-    // Close button (only when expanded)
-closeBtn.addEventListener("click", () => {
-    sidebar.classList.add("collapsed");
-});
-
-// Open via logo hover click
-logoToggle.addEventListener("click", () => {
-    if (sidebar.classList.contains("collapsed")) {
-        sidebar.classList.remove("collapsed");
-    }
-});
-
+    
     // Select CV Elements
     const cvInput = document.getElementById("cv-upload");
     const fileNameDisplay = document.getElementById("file-name");
