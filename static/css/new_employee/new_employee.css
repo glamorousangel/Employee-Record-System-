@@ -90,19 +90,24 @@ body {
 }
 
 .tab-btn {
-    padding: 10px 20px;
-    border: 1px solid #ccc;
+  padding: 10px 20px;
     border-radius: 8px;
     cursor: pointer;
     font-weight: 500;
     font-size: 0.9rem;
-    transition: 0.2s;
+    transition: background 0.3s ease, color 0.3s ease;
 }
 
 .tab-btn.active {
     background: #632b2b; /* UPHSD Maroon */
     color: white;
-    border-color: #632b2b;
+    border: 1px solid #632b2b;
+}
+
+.tab-btn.secondary {
+    background: #e0e0e0;
+    color: #333;
+    border: 1px solid #ccc;
 }
 
 .tab-btn:not(.active) {
@@ -590,3 +595,150 @@ hr {
     margin-top: 10px;
 }
 
+/* --- Log New Request Modal Specific Styles --- */
+
+/* Modal Content Box */
+#positionChangeModal .modal-content {
+    background: #ffffff;
+    width: 450px; /* Adjusted to match the image aspect ratio */
+    border-radius: 12px; /* Smoother, smaller radius */
+    padding: 0; /* Remove padding here to allow header background to span full width */
+    overflow: hidden;
+    border: 1px solid #ccc;
+}
+
+/* Modal Header with Gray Background */
+#positionChangeModal .modal-header {
+    background-color: #f0f0f0; /* Light gray background from image */
+    padding: 10px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #ddd;
+}
+
+#positionChangeModal .applicant-name {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #333;
+}
+
+/* Form Body Padding */
+#positionChangeModal .modal-body {
+    padding: 20px;
+}
+
+/* Grid Layout for the Form */
+.log-request-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.full-width {
+    grid-column: span 2;
+}
+
+/* Label Styling */
+.form-group label {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #000;
+}
+
+/* Input, Select, and Textarea Styling */
+.form-group input, 
+.form-group select, 
+.form-group textarea {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    color: #333;
+    outline: none;
+    background-color: #fff;
+}
+
+/* Placeholder Styling */
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+    color: #b8b8b8;
+}
+
+/* Auto-filled / Disabled state */
+.form-group input:disabled {
+    background-color: #ffffff; /* Image shows white background even for auto-fill */
+    color: #b8b8b8;
+}
+
+/* Employee Name Search Wrapper */
+.form-group .search-input-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.form-group .search-input-wrapper i {
+    position: absolute;
+    right: 12px; /* Magnifying glass is on the right in the image */
+    left: auto;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999;
+}
+
+.form-group .search-input-wrapper input {
+    width: 100%;
+    padding-right: 35px; /* Space for the icon */
+    padding-left: 12px;
+}
+
+/* Textarea height */
+.form-group textarea {
+    resize: none;
+    height: 100px;
+}
+
+/* Footer Action Buttons */
+.modal-footer.action-btns {
+    display: flex;
+    justify-content: flex-end; /* Align buttons to the right */
+    gap: 15px;
+    margin-top: 15px;
+    grid-column: span 2;
+}
+
+/* Gray Cancel Button */
+#cancelRequest {
+    background-color: #d3d3d3; /* Light gray */
+    color: #333;
+    border: none;
+    padding: 10px 35px;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    flex: none; /* Don't grow */
+}
+
+/* Dark Maroon Save Button */
+#positionChangeForm .modal-approve {
+    background-color: #5b2a2a; /* Exact dark maroon from image */
+    color: #ffffff;
+    border: none;
+    padding: 10px 45px;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    flex: none; /* Don't grow */
+}
+
+#cancelRequest:hover { background-color: #c0c0c0; }
+#positionChangeForm .modal-approve:hover { background-color: #4a2222; }
