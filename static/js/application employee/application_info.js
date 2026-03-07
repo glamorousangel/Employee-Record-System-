@@ -1,89 +1,84 @@
 document.addEventListener("DOMContentLoaded", () => {
-    // --- 1. SELECT ELEMENTS ---
+
+    // 1. SELECT ELEMENTS
     const sidebar = document.getElementById("sidebar");
     const logoToggle = document.getElementById("logoToggle");
     const closeBtn = document.getElementById("closeBtn");
     const menuItems = document.querySelectorAll(".menu-item");
-    
-    // CV Upload Elements
+
+    // CV Elements
     const cvInput = document.getElementById("cv-upload");
     const fileNameDisplay = document.getElementById("file-name");
 
-    console.log("Application Script: Initialized");
+    const applicantForm = document.getElementById("applicantForm");
 
-    // --- 2. SIDEBAR LOGIC ---
+    console.log("Dashboard Script: Initialized");
+
+    // 2. SIDEBAR LOGIC
     if (sidebar && closeBtn && logoToggle) {
-        // Close button: Collapses the sidebar
+
+        // Collapse sidebar
         closeBtn.addEventListener("click", () => {
             sidebar.classList.add("collapsed");
-            console.log("Sidebar: Collapsed");
+            console.log("Sidebar Status: Collapsed");
         });
 
-        // Logo click: Expands the sidebar if it is currently collapsed
+        // Expand sidebar when clicking logo
         logoToggle.addEventListener("click", () => {
             if (sidebar.classList.contains("collapsed")) {
                 sidebar.classList.remove("collapsed");
-                console.log("Sidebar: Expanded");
+                console.log("Sidebar Status: Expanded");
             }
         });
     }
 
-    // --- 3. UPLOAD CV LOGIC (DYNAMIC FILE NAME) ---
+    // 3. CV UPLOAD LOGIC
     if (cvInput && fileNameDisplay) {
-        // This event fires the moment the user selects a file from the system dialog
-        cvInput.addEventListener("change", function() {
-            // Check if at least one file was selected
-            if (this.files && this.files.length > 0) {
-                // Get the name of the chosen file
-                const chosenName = this.files[0].name;
-                
-                // Update the <span> text to show the actual filename
-                fileNameDisplay.textContent = chosenName;
-                
-                // Optional: Enhance visibility of the selected name
-                fileNameDisplay.style.color = "#1a1a1a"; 
-                fileNameDisplay.style.fontWeight = "600";
-                
-                console.log("File Selected: " + chosenName);
+        cvInput.addEventListener("change", (e) => {
+
+            if (e.target.files && e.target.files.length > 0) {
+                const name = e.target.files[0].name;
+                fileNameDisplay.textContent = name;
+                console.log("File Selected:", name);
             } else {
-                // If the user opens the dialog but cancels, revert to default
                 fileNameDisplay.textContent = "File_Name.pdf";
-                fileNameDisplay.style.color = "#555";
-                fileNameDisplay.style.fontWeight = "400";
             }
+
         });
+    } else {
+        console.error("CV Upload elements missing. Check IDs: cv-upload, file-name");
     }
 
-    // --- 4. MENU ACTIVE STATES & TOOLTIPS ---
+    // 4. MENU ACTIVE STATES & TOOLTIP TEXT
     menuItems.forEach(item => {
-        // Automatically set tooltip text for collapsed mode based on the span text
-        const spanText = item.querySelector("span")?.innerText;
-        if (spanText) {
-            item.setAttribute("data-text", spanText);
+
+        const span = item.querySelector("span");
+
+        if (span) {
+            const text = span.innerText;
+            item.setAttribute("data-text", text);
         }
 
         item.addEventListener("click", () => {
-            // Remove 'active' class from current item
+
             const currentActive = document.querySelector(".menu-item.active");
+
             if (currentActive) {
                 currentActive.classList.remove("active");
             }
-            // Set clicked item as active
+
             item.classList.add("active");
+
         });
+
     });
 
-    // --- 5. FORM SUBMISSION ---
-    const applicantForm = document.getElementById("applicantForm");
+    // 5. FORM SUBMISSION
     if (applicantForm) {
         applicantForm.addEventListener("submit", (e) => {
             e.preventDefault();
-            // Basic validation check for the file
-            if (cvInput.files.length === 0) {
-                alert("Please upload your CV before saving.");
-                return;
-            }
-            alert("Applicant information and CV saved successfully!");
+            alert("Application Saved Successfully!");
         });
     }
+
 });
