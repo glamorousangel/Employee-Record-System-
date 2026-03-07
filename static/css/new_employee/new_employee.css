@@ -99,15 +99,15 @@ body {
 }
 
 .tab-btn.active {
-    background: #632b2b; /* UPHSD Maroon */
-    color: white;
-    border: 1px solid #632b2b;
+   background-color: #632b2b !important;
+    color: white !important;
+    border-color: #632b2b !important;
 }
 
 .tab-btn.secondary {
-    background: #e0e0e0;
-    color: #333;
-    border: 1px solid #ccc;
+   background-color: #e0e0e0 !important;
+    color: #333 !important;
+    border-color: #ccc !important;
 }
 
 .tab-btn:not(.active) {

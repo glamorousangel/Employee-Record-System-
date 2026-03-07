@@ -5,6 +5,10 @@ const sidebar = document.getElementById("sidebar");
 const logoToggle = document.getElementById("logoToggle");
 const closeBtn = document.getElementById("closeBtn");
 
+// Tab Buttons
+const newEmpTabBtn = document.getElementById("newEmpTabBtn");
+const posChangeTabBtn = document.getElementById("posChangeTabBtn");
+
 // Applicant View Modal (Applications Management)
 const viewModal = document.getElementById("viewModal");
 const closeModal = document.getElementById("modalClose");
@@ -15,8 +19,7 @@ const slide2 = document.getElementById("slide2");
 
 // Log New Request Modal (Position Change Request)
 const posModal = document.getElementById("positionChangeModal");
-const posChangeTabBtn = document.getElementById("posChangeTabBtn"); // Targeted Tab Button
-const posClose = document.getElementById("posClose"); // Modal 'X' button
+const posClose = document.getElementById("posClose"); 
 const cancelReq = document.getElementById("cancelRequest");
 const posForm = document.getElementById("positionChangeForm");
 
@@ -52,7 +55,6 @@ if (searchInput) {
 
 /* --- Modal Navigation & Logic --- */
 
-// Helper to close all open modals
 const closeAllModals = () => {
     if (viewModal) viewModal.style.display = "none";
     if (posModal) posModal.style.display = "none";
@@ -69,7 +71,6 @@ function showSlide(slideNumber) {
     }
 }
 
-// Event Listeners for Applicant View
 if (nextBtn) nextBtn.addEventListener("click", () => showSlide(2));
 if (prevBtn) prevBtn.addEventListener("click", () => showSlide(1));
 
@@ -81,30 +82,53 @@ document.querySelectorAll(".view-link").forEach(link => {
     });
 });
 
-/* --- Position Change Request Logic --- */
+/* --- Tab Switching & Log Request Logic --- */
 
-// Open Log New Request Modal when clicking the tab
-const openPosModal = (e) => {
-    if (e) e.preventDefault();
+/**
+ * Handles the visual "active" state swap and opens the modal if needed.
+ */
+function setActiveTab(clickedBtn, otherBtn) {
+    // Set clicked button to Maroon (Active)
+    clickedBtn.classList.add("active");
+    clickedBtn.classList.remove("secondary");
+    
+    // Set other button to Gray (Secondary)
+    otherBtn.classList.add("secondary");
+    otherBtn.classList.remove("active");
+}
+
+const openPosModal = () => {
     if (posModal) {
         posModal.style.display = "flex";
     }
 };
 
+// Listener for Position Change Request Tab
 if (posChangeTabBtn) {
-    posChangeTabBtn.addEventListener("click", openPosModal);
+    posChangeTabBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        setActiveTab(posChangeTabBtn, newEmpTabBtn);
+        openPosModal();
+    });
 }
 
-// Close triggers for the Log Request Modal
+// Listener for New Employee Applications Tab
+if (newEmpTabBtn) {
+    newEmpTabBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        setActiveTab(newEmpTabBtn, posChangeTabBtn);
+    });
+}
+
+/* --- Form & Modal Close Logic --- */
+
 if (closeModal) closeModal.addEventListener("click", closeAllModals);
 if (posClose) posClose.addEventListener("click", closeAllModals);
 if (cancelReq) cancelReq.addEventListener("click", closeAllModals);
 
-// Form Submission Action
 if (posForm) {
     posForm.addEventListener("submit", (e) => {
         e.preventDefault();
-        // Logic for handling data transmission goes here
         alert("Success: The position change request has been logged.");
         closeAllModals();
         posForm.reset();
@@ -113,14 +137,12 @@ if (posForm) {
 
 /* --- Global Listeners --- */
 
-// Close on outside click
 window.addEventListener("click", (e) => {
     if (e.target === viewModal || e.target === posModal) {
         closeAllModals();
     }
 });
 
-// Close on Escape key
 document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
         closeAllModals();
