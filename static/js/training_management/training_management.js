@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const closeModalBtn = document.getElementById('closeModalBtn');
     const addForm = document.getElementById('addTrainingForm');
 
-    // CV Upload Elements
+    // CV Upload Elements (if applicable to your page)
     const cvInput = document.getElementById("cv-upload");
     const fileNameDisplay = document.getElementById("file-name");
 
@@ -40,14 +40,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- 3. MENU INTERACTION (Active States & Tooltips) ---
     menuItems.forEach(item => {
-        // Set Tooltip Text for collapsed mode
+        // Set Tooltip Text for collapsed mode based on the <span> content
         const span = item.querySelector("span");
         if (span) {
             item.setAttribute("data-text", span.innerText);
         }
 
         item.addEventListener("click", (e) => {
-            // If it's the logout button, we handle navigation separately
+            // Prevent 'active' highlight if it's the logout button
             if (item.classList.contains("logout")) return;
 
             const currentActive = document.querySelector(".menu-item.active");
@@ -63,7 +63,7 @@ document.addEventListener("DOMContentLoaded", () => {
         logoutBtn.addEventListener("click", (e) => {
             e.preventDefault(); 
             console.log("Action: Logging out user immediately.");
-            // Redirects straight to login page
+            // Redirects straight to login page path provided in your HTML
             window.location.href = "../login/login.html";
         });
     }
@@ -74,6 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const query = searchInput.value.toLowerCase();
             tableRows().forEach(row => {
                 const text = row.innerText.toLowerCase();
+                // Show row if it matches query, otherwise hide it
                 row.style.display = text.includes(query) ? '' : 'none';
             });
         });
@@ -89,7 +90,7 @@ document.addEventListener("DOMContentLoaded", () => {
             modal.style.display = 'none';
         });
 
-        // Close modal if user clicks outside the box
+        // Close modal if user clicks on the dark background area
         window.addEventListener('click', (event) => {
             if (event.target === modal) {
                 modal.style.display = 'none';
@@ -98,18 +99,20 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // --- 7. FORM SUBMISSIONS ---
-    // Add Training Form
+    // Add Training Form Logic
     if (addForm) {
         addForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const name = document.getElementById('newTrainingName')?.value || "New Training";
             alert(`Success: ${name} has been added.`);
+            
+            // Clear form and close modal after "saving"
             addForm.reset();
             modal.style.display = 'none';
         });
     }
 
-    // CV Upload (Optional Module)
+    // CV Upload Module (Used in Employee Profile/Application pages)
     if (cvInput && fileNameDisplay) {
         cvInput.addEventListener("change", (e) => {
             if (e.target.files && e.target.files.length > 0) {
