@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Training Management</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../static/css/training_management/training_management.css">
+</head>
+<body>
+
+    <div class="background"></div>
+
+    <nav class="sidebar" id="sidebar">
+        <div class="top-section">
+            <div class="logo-wrapper" id="logoToggle">
+                <img src="../../static/img/general/uph.png" class="logo" alt="Logo">
+                <div class="open-icon"><i class="fas fa-chevron-right"></i></div>
+            </div>
+            <button class="close-btn" id="closeBtn">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+        </div>
+
+        <ul class="menu">
+            <li>
+                <a href="#" class="menu-item active">
+                    <i class="fas fa-border-all"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-user"></i>
+                    <span>Profile</span>
+                </a>
+            </li>
+            <hr>
+            <li>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>Attendance</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    <span>Trainings</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="bottom-section">
+            <a href="#" class="menu-item logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Log Out</span>
+            </a>
+        </div>
+    </nav>
+
+    <main class="main-content" id="mainContent">
+        <h1>Training Management</h1>
+
+        <div class="controls-row">
+            <div class="search-container">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Search training name, ID or category...">
+            </div>
+            <button class="btn-filter"><i class="fas fa-filter"></i> Filter</button>
+        </div>
+
+        <div class="filter-tags">
+            <div class="tags-group">
+                <span class="tag">Sample Filter <i class="fas fa-times"></i></span>
+            </div>
+            <button class="btn-add" id="openModalBtn">+ Add Training</button>
+        </div>
+
+        <div class="table-container">
+            <table id="trainingTable">
+                <thead>
+                    <tr>
+                        <th>Training ID</th>
+                        <th>Training Name</th>
+                        <th>Category</th>
+                        <th>Date</th>
+                        <th>Mode</th>
+                        <th>Slots</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>001</td>
+                        <td>Outcomes-Based Education Workshop</td>
+                        <td>Teaching</td>
+                        <td>03/12/2026</td>
+                        <td>Onsite</td>
+                        <td>25 / 30</td>
+                        <td><span class="status open">Open</span></td>
+                        <td class="actions">
+                            <a href="#" class="view-link">View</a>
+                            <a href="#" class="edit-link">Edit</a>
+                            <a href="#" class="close-link">Close</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>002</td>
+                        <td>Advanced Research Methods</td>
+                        <td>Academic</td>
+                        <td>03/15/2026</td>
+                        <td>Online</td>
+                        <td>30 / 30</td>
+                        <td><span class="status full">Full</span></td>
+                        <td class="actions">
+                            <a href="#" class="view-link">View</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <div id="trainingModal" class="modal">
+        <div class="modal-content">
+            <h3>Add New Training</h3>
+            <form id="addTrainingForm">
+                <div class="form-group">
+                    <label>Training Name</label>
+                    <input type="text" id="newTrainingName" required>
+                </div>
+                <div class="form-group">
+                    <label>Category</label>
+                    <input type="text" id="newCategory" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" id="newDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Mode</label>
+                        <select id="newMode">
+                            <option value="Onsite">Onsite</option>
+                            <option value="Online">Online</option>
+                            <option value="Hybrid">Hybrid</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" id="closeModalBtn">Cancel</button>
+                    <button type="submit" class="btn-save">Save Training</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../../static/js/training_management/training_management.js"></script>
+</body>
+</html>
