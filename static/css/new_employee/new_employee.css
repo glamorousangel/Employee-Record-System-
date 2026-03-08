@@ -95,13 +95,16 @@ body {
     cursor: pointer;
     font-weight: 500;
     font-size: 0.9rem;
-    transition: background 0.3s ease, color 0.3s ease;
+    transition: all 0.3s ease;
+    border: 1.5px solid #ccc;
+    background-color: #e0e0e0; /* Default Gray */
+    color: #333;
 }
 
 .tab-btn.active {
-   background-color: #632b2b !important;
-    color: white !important;
-    border-color: #632b2b !important;
+  background-color: #632b2b;
+    color: white;
+    border-color: #632b2b;
 }
 
 .tab-btn.secondary {
@@ -113,6 +116,10 @@ body {
 .tab-btn:not(.active) {
     background: #e0e0e0;
     color: #333;
+}
+
+.tab-btn:not(.active):hover {
+    background-color: #d0d0d0;
 }
 
 /* --- Search and Filter Section --- */
