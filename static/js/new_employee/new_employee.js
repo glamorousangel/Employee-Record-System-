@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const closeBtn = document.getElementById("closeBtn");
 
     const searchInput = document.getElementById("tableSearch");
+    const clearSearch = document.getElementById("clearSearch");
     const tableBody = document.getElementById("applicationTableBody");
     const noResultsRow = document.getElementById("noResultsRow");
     const rows = tableBody.querySelectorAll("tr:not(#noResultsRow)");
@@ -20,26 +21,43 @@ document.addEventListener("DOMContentLoaded", () => {
     const statusTimelineBox = document.getElementById("statusTimelineBox");
     const submissionTimestamp = document.getElementById("submissionTimestamp");
 
-    // --- Search Functionality ---
-    if (searchInput) {
-        searchInput.addEventListener("keyup", () => {
-            const filter = searchInput.value.toLowerCase();
-            let visibleCount = 0;
+    // --- Search & Filter Logic ---
+    const filterTable = (query) => {
+        const filter = query.toLowerCase();
+        let visibleCount = 0;
 
-            rows.forEach(row => {
-                const text = row.innerText.toLowerCase();
-                if (text.includes(filter)) {
-                    row.style.display = "";
-                    visibleCount++;
-                } else {
-                    row.style.display = "none";
-                }
-            });
-
-            // Toggle "No Results" row
-            if (noResultsRow) {
-                noResultsRow.style.display = visibleCount === 0 ? "" : "none";
+        rows.forEach(row => {
+            const text = row.innerText.toLowerCase();
+            if (text.includes(filter)) {
+                row.style.display = "";
+                visibleCount++;
+            } else {
+                row.style.display = "none";
             }
+        });
+
+        // Toggle "No Results" row based on visibility
+        if (noResultsRow) {
+            noResultsRow.style.display = visibleCount === 0 ? "" : "none";
+        }
+
+        // Show/Hide Clear (X) Button
+        if (clearSearch) {
+            clearSearch.style.display = query.length > 0 ? "block" : "none";
+        }
+    };
+
+    if (searchInput) {
+        searchInput.addEventListener("input", (e) => {
+            filterTable(e.target.value);
+        });
+    }
+
+    if (clearSearch) {
+        clearSearch.addEventListener("click", () => {
+            searchInput.value = "";
+            filterTable("");
+            searchInput.focus();
         });
     }
 
@@ -68,13 +86,13 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll(".view-link").forEach(link => {
         link.addEventListener("click", (e) => {
             e.preventDefault();
-            showSlide(1);
+            showSlide(1); // Reset to first slide on open
             openModal(viewModal);
         });
     });
 
     // Close Buttons
-    document.querySelectorAll(".modal-close, #cancelRequest").forEach(btn => {
+    document.querySelectorAll(".modal-close, #cancelRequest, #posClose, #modalClose").forEach(btn => {
         btn.addEventListener("click", closeAllModals);
     });
 
@@ -94,7 +112,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // --- Slide Control (View Modal) ---
+    // --- Slide Control (View Modal Pagination) ---
     function showSlide(n) {
         const s1 = document.getElementById("slide1");
         const s2 = document.getElementById("slide2");
@@ -110,12 +128,12 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("nextSlide")?.addEventListener("click", () => showSlide(2));
     document.getElementById("prevSlide")?.addEventListener("click", () => showSlide(1));
 
-    // --- Form Submission (Position Change) ---
+    // --- Form Submission Logic ---
     if (posForm) {
         posForm.addEventListener("submit", (e) => {
             e.preventDefault();
             
-            // Generate Timestamp
+            // Create Dynamic Timestamp
             const now = new Date();
             const dateStr = now.toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' });
             const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
@@ -125,17 +143,18 @@ document.addEventListener("DOMContentLoaded", () => {
                 statusTimelineBox.style.display = "block";
             }
 
-            const selectedPos = posForm.querySelector('select').value;
-            if (statusBanner && selectedPos) {
+            // Update UI feedback
+            const selectedPos = posForm.querySelector('select')?.value || "Approval";
+            if (statusBanner) {
                 statusBanner.innerHTML = `<i class="fas fa-exclamation-circle"></i> Pending - For ${selectedPos} Approval`;
             }
 
-            alert("Success: Position change request logged.");
+            alert("Request successfully submitted.");
             closeAllModals();
         });
     }
 
-    // Global Close (Click Outside or Esc Key)
+    // Global Close (Clicking outside modal or pressing ESC)
     window.addEventListener("click", (e) => {
         if (e.target === viewModal || e.target === posModal) closeAllModals();
     });

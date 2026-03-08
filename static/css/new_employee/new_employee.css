@@ -131,8 +131,17 @@ body {
 }
 
 .search-input-wrapper {
-    flex-grow: 1;
     position: relative;
+    display: flex;
+    align-items: center;
+}
+
+#tableSearch {
+    padding-right: 40px; /* Make space for the X button on the right */
+}
+
+#clearSearch:hover {
+    color: #632b2b; /* Change to your theme color on hover */
 }
 
 .search-input-wrapper i {
