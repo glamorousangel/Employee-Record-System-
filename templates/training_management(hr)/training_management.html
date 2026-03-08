@@ -103,7 +103,73 @@
     </div>
 
     </div>
+    <div class="main-content" id="mainContent">
+        <header class="content-header">
+            <h1>Training Management</h1>
+            <div class="header-actions">
+                <div class="search-container">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search">
+                </div>
+                <button class="filter-btn"><i class="fas fa-filter"></i> Filter</button>
+            </div>
+        </header>
 
+        <div class="toolbar">
+            <div class="active-filters">
+                <span class="filter-tag">Sample Filter <i class="fas fa-times"></i></span>
+            </div>
+            <button class="add-btn">+ Add Training</button>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Training ID</th>
+                        <th>Training Name</th>
+                        <th>Category</th>
+                        <th>Date</th>
+                        <th>Mode</th>
+                        <th>Slots</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>001</td>
+                        <td>Outcomes-Based Education Workshop</td>
+                        <td>Teaching</td>
+                        <td>03/12/2026</td>
+                        <td>Onsite</td>
+                        <td>25 / 30</td>
+                        <td><span class="status-badge open">Open</span></td>
+                        <td class="actions">
+                            <a href="#" class="view">View</a>
+                            <a href="#" class="edit">Edit</a>
+                            <a href="#" class="close">Close</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="6"></td>
+                        <td><span class="status-badge full">Full</span></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td colspan="6"></td>
+                        <td><span class="status-badge completed">Completed</span></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td colspan="6"></td>
+                        <td><span class="status-badge cancelled">Cancelled</span></td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
     <script src="../../static/js/training_management/training_management.js"></script>
 </body>
 </html>

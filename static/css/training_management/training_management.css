@@ -178,3 +178,148 @@ hr {
 .bottom-section {
     margin-top: auto;
 }
+
+/* Main Layout Positioning */
+.main-content {
+    margin-left: 320px; /* Aligns with expanded sidebar */
+    padding: 40px;
+    transition: margin-left 0.35s ease;
+    color: #333;
+}
+
+.sidebar.collapsed ~ .main-content {
+    margin-left: 110px;
+}
+
+/* Header & Controls */
+.content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.content-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #000;
+}
+
+.header-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.search-container {
+    position: relative;
+    width: 600px;
+}
+
+.search-container i {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999;
+}
+
+.search-container input {
+    width: 100%;
+    padding: 10px 10px 10px 40px;
+    border-radius: 25px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+}
+
+.filter-btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: 1px solid #333;
+    background: white;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+/* Toolbar */
+.toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.filter-tag {
+    background: #f0f0f0;
+    padding: 6px 15px;
+    border-radius: 20px;
+    border: 1px solid #333;
+    font-size: 14px;
+}
+
+.add-btn {
+    background: #e0e0e0;
+    border: 1px solid #999;
+    padding: 8px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+/* Table Style */
+.table-container {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+thead {
+    background: #3a3a3a;
+    color: white;
+}
+
+th {
+    padding: 15px;
+    font-weight: 400;
+    font-size: 14px;
+}
+
+td {
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+    color: #444;
+}
+
+/* Row Striping */
+tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+/* Status Badges */
+.status-badge {
+    padding: 6px 20px;
+    border-radius: 15px;
+    font-size: 13px;
+    display: inline-block;
+    min-width: 90px;
+    text-align: center;
+}
+
+.status-badge.open { background: #fdf2d0; color: #7a5c00; }
+.status-badge.full { background: #f8cbad; color: #843c0c; }
+.status-badge.completed { background: #c6efce; color: #006100; }
+.status-badge.cancelled { background: #f4b0b0; color: #9c0006; }
+
+/* Actions */
+.actions a {
+    text-decoration: none;
+    margin-right: 10px;
+    font-size: 14px;
+    color: #8c3b3b; /* Dark reddish brown from image */
+}
