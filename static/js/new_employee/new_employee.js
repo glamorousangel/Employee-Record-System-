@@ -27,6 +27,11 @@ const posForm = document.getElementById("positionChangeForm");
 const searchInput = document.querySelector('.search-input-wrapper input');
 const tableRows = document.querySelectorAll('tbody tr');
 
+// Position Change Elements
+const positionSelect = document.querySelector('#positionChangeForm select');
+const timelineList = document.querySelector('.timeline-list');
+const statusBanner = document.querySelector('.timeline-status-banner');
+
 /* --- Sidebar Logic --- */
 if (closeBtn) {
     closeBtn.addEventListener("click", () => {
@@ -50,6 +55,40 @@ if (searchInput) {
             const text = row.innerText.toLowerCase();
             row.style.display = text.includes(searchTerm) ? "" : "none";
         });
+    });
+}
+
+/* --- Position Change Logic (Timeline Update) --- */
+if (positionSelect) {
+    positionSelect.addEventListener('change', function() {
+        const newPosition = this.value; 
+        
+        // 1. Update the Status Banner text
+        if (statusBanner) {
+            statusBanner.innerHTML = `<i class="fas fa-exclamation-circle"></i> Pending - For ${newPosition} Approval`;
+        }
+
+        // 2. Update the Timeline List labels
+        if (timelineList) {
+            timelineList.innerHTML = `
+                <div class="timeline-item">
+                    <span>HR Evaluator</span> 
+                    <span class="status-ok"><i class="fas fa-check-square"></i> Approved - Feb 18</span>
+                </div>
+                <div class="timeline-item">
+                    <span>${newPosition}</span> 
+                    <span class="status-pending"><i class="fas fa-hourglass-half"></i> Pending</span>
+                </div>
+                <div class="timeline-item">
+                    <span>HR Head</span> 
+                    <span>-</span>
+                </div>
+                <div class="timeline-item">
+                    <span>SD</span> 
+                    <span>-</span>
+                </div>
+            `;
+        }
     });
 }
 
@@ -84,15 +123,9 @@ document.querySelectorAll(".view-link").forEach(link => {
 
 /* --- Tab Switching & Log Request Logic --- */
 
-/**
- * Handles the visual "active" state swap and opens the modal if needed.
- */
 function setActiveTab(clickedBtn, otherBtn) {
-    // Set clicked button to Maroon (Active)
     clickedBtn.classList.add("active");
     clickedBtn.classList.remove("secondary");
-    
-    // Set other button to Gray (Secondary)
     otherBtn.classList.add("secondary");
     otherBtn.classList.remove("active");
 }
@@ -103,7 +136,6 @@ const openPosModal = () => {
     }
 };
 
-// Listener for Position Change Request Tab
 if (posChangeTabBtn) {
     posChangeTabBtn.addEventListener("click", (e) => {
         e.preventDefault();
@@ -112,7 +144,6 @@ if (posChangeTabBtn) {
     });
 }
 
-// Listener for New Employee Applications Tab
 if (newEmpTabBtn) {
     newEmpTabBtn.addEventListener("click", (e) => {
         e.preventDefault();
@@ -132,6 +163,9 @@ if (posForm) {
         alert("Success: The position change request has been logged.");
         closeAllModals();
         posForm.reset();
+        
+        // Reset timeline to default state after successful submission
+        if (statusBanner) statusBanner.innerHTML = `<i class="fas fa-exclamation-circle"></i> Pending - For HR Approval`;
     });
 }
 
