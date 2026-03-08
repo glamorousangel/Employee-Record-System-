@@ -58,17 +58,13 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // --- 4. LOGOUT LOGIC ---
+    // --- 4. LOGOUT LOGIC (Immediate Redirect) ---
     if (logoutBtn) {
         logoutBtn.addEventListener("click", (e) => {
-            e.preventDefault(); // Stop immediate redirection
-            
-            const confirmLogout = confirm("Are you sure you want to log out?");
-            if (confirmLogout) {
-                console.log("Action: Logging out user.");
-                // Ensure this path matches your folder structure
-                window.location.href = "../login/login.html";
-            }
+            e.preventDefault(); 
+            console.log("Action: Logging out user immediately.");
+            // Redirects straight to login page
+            window.location.href = "../login/login.html";
         });
     }
 
