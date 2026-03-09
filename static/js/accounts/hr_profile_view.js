@@ -207,18 +207,29 @@ document.addEventListener('DOMContentLoaded', function() {
     const empData = employees.find(e => e.id === empID);
 
     if (empData) {
+        // Update Profile Picture if it exists in the record
+        if (empData.photo) {
+            const profImg = document.getElementById('profImage');
+            if (profImg) profImg.src = empData.photo;
+        }
+
+        // Existing text data mapping
         document.getElementById('profName').textContent = empData.fullName;
         document.getElementById('profRoleHeader').textContent = empData.pos;
         document.getElementById('profID').textContent = "Employee ID: " + empData.id;
         document.getElementById('profStatusText').textContent = empData.status;
         document.getElementById('profPos').textContent = empData.pos;
         document.getElementById('profDept').textContent = empData.dept;
+        
+        // Employment Type and Date Hired mapping
         document.getElementById('profType').textContent = empData.empType || "---";
-    document.getElementById('profDateHired').textContent = empData.dateHired || "---";
+        document.getElementById('profDateHired').textContent = empData.dateHired || "---";
+        
         document.getElementById('profEmail').textContent = empData.email || "N/A";
         document.getElementById('profContact').textContent = empData.contact || "N/A";
         document.getElementById('profAddress').textContent = empData.address || "N/A";
 
+        // Status Dot logic
         const statusDot = document.getElementById('statusDot');
         const status = empData.status.toLowerCase();
         if (status === "active") statusDot.style.backgroundColor = "#8ddf9b";
