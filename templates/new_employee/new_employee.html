@@ -22,17 +22,15 @@
         </div>
 
         <ul class="menu">
-            <li><a href="../dashboards/hr_dash.html" class="menu-item"><i class="fas fa-border-all"></i> <span>Dashboard</span></a></li>
-            <li><a href="../accounts/hr_profile_view.html?id=2024-001" class="menu-item"><i class="fas fa-user"></i> <span>Profile</span></a></li>
+            <li><a href="emp_dash.html" class="menu-item active"><i class="fas fa-border-all"></i><span>Dashboard</span></a></li>
+            <li><a href="#" class="menu-item"><i class="fas fa-user"></i><span>Profile</span></a></li>
             <hr>
-            <li><a href="../application/application_info.html" class="menu-item active"><i class="fas fa-file"></i><span>Application Management</span></a></li>
-            <li><a href="../hr/employee_management/hr_employeelist.html" class="menu-item"><i class="fas fa-database"></i> <span>Employee Records</span></a></li>
-            <li><a href="#" class="menu-item"><i class="fas fa-calendar"></i> <span>Attendance Monitoring</span></a></li>
-            <li><a href="hr_leaveselect.html" class="menu-item"><i class="fas fa-briefcase"></i> <span>Leave Management</span></a></li>
-            <li><a href="#" class="menu-item"><i class="fas fa-star"></i> <span>Performance Evaluation</span></a></li>
-            <li><a href="#" class="menu-item"><i class="fas fa-folder-open"></i> <span>Document Management</span></a></li>
-            <li><a href="#" class="menu-item"><i class="fas fa-chalkboard-teacher"></i> <span>Trainings</span></a></li>
-            <li><a href="#" class="menu-item"><i class="fas fa-chart-line"></i> <span>Reports / Analytics</span></a></li>
+            <li><a href="#" class="menu-item"><i class="fas fa-user-edit"></i><span>Position Change Request</span></a></li>
+            <li><a href="#" class="menu-item"><i class="fas fa-calendar-check"></i><span>Attendance</span></a></li>
+            <li><a href="#" class="menu-item"><i class="fas fa-plane-departure"></i><span>Leave Request</span></a></li>
+            <li><a href="#" class="menu-item"><i class="fas fa-star"></i><span>Performance Evaluation</span></a></li>
+            <li><a href="#" class="menu-item"><i class="fas fa-folder-open"></i><span>Documents</span></a></li>
+            <li><a href="#" class="menu-item"><i class="fas fa-chalkboard-teacher"></i><span>Trainings</span></a></li>
         </ul>
 
         <div class="bottom-section">
@@ -98,6 +96,31 @@
                             </div>
                         </td>
                     </tr>
+                    <tr>
+                        <td>002</td>
+                        <td>Santos, Maria</td>
+                        <td>CBA</td>
+                        <td>Professor</td>
+                        <td>02/15/2026</td>
+                        <td>Stage 1 of 4</td>
+                        <td><span class="status-pill pending-hr">Pending - Dept. Head</span></td>
+                        <td class="actions">
+                            <a href="#" class="view-link">View</a>
+                            <div class="dropdown">
+                                <button class="update-link">Update <i class="fas fa-caret-down"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>003</td>
+                        <td>Reyes, Ricardo</td>
+                        <td>COE</td>
+                        <td>Registrar</td>
+                        <td>02/10/2026</td>
+                        <td>Completed</td>
+                        <td><span class="status-pill approved">Approved</span></td>
+                        <td class="actions"><a href="#" class="view-link">View</a></td>
+                    </tr>
                     <tr id="noResultsRow" style="display: none;">
                         <td colspan="8" style="text-align: center; padding: 30px; color: #888; font-style: italic;">
                             No applications match your search.
@@ -129,16 +152,17 @@
                                 <div class="info-label">Department Applying To</div><div class="info-value">College of Computer Studies</div>
                                 <div class="info-label">Position Applying For</div><div class="info-value">Instructor</div>
                                 <div class="info-label">Remarks from Head</div><div class="info-value">Good</div>
-                            </div>
+                             </div>
                         </div>
-
                         <div id="slide2" class="modal-slide">
                             <div class="pagination">
                                 <i class="fas fa-caret-left" id="prevSlide" style="cursor:pointer;"></i> 2 / 2
                             </div>
                             <div class="document-preview-container">
-                                <div class="doc-toolbar"><i class="fas fa-search"></i></div>
-                                <img src="../../static/img/general/application_sample.png" class="doc-image" alt="Application Form">
+                                <div class="doc-toolbar">
+                                    <i class="fas fa-search"></i>
+                                </div>
+                                <img src="../../static/img/general/application_sample.png" class="doc-image">
                             </div>
                         </div>
                     </div>
@@ -147,21 +171,29 @@
                         <div class="timeline-box">
                             <h3>Approval Timeline</h3>
                             <div class="timeline-status-banner" id="statusBanner">
-                                <i class="fas fa-exclamation-circle"></i> Pending - For Dept. Head Approval
+                                <i class="fas fa-exclamation-circle"></i> Pending - For HR Approval
                             </div>
-                            <div class="timeline-list">
-                                <div class="timeline-item"><span>HR Evaluator</span> <span style="color: green;"><i class="fas fa-check-square"></i> Approved - Feb 18</span></div>
-                                <div class="timeline-item"><span>Dept. Head</span> <span style="color: #856404;"><i class="fas fa-hourglass-half"></i> Pending</span></div>
+                            <div class="timeline-list" id="timelineList">
+                                <div class="timeline-item"><span>HR Evaluator</span> <span class="status-ok"><i class="fas fa-check-square"></i> Approved - Feb 18</span></div>
+                                <div class="timeline-item"><span>Dept. Head</span> <span class="status-pending"><i class="fas fa-hourglass-half"></i> Pending</span></div>
                                 <div class="timeline-item"><span>HR Head</span> <span>-</span></div>
                                 <div class="timeline-item"><span>SD</span> <span>-</span></div>
                             </div>
                         </div>
 
+                        <div class="timeline-box" id="statusTimelineBox" style="display: none; margin-top: 15px;">
+                            <h3>Status Timeline</h3>
+                            <div class="status-timeline-content" style="padding: 10px; font-size: 0.9rem;">
+                                <div style="font-weight: bold;">Submitted</div>
+                                <div id="submissionTimestamp" style="color: #555;"></div>
+                            </div>
+                        </div>
+            
                         <div class="quick-actions">
                             <h3>Actions</h3>
                             <div class="action-btns">
-                                <button class="modal-approve" style="background: #d4edda; color: #155724;">Approve</button>
-                                <button class="modal-reject" style="background: #f8d7da; color: #721c24;">Reject</button>
+                                <button class="modal-approve">Approve</button>
+                                <button class="modal-reject">Reject</button>
                             </div>
                         </div>
                     </div>
@@ -169,7 +201,7 @@
 
                 <div class="remarks-input-section">
                     <label>Add Remarks</label>
-                    <input type="text" id="remarksInput" placeholder="Enter remarks here...">
+                    <input type="text" placeholder="Remarks">
                 </div>
             </div>
         </div>
@@ -187,10 +219,22 @@
                         <label>Employee Name</label>
                         <div class="search-input-wrapper">
                             <i class="fas fa-search"></i>
-                            <input type="text" placeholder="Search employee...">
+                            <input type="text" placeholder="Employee Name">
                         </div>
                     </div>
                     <div class="form-group">
+                        <label>Employee ID</label>
+                        <input type="text" placeholder="Auto-filled" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label>Current Position</label>
+                        <input type="text" placeholder="Auto-filled" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label>Department</label>
+                        <input type="text" placeholder="Auto-filled" disabled>
+                    </div>
+                    <div class="form-group full-width">
                         <label>Requested Position</label>
                         <select class="form-control">
                             <option value="" disabled selected>Select position...</option>
@@ -198,9 +242,17 @@
                             <option value="Department Head">Department Head</option>
                         </select>
                     </div>
+                    <div class="form-group full-width">
+                        <label>Effective Date</label>
+                        <input type="date" class="form-control">
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Reason for Position Change</label>
+                        <textarea placeholder="Input reason/remarks..." rows="4"></textarea>
+                    </div>
                     <div class="modal-footer action-btns">
                         <button type="button" class="modal-reject" id="cancelRequest">Cancel</button>
-                        <button type="submit" class="modal-approve" style="background: #632b2b; color: white;">Save Request</button>
+                        <button type="submit" class="modal-approve" style="background: #632b2b; color: white;">Save</button>
                     </div>
                 </form>
             </div>
