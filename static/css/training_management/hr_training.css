@@ -167,7 +167,7 @@ hr {
 /* --- White Content Card --- */
 .content-card {
     background: #ffffff;
-    border-radius: 20px 0 0 20px;
+    border-radius: 35px;
     padding: 35px 40px;
     flex: 1;
     overflow-y: auto;
