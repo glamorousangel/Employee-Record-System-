@@ -43,94 +43,99 @@
     </div>
 
     <div class="main-content" id="mainContent">
-        <div class="header-container">
-            <h1>Applications Management</h1>
-            <div class="tab-buttons">
-                <button id="newEmpTabBtn" class="tab-btn active">New Employee Applications</button>
-                <button id="posChangeTabBtn" class="tab-btn secondary">Position Change Requests</button>
-            </div>
-        </div>
 
-        <div class="search-filter-section">
-            <div class="search-bar-container">
-                <div class="search-input-wrapper">
-                    <i class="fas fa-search"></i>
-                    <input type="text" id="tableSearch" placeholder="Search by Name / ID / Department / Position">
+        <h1 class="page-title">Applications Management</h1>
+
+        <div class="content-card">
+
+            <div class="card-top-row">
+                <div class="tab-buttons">
+                    <button id="newEmpTabBtn" class="tab-btn active">New Employee Applications</button>
+                    <button id="posChangeTabBtn" class="tab-btn secondary">Position Change Requests</button>
                 </div>
-                <button class="filter-main-btn"><i class="fas fa-filter"></i> Filter</button>
             </div>
-            <div class="active-filters">
-                <span class="filter-tag">Sample Filter <i class="fas fa-times"></i></span>
+
+            <div class="search-filter-section">
+                <div class="search-bar-container">
+                    <div class="search-input-wrapper">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="tableSearch" placeholder="Search by Name / ID / Department / Position">
+                    </div>
+                    <button class="filter-main-btn"><i class="fas fa-filter"></i> Filter</button>
+                </div>
+                <div class="active-filters">
+                    <span class="filter-tag">Sample Filter <i class="fas fa-times"></i></span>
+                </div>
             </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Application ID</th>
+                            <th>Full Name</th>
+                            <th>Department</th>
+                            <th>Position</th>
+                            <th>Submitted</th>
+                            <th>Progress</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="applicationTableBody">
+                        <tr>
+                            <td>001</td>
+                            <td>Dela Cruz, Juan</td>
+                            <td>CCS</td>
+                            <td>Instructor</td>
+                            <td>02/12/2026</td>
+                            <td>Stage 2 of 4</td>
+                            <td><span class="status-pill pending-hr">Pending - HR Evaluator</span></td>
+                            <td class="actions">
+                                <a href="#" class="view-link">View</a>
+                                <div class="dropdown">
+                                    <button class="update-link">Update <i class="fas fa-caret-down"></i></button>
+                                    <div class="dropdown-content">
+                                        <a href="#" class="approve-option">Approve</a>
+                                        <a href="#" class="reject-option">Reject</a>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>002</td>
+                            <td>Santos, Maria</td>
+                            <td>CBA</td>
+                            <td>Professor</td>
+                            <td>02/15/2026</td>
+                            <td>Stage 1 of 4</td>
+                            <td><span class="status-pill pending-hr">Pending - Dept. Head</span></td>
+                            <td class="actions">
+                                <a href="#" class="view-link">View</a>
+                                <div class="dropdown">
+                                    <button class="update-link">Update <i class="fas fa-caret-down"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>003</td>
+                            <td>Reyes, Ricardo</td>
+                            <td>COE</td>
+                            <td>Registrar</td>
+                            <td>02/10/2026</td>
+                            <td>Completed</td>
+                            <td><span class="status-pill approved">Approved</span></td>
+                            <td class="actions"><a href="#" class="view-link">View</a></td>
+                        </tr>
+                        <tr id="noResultsRow" class="no-results-row">
+                            <td colspan="8">No applications match your search.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
         </div>
 
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Application ID</th>
-                        <th>Full Name</th>
-                        <th>Department</th>
-                        <th>Position</th>
-                        <th>Submitted</th>
-                        <th>Progress</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="applicationTableBody">
-                    <tr>
-                        <td>001</td>
-                        <td>Dela Cruz, Juan</td>
-                        <td>CCS</td>
-                        <td>Instructor</td>
-                        <td>02/12/2026</td>
-                        <td>Stage 2 of 4</td>
-                        <td><span class="status-pill pending-hr">Pending - HR Evaluator</span></td>
-                        <td class="actions">
-                            <a href="#" class="view-link">View</a>
-                            <div class="dropdown">
-                                <button class="update-link">Update <i class="fas fa-caret-down"></i></button>
-                                <div class="dropdown-content">
-                                    <a href="#" style="color: green;">Approve</a>
-                                    <a href="#" style="color: red;">Reject</a>
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>002</td>
-                        <td>Santos, Maria</td>
-                        <td>CBA</td>
-                        <td>Professor</td>
-                        <td>02/15/2026</td>
-                        <td>Stage 1 of 4</td>
-                        <td><span class="status-pill pending-hr">Pending - Dept. Head</span></td>
-                        <td class="actions">
-                            <a href="#" class="view-link">View</a>
-                            <div class="dropdown">
-                                <button class="update-link">Update <i class="fas fa-caret-down"></i></button>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>003</td>
-                        <td>Reyes, Ricardo</td>
-                        <td>COE</td>
-                        <td>Registrar</td>
-                        <td>02/10/2026</td>
-                        <td>Completed</td>
-                        <td><span class="status-pill approved">Approved</span></td>
-                        <td class="actions"><a href="#" class="view-link">View</a></td>
-                    </tr>
-                    <tr id="noResultsRow" style="display: none;">
-                        <td colspan="8" style="text-align: center; padding: 30px; color: #888; font-style: italic;">
-                            No applications match your search.
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
     </div>
 
     <!-- View Modal -->
@@ -140,13 +145,12 @@
                 <span class="applicant-name" id="modalApplicantName">Dela Cruz, Juan &nbsp;&nbsp;&nbsp; Employee ID &nbsp; 001</span>
                 <button class="modal-close" id="modalClose">&times;</button>
             </div>
-
             <div class="modal-body">
                 <div class="info-approval-container">
                     <div class="info-section">
                         <div id="slide1" class="modal-slide active">
                             <div class="pagination">
-                                1 / 2 <i class="fas fa-caret-right" id="nextSlide" style="cursor:pointer;"></i>
+                                1 / 2 <i class="fas fa-caret-right" id="nextSlide"></i>
                             </div>
                             <div class="info-grid">
                                 <div class="info-label">Request ID</div><div class="info-value">001</div>
@@ -158,7 +162,7 @@
                         </div>
                         <div id="slide2" class="modal-slide">
                             <div class="pagination">
-                                <i class="fas fa-caret-left" id="prevSlide" style="cursor:pointer;"></i> 2 / 2
+                                <i class="fas fa-caret-left" id="prevSlide"></i> 2 / 2
                             </div>
                             <div class="document-preview-container">
                                 <div class="doc-toolbar">
@@ -187,8 +191,7 @@
                             </div>
                         </div>
 
-                        <!-- Status Timeline: hidden until position change is submitted -->
-                        <div class="timeline-box" id="statusTimelineBox" style="display: none; margin-top: 10px;">
+                        <div class="timeline-box timeline-box--hidden" id="statusTimelineBox">
                             <h3>Status Timeline</h3>
                             <div class="timeline-list">
                                 <div class="timeline-item">
@@ -218,9 +221,9 @@
 
     <!-- Position Change Modal -->
     <div id="positionChangeModal" class="modal-overlay">
-        <div class="modal-content" style="width: 500px;">
+        <div class="modal-content modal-content--sm">
             <div class="modal-header">
-                <span class="applicant-name" style="width: 100%;">Log New Request</span>
+                <span class="applicant-name modal-title-full">Log New Request</span>
                 <button class="modal-close" id="posClose">&times;</button>
             </div>
             <div class="modal-body">
@@ -262,7 +265,7 @@
                     </div>
                     <div class="modal-footer action-btns">
                         <button type="button" class="modal-reject" id="cancelRequest">Cancel</button>
-                        <button type="submit" class="modal-approve" style="background: #632b2b; color: white;">Save</button>
+                        <button type="submit" class="modal-approve btn-save">Save</button>
                     </div>
                 </form>
             </div>
