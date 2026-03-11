@@ -152,7 +152,7 @@ hr {
 /* --- Main Content --- */
 .main-content {
     margin-left: 340px;
-    padding: 20px;
+    padding: 20px 20px 20px 0;
     transition: margin-left 0.35s ease;
     height: 100vh;
     overflow: hidden;
@@ -167,8 +167,8 @@ hr {
 /* --- White Content Card --- */
 .content-card {
     background: #ffffff;
-    border-radius: 35px;
-    padding: 25px 40px; 
+    border-radius: 20px 0 0 20px;
+    padding: 35px 40px;
     flex: 1;
     overflow-y: auto;
     display: flex;
