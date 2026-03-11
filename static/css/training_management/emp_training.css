@@ -1,4 +1,4 @@
-/* --- Global Reset --- */
+/* --- Global Styles & Sidebar (Keep your existing sidebar CSS here) --- */
 * {
     margin: 0;
     padding: 0;
@@ -15,151 +15,214 @@ body {
 .background {
     position: fixed;
     inset: 0;
-    background: #f4f6f9;
+    background: url('../../img/general/bg.jpeg') no-repeat center/cover;
+    filter: blur(10px);
+    transform: scale(1.1);
     z-index: -1;
 }
 
-/* --- Sidebar --- */
-.sidebar {
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    height: calc(100% - 40px);
-    width: 300px;
-    padding: 25px;
-    border-radius: 20px;
-    display: flex;
-    flex-direction: column;
-    background: #5b1f1f; /* Dark Maroon from your original style */
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    transition: all 0.35s ease;
-    z-index: 100;
-}
+/* Include your original .sidebar, .top-section, .menu etc. CSS here */
+/* ... */
 
-.sidebar.collapsed {
-    top: 0; left: 0; height: 100%; width: 90px;
-    border-radius: 0; padding: 20px 0;
-}
-
-.top-section { display: flex; align-items: center; justify-content: space-between; color: white; }
-.sidebar.collapsed .top-section { justify-content: center; }
-.logo-wrapper { width: 45px; height: 45px; cursor: pointer; }
-.logo { width: 100%; border-radius: 50%; }
-.close-btn { background: none; border: none; color: white; cursor: pointer; font-size: 1.2rem; }
-.sidebar.collapsed .close-btn { display: none; }
-
-.menu { list-style: none; margin-top: 30px; flex: 1; }
-.menu-item {
-    display: flex; align-items: center; height: 48px;
-    color: rgba(255,255,255,0.8); text-decoration: none;
-    border-radius: 12px; margin-bottom: 8px; transition: 0.3s;
-}
-.menu-item i { width: 50px; text-align: center; }
-.menu-item:hover, .menu-item.active { background: rgba(255,255,255,0.2); color: white; }
-.sidebar.collapsed .menu-item span { display: none; }
-
-hr { border: 0.5px solid rgba(255,255,255,0.1); margin: 15px 0; }
-
-/* --- Main Content Layout --- */
+/* --- Main Content --- */
 .main-content {
     margin-left: 340px;
     padding: 20px 20px 20px 0;
     transition: margin-left 0.35s ease;
     height: 100vh;
-}
-
-.sidebar.collapsed ~ .main-content { margin-left: 110px; }
-
-.content-card {
-    background: #ffffff;
-    border-radius: 25px;
-    padding: 35px;
-    height: 100%;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
 }
 
-.page-title { font-size: 1.8rem; font-weight: 700; margin-bottom: 20px; color: #1a1a1a; }
-
-/* --- Search Bar --- */
-.search-input-wrapper { position: relative; max-width: 400px; margin-bottom: 25px; }
-.search-input-wrapper i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #999; }
-.search-input-wrapper input {
-    width: 100%; padding: 12px 15px 12px 45px;
-    border-radius: 30px; border: 1px solid #eee;
-    background: #f8f9fa; outline: none;
+.sidebar.collapsed ~ .main-content {
+    margin-left: 100px;
 }
 
-/* --- Split Layout --- */
+/* --- White Content Card --- */
+.content-card {
+    background: #ffffff;
+    border: 1px solid #d9d9d9;
+    border-radius: 16px;
+    padding: 30px 35px;
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+/* --- Card Top Row --- */
+.card-top-row {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.page-title {
+    color: #1a1a1a;
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+/* --- Trainings Layout (Grid + Panel) --- */
 .trainings-layout {
     display: grid;
-    grid-template-columns: 1fr 260px;
-    gap: 30px;
+    grid-template-columns: 1fr 280px; /* Adjusted width for right panel */
+    gap: 24px;
     flex: 1;
     overflow: hidden;
 }
 
-/* Left Grid */
-.trainings-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
-    overflow-y: auto;
-    padding-right: 10px;
+/* --- Grid Wrap --- */
+.trainings-grid-wrap {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
+.trainings-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    overflow-y: auto;
+    padding-right: 5px;
+    padding-bottom: 20px;
+}
+
+.trainings-grid::-webkit-scrollbar { width: 5px; }
+.trainings-grid::-webkit-scrollbar-track { background: #f0f0f0; border-radius: 10px; }
+.trainings-grid::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
+
+/* --- Training Card --- */
 .training-card {
-    border: 1px solid #f0f0f0;
-    border-radius: 15px;
-    padding: 20px;
-    background: #fff;
+    border: 1px solid #d1d1d1;
+    border-radius: 12px;
+    padding: 24px;
+    background: #ffffff;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    gap: 20px;
 }
 
-.training-card-title { font-size: 1rem; font-weight: 700; color: #333; margin-bottom: 8px; }
-.training-card-category { font-size: 0.85rem; color: #999; }
-.training-card-date { font-size: 0.9rem; color: #666; margin: 10px 0; }
+.training-card-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #000000;
+    line-height: 1.3;
+    margin-bottom: 6px;
+}
+
+.training-card-category {
+    font-size: 1rem;
+    color: #a0a0a0;
+    margin-bottom: 14px;
+}
+
+.training-card-date {
+    font-size: 1rem;
+    color: #333333;
+    margin-bottom: 14px;
+}
+
+/* Stacked Tags */
+.training-card-tags {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+}
 
 .tag {
-    display: inline-block; padding: 4px 12px; border-radius: 15px;
-    font-size: 0.75rem; font-weight: 600; margin-right: 5px;
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 16px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
 }
-.tag-mode { background: #ffe8d1; color: #a35d00; }
-.tag-slots { background: #fcd7d7; color: #8b0000; }
+
+.tag-onsite {
+    background-color: #f2ba9c; /* Peachy orange from image */
+    color: #222;
+}
+
+.tag-slots {
+    background-color: #f0aeb5; /* Pinkish color from image */
+    color: #222;
+}
+
+.tag-status {
+    background-color: #f0aeb5;
+    color: #222;
+}
+
+.training-card-footer {
+    display: flex;
+    justify-content: flex-end;
+}
 
 .btn-register {
-    background: #5b1f1f; color: white; border: none;
-    padding: 8px 20px; border-radius: 8px; cursor: pointer;
-    align-self: flex-end; font-weight: 600; transition: 0.2s;
+    background-color: #5c2d2d; /* Maroon matching the design */
+    color: #ffffff;
+    border: none;
+    padding: 10px 28px;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background 0.2s ease;
 }
-.btn-register:hover { background: #451616; }
 
-/* Right Panel */
+.btn-register:hover { background-color: #432020; }
+
+/* --- My Trainings Panel --- */
 .my-trainings-panel {
-    background: #f1f3f5;
-    border-radius: 15px;
-    padding: 20px;
+    background: #ebebeb;
+    border: 1px solid #d1d1d1;
+    border-radius: 14px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
     overflow-y: auto;
+    align-self: start;
+    max-height: 100%;
 }
 
-.my-trainings-title { font-size: 1rem; margin-bottom: 15px; color: #333; }
+.my-trainings-panel::-webkit-scrollbar { width: 4px; }
+.my-trainings-panel::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
+
+.my-trainings-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #000;
+    margin-bottom: 4px;
+    flex-shrink: 0;
+}
 
 .my-training-item {
-    background: #fff; border-radius: 10px; padding: 15px;
-    margin-bottom: 12px; display: flex; flex-direction: column; gap: 4px;
+    background: #ffffff;
+    border: 1px solid #d1d1d1;
+    border-radius: 12px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
-.my-training-name { font-weight: 600; font-size: 0.85rem; }
-.my-training-date { font-size: 0.75rem; color: #888; }
-
-.status-badge {
-    padding: 3px 10px; border-radius: 10px; font-size: 0.7rem;
-    width: fit-content; margin-top: 5px; background: #f4c2c2; color: #7a1f1f;
+.my-training-name {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #000;
 }
 
-/* Scrollbar */
-::-webkit-scrollbar { width: 5px; }
-::-webkit-scrollbar-thumb { background: #ddd; border-radius: 10px; }
+.my-training-date {
+    font-size: 0.85rem;
+    color: #333;
+    margin-bottom: 6px;
+}
+
+.my-training-tags {
+    display: flex;
+}

@@ -2,12 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trainings | Employee Portal</title>
+    <title>Employee Trainings</title>
     <link rel="shortcut icon" type="image/png" href="../../static/img/general/uph.png">
-    
     <link rel="stylesheet" href="../../static/css/training_management/emp_training.css">
-    
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
@@ -31,9 +28,14 @@
             <li><a href="emp_dash.html" class="menu-item"><i class="fas fa-border-all"></i><span>Dashboard</span></a></li>
             <li><a href="#" class="menu-item"><i class="fas fa-user"></i><span>Profile</span></a></li>
             <hr>
-            <li><a href="#" class="menu-item active"><i class="fas fa-chalkboard-teacher"></i><span>Trainings</span></a></li>
+            <li><a href="../new_employee/new_employee.html" class="menu-item"><i class="fas fa-file"></i><span>Application Management</span></a></li>
+            <li><a href="../hr/employee_management/hr_employeelist.html" class="menu-item"><i class="fas fa-database"></i><span>Employee Records</span></a></li>
+            <li><a href="#" class="menu-item"><i class="fas fa-calendar-alt"></i><span>Attendance Monitoring</span></a></li>
             <li><a href="../leave/hr_leaveselect.html" class="menu-item"><i class="fas fa-briefcase"></i><span>Leave Management</span></a></li>
-            <li><a href="#" class="menu-item"><i class="fas fa-star"></i><span>Performance</span></a></li>
+            <li><a href="#" class="menu-item"><i class="fas fa-star"></i><span>Performance Evaluation</span></a></li>
+            <li><a href="#" class="menu-item"><i class="fas fa-folder-open"></i><span>Document Management</span></a></li>
+            <li><a href="../training_management/hr_training.html" class="menu-item active"><i class="fas fa-chalkboard-teacher"></i><span>Trainings</span></a></li>
+            <li><a href="#" class="menu-item"><i class="fas fa-chart-line"></i><span>Reports / Analytics</span></a></li>
         </ul>
 
         <div class="bottom-section">
@@ -46,26 +48,23 @@
 
     <div class="main-content" id="mainContent">
         <div class="content-card">
-            <h1 class="page-title">Trainings</h1>
-
-            <div class="search-bar-container">
-                <div class="search-input-wrapper">
-                    <i class="fas fa-search"></i>
-                    <input type="text" id="trainingSearch" placeholder="Search trainings...">
-                </div>
+            
+            <div class="card-top-row">
+                <h1 class="page-title">Trainings</h1>
             </div>
 
             <div class="trainings-layout">
+                
                 <div class="trainings-grid-wrap">
-                    <div class="trainings-grid" id="trainingGrid">
+                    <div class="trainings-grid">
                         
                         <div class="training-card">
-                            <div class="card-body">
-                                <h3 class="training-card-title">Outcomes-Based Education Workshop</h3>
-                                <p class="training-card-category">Teaching</p>
-                                <p class="training-card-date">March 12, 2026</p>
+                            <div>
+                                <div class="training-card-title">Outcomes-Based<br>Education Workshop</div>
+                                <div class="training-card-category">Teaching</div>
+                                <div class="training-card-date">March 12, 2026</div>
                                 <div class="training-card-tags">
-                                    <span class="tag tag-mode">Onsite</span>
+                                    <span class="tag tag-onsite">Onsite</span>
                                     <span class="tag tag-slots">25 / 30 slots left</span>
                                 </div>
                             </div>
@@ -75,13 +74,43 @@
                         </div>
 
                         <div class="training-card">
-                            <div class="card-body">
-                                <h3 class="training-card-title">Curriculum Development Seminar</h3>
-                                <p class="training-card-category">Teaching</p>
-                                <p class="training-card-date">April 05, 2026</p>
+                            <div>
+                                <div class="training-card-title">Outcomes-Based<br>Education Workshop</div>
+                                <div class="training-card-category">Teaching</div>
+                                <div class="training-card-date">March 12, 2026</div>
                                 <div class="training-card-tags">
-                                    <span class="tag tag-mode">Onsite</span>
-                                    <span class="tag tag-slots">10 / 20 slots left</span>
+                                    <span class="tag tag-onsite">Onsite</span>
+                                    <span class="tag tag-slots">25 / 30 slots left</span>
+                                </div>
+                            </div>
+                            <div class="training-card-footer">
+                                <button class="btn-register">Register</button>
+                            </div>
+                        </div>
+
+                        <div class="training-card">
+                            <div>
+                                <div class="training-card-title">Outcomes-Based<br>Education Workshop</div>
+                                <div class="training-card-category">Teaching</div>
+                                <div class="training-card-date">March 12, 2026</div>
+                                <div class="training-card-tags">
+                                    <span class="tag tag-onsite">Onsite</span>
+                                    <span class="tag tag-slots">25 / 30 slots left</span>
+                                </div>
+                            </div>
+                            <div class="training-card-footer">
+                                <button class="btn-register">Register</button>
+                            </div>
+                        </div>
+
+                        <div class="training-card">
+                            <div>
+                                <div class="training-card-title">Outcomes-Based<br>Education Workshop</div>
+                                <div class="training-card-category">Teaching</div>
+                                <div class="training-card-date">March 12, 2026</div>
+                                <div class="training-card-tags">
+                                    <span class="tag tag-onsite">Onsite</span>
+                                    <span class="tag tag-slots">25 / 30 slots left</span>
                                 </div>
                             </div>
                             <div class="training-card-footer">
@@ -92,21 +121,34 @@
                     </div>
                 </div>
 
-                <aside class="my-trainings-panel">
-                    <h3 class="my-trainings-title">My Trainings</h3>
+                <div class="my-trainings-panel">
+                    <div class="my-trainings-title">My Trainings</div>
                     
                     <div class="my-training-item">
-                        <span class="my-training-name">Training Name</span>
-                        <span class="my-training-date">Date</span>
-                        <span class="status-badge cancelled">Status</span>
+                        <div class="my-training-name">Training Name</div>
+                        <div class="my-training-date">Date</div>
+                        <div class="my-training-tags">
+                            <span class="tag tag-status">Status</span>
+                        </div>
                     </div>
 
                     <div class="my-training-item">
-                        <span class="my-training-name">Training Name</span>
-                        <span class="my-training-date">Date</span>
-                        <span class="status-badge cancelled">Status</span>
+                        <div class="my-training-name">Training Name</div>
+                        <div class="my-training-date">Date</div>
+                        <div class="my-training-tags">
+                            <span class="tag tag-status">Status</span>
+                        </div>
                     </div>
-                </aside>
+
+                    <div class="my-training-item">
+                        <div class="my-training-name">Training Name</div>
+                        <div class="my-training-date">Date</div>
+                        <div class="my-training-tags">
+                            <span class="tag tag-status">Status</span>
+                        </div>
+                    </div>
+
+                </div>
 
             </div>
         </div>
