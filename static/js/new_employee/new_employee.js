@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", () => {
-    // --- UI Elements ---
     const sidebar = document.getElementById("sidebar");
     const logoToggle = document.getElementById("logoToggle");
     const closeBtn = document.getElementById("closeBtn");
@@ -17,7 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const newEmpTabBtn = document.getElementById("newEmpTabBtn");
     const posChangeTabBtn = document.getElementById("posChangeTabBtn");
 
-    const statusBanner = document.querySelector(".timeline-status-banner");
+    const statusBanner = document.getElementById("statusBanner");
     const statusTimelineBox = document.getElementById("statusTimelineBox");
     const submissionTimestamp = document.getElementById("submissionTimestamp");
 
@@ -120,15 +119,18 @@ document.addEventListener("DOMContentLoaded", () => {
         posForm.addEventListener("submit", (e) => {
             e.preventDefault();
 
+            // Generate timestamp
             const now = new Date();
             const dateStr = now.toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' });
             const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
 
+            // Show Status Timeline box in the view modal with timestamp
             if (submissionTimestamp && statusTimelineBox) {
                 submissionTimestamp.innerText = `${dateStr} - ${timeStr}`;
                 statusTimelineBox.style.display = "block";
             }
 
+            // Update the approval banner with selected position
             const selectedPos = posForm.querySelector('select').value;
             if (statusBanner && selectedPos) {
                 statusBanner.innerHTML = `<i class="fas fa-exclamation-circle"></i> Pending - For ${selectedPos} Approval`;
