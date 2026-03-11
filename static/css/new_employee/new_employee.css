@@ -61,7 +61,7 @@ body {
 /* --- Main Content Area --- */
 .main-content {
     margin-left: 320px;
-    padding: 40px;
+    padding: 20px 20px 20px 20px;
     transition: margin-left 0.35s ease;
     height: 100vh;
     overflow: hidden;
@@ -77,12 +77,11 @@ body {
     margin-left: 110px;
 }
 
-/* --- Page Title (outside card) --- */
+/* --- Page Title (inside card) --- */
 .page-title {
-    color: #ffffff;
+    color: #1a1a1a;
     font-size: 1.8rem;
     font-weight: 700;
-    margin-bottom: 20px;
 }
 
 /* --- White Content Card --- */
@@ -97,7 +96,7 @@ body {
     gap: 20px;
 }
 
-/* --- Card Top Row (Tabs) --- */
+/* --- Card Top Row (Title left, Tabs right) --- */
 .card-top-row {
     display: flex;
     justify-content: space-between;
