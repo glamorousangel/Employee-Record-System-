@@ -1,3 +1,8 @@
+/* ============================================================
+   emp_attendance.css
+   Place at: static/css/attendance/emp_attendance.css
+   ============================================================ */
+
 /* --- GLOBAL RESET & BASE STYLES --- */
 * {
     margin: 0;
@@ -17,17 +22,17 @@ body {
     inset: 0;
     background: url('../../img/general/bg.jpeg') no-repeat center/cover;
     filter: blur(10px);
-    transform: scale(1.1); 
+    transform: scale(1.1);
     z-index: -1;
 }
 
-/* Sidebar */
+/* ── SIDEBAR ─────────────────────────────────────────────── */
 .sidebar {
     position: fixed;
     top: 20px;
     left: 20px;
     height: calc(100% - 40px);
-    width: 300px; /* widened */
+    width: 300px;
     padding: 25px;
     border-radius: 20px;
     display: flex;
@@ -36,23 +41,19 @@ body {
     background: rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.15);
-
     transition: width 0.35s ease;
 }
 
-/* Collapsed */
 .sidebar.collapsed {
     width: 90px;
 }
 
-/* Top */
 .top-section {
     display: flex;
     align-items: center;
     justify-content: space-between;
 }
 
-/* Logo aligned with icons */
 .logo-wrapper {
     width: 45px;
     height: 45px;
@@ -69,7 +70,6 @@ body {
     transition: 0.3s;
 }
 
-/* FIXED CENTERED OPEN ICON */
 .open-icon {
     position: absolute;
     width: 100%;
@@ -82,16 +82,9 @@ body {
     transition: 0.3s;
 }
 
-/* Show open icon only when collapsed + hover */
-.sidebar.collapsed .logo-wrapper:hover .logo {
-    opacity: 0;
-}
+.sidebar.collapsed .logo-wrapper:hover .logo    { opacity: 0; }
+.sidebar.collapsed .logo-wrapper:hover .open-icon { opacity: 1; }
 
-.sidebar.collapsed .logo-wrapper:hover .open-icon {
-    opacity: 1;
-}
-
-/* Close button */
 .close-btn {
     background: none;
     border: none;
@@ -100,16 +93,12 @@ body {
     cursor: pointer;
 }
 
-.sidebar.collapsed .close-btn {
-    display: none;
-}
+.sidebar.collapsed .close-btn { display: none; }
 
-/* Menu */
 .menu a,
 .bottom-section a {
     text-decoration: none;
 }
-
 
 .menu {
     list-style: none;
@@ -117,7 +106,6 @@ body {
     flex: 1;
 }
 
-/* Fixed icon layout */
 .menu-item {
     position: relative;
     display: flex;
@@ -134,7 +122,6 @@ body {
     text-align: center;
 }
 
-/* Text absolute (prevents shifting) */
 .menu-item span {
     position: absolute;
     left: 60px;
@@ -142,22 +129,15 @@ body {
     transition: opacity 0.2s ease;
 }
 
-/* Hide text smoothly */
 .sidebar.collapsed .menu-item span {
     opacity: 0;
     pointer-events: none;
 }
 
-/* Hover */
-.menu-item:hover {
-    background: rgba(255,255,255,0.15);
-}
+.menu-item:hover  { background: rgba(255,255,255,0.15); }
+.menu-item.active { background: rgba(255,255,255,0.25); }
 
-.menu-item.active {
-    background: rgba(255,255,255,0.25);
-}
-
-/* Tooltip */
+/* Tooltip when collapsed */
 .sidebar.collapsed .menu-item:hover::after {
     content: attr(data-text);
     position: absolute;
@@ -167,21 +147,20 @@ body {
     border-radius: 8px;
     white-space: nowrap;
     font-size: 14px;
+    color: white;
+    z-index: 999;
 }
 
-/* Divider */
 hr {
     border: 0.5px solid rgba(255,255,255,0.2);
     margin: 10px 0;
 }
 
-/* Bottom logout spacing */
-.bottom-section {
-    margin-top: auto;
-}
-/* --- MAIN CONTAINER --- */
+.bottom-section { margin-top: auto; }
+
+/* ── MAIN CONTAINER ──────────────────────────────────────── */
 .main-container {
-    margin-left: 340px; 
+    margin-left: 340px;
     height: 100vh;
     padding: 30px;
     overflow-y: auto;
@@ -190,7 +169,7 @@ hr {
 
 .sidebar.collapsed ~ .main-container { margin-left: 130px; }
 
-/* --- CONTENT CARDS --- */
+/* ── CONTENT CARDS ───────────────────────────────────────── */
 .content-card {
     background: #ffffff;
     border-radius: 20px;
@@ -201,7 +180,7 @@ hr {
 
 .header-banner h1 { font-size: 1.8rem; color: #333; }
 
-/* --- DASHBOARD GRID --- */
+/* ── DASHBOARD GRID ──────────────────────────────────────── */
 .dashboard-grid {
     display: grid;
     grid-template-columns: 1.6fr 1fr;
@@ -212,28 +191,31 @@ hr {
 .btn-clock-in {
     width: 100%;
     padding: 14px;
-    background: #2d5a27; 
+    background: #2d5a27;
     color: white;
     border: none;
-    border-radius: 50px; /* Rounded pill style */
+    border-radius: 50px;
     font-weight: 600;
     cursor: pointer;
     transition: background 0.3s;
 }
 
-.avatar-box img { 
-    width: 110px; height: 110px; border-radius: 50%; 
-    object-fit: cover; background: #f0f7ff;
+.avatar-box img {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #f0f7ff;
 }
 
-/* --- TABLES & PILLS --- */
+/* ── TABLES & PILLS ──────────────────────────────────────── */
 .attendance-table { width: 100%; border-collapse: collapse; }
 .attendance-table th { background: #2e2e2e; color: #fff; padding: 12px; }
 .attendance-table td { border: 1px solid #eee; padding: 15px; text-align: center; }
 
 .pill { padding: 6px 14px; border-radius: 12px; font-size: 0.8rem; display: inline-block; }
-.pill-warning { background: #fff8e1; color: #b78a00; border: 1px solid #ffe082; }
-.pill-purple { background: #f3e5f5; color: #7b1fa2; border: 1px solid #e1bee7; }
+.pill-warning       { background: #fff8e1; color: #b78a00; border: 1px solid #ffe082; }
+.pill-purple        { background: #f3e5f5; color: #7b1fa2; border: 1px solid #e1bee7; }
 .pill-success-check { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
 
 .btn-history {
@@ -245,98 +227,348 @@ hr {
     cursor: pointer;
 }
 
-/* --- FULL HISTORY MODAL --- */
-.modal {
-    display: none; 
-    position: fixed;
-    z-index: 1000;
-    inset: 0;
-    background-color: rgba(0,0,0,0.6);
-    backdrop-filter: blur(5px);
-}
-
-.modal-content {
-    background-color: #f4f4f4;
-    margin: 5vh auto;
-    padding: 25px;
-    width: 90%;
-    max-width: 1150px;
-    border-radius: 15px;
-}
-
-.employee-name-tab {
-    background: #e0e0e0;
-    padding: 8px 30px;
-    border-radius: 20px;
-    border: 1px solid #ccc;
-    font-weight: bold;
-    display: inline-block;
-}
-
-.view-switches { display: flex; gap: 10px; }
-.view-btn {
-    padding: 8px 18px;
-    border: 1px solid #ccc;
-    background: #fff;
-    border-radius: 8px;
-    cursor: pointer;
-}
-.view-btn.active { background: #4d1c14; color: white; }
-
-.history-grid {
-    display: grid;
-    grid-template-columns: 2.5fr 1fr;
-    gap: 20px;
-    margin-top: 20px;
-}
-
-.history-table {
-    width: 100%;
-    background: white;
-    border-collapse: collapse;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-}
-
-.history-table th { background: #3c3c3c; color: white; padding: 12px; }
-.history-table td { padding: 15px; border-bottom: 1px solid #eee; text-align: center; height: 55px; }
-
-.status-pill.present { background: #d4edda; color: #155724; padding: 5px 12px; border-radius: 10px; }
-
-/* History Sidebar Details */
-.details-card {
-    background: white;
-    border: 1px solid #ddd;
-    border-radius: 15px;
-    padding: 20px;
-    text-align: center;
-}
-
-.sidebar-avatar {
-    width: 90px; height: 90px; background: #4d1c14;
-    border-radius: 50%; margin: 0 auto 15px;
-    display: flex; align-items: center; justify-content: center;
-    color: white; font-size: 2.5rem;
-}
-
-.details-list p {
-    display: flex; justify-content: space-between;
-    font-size: 0.9rem; margin-bottom: 12px; border-bottom: 1px solid #fafafa;
-}
-
-.total-hours-card {
-    margin-top: 20px;
-    background: #e0e0e0;
-    padding: 15px;
-    border-radius: 20px;
-    text-align: center;
-    font-weight: bold;
-    border: 1px solid #ccc;
-}
-
-.close-modal { font-size: 30px; cursor: pointer; float: right; }
-
 /* Scrollbar */
 .main-container::-webkit-scrollbar { width: 8px; }
 .main-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 10px; }
+
+
+/* ============================================================
+   HISTORY MODAL STYLES
+   ============================================================ */
+
+/* ── Overlay ── */
+.history-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(5px);
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.history-modal.open {
+    display: flex;
+}
+
+/* ── Modal Box ── */
+.history-modal-content {
+    background: #f0f0f0;
+    border-radius: 18px;
+    width: 100%;
+    max-width: 1100px;
+    max-height: 90vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+}
+
+/* ── Modal Header ── */
+.history-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 24px;
+    background: #f0f0f0;
+    border-bottom: 1px solid #ddd;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.employee-tab {
+    background: #e2e2e2;
+    border: 1px solid #c8c8c8;
+    border-radius: 30px;
+    padding: 8px 28px;
+    font-weight: 700;
+    font-size: 1rem;
+    color: #222;
+}
+
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+/* View Toggle */
+.view-toggle {
+    display: flex;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid #ccc;
+}
+
+.view-btn {
+    padding: 8px 20px;
+    border: none;
+    background: #fff;
+    font-size: 0.875rem;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.2s, color 0.2s;
+    color: #444;
+}
+
+.view-btn:first-child { border-right: 1px solid #ccc; }
+.view-btn.active { background: #7a1a10; color: #fff; font-weight: 600; }
+
+/* Date Navigator */
+.date-navigator {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.date-navigator i {
+    cursor: pointer;
+    color: #555;
+    font-size: 0.85rem;
+    padding: 6px 8px;
+    border-radius: 6px;
+    transition: background 0.2s;
+}
+
+.date-navigator i:hover { background: #e0e0e0; }
+
+/* Close Button */
+.close-history {
+    font-size: 26px;
+    cursor: pointer;
+    color: #555;
+    line-height: 1;
+    padding: 2px 6px;
+    border-radius: 6px;
+    transition: background 0.2s;
+}
+
+.close-history:hover { background: #ddd; color: #111; }
+
+/* ── Modal Body ── */
+.history-modal-body {
+    padding: 20px 24px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+/* ── Layout Grid ── */
+.history-layout-grid {
+    display: grid;
+    grid-template-columns: 1fr 260px;
+    gap: 20px;
+}
+
+/* ── Table Section ── */
+.table-section {
+    background: #fff;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.07);
+}
+
+.history-log-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.history-log-table thead tr { background: #2e2e2e; }
+
+.history-log-table th {
+    color: #fff;
+    padding: 13px 16px;
+    text-align: center;
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+}
+
+.history-log-table th:first-child { text-align: left; }
+
+.history-log-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #f0f0f0;
+    text-align: center;
+    font-size: 0.9rem;
+    color: #333;
+    height: 58px;
+}
+
+.history-log-table td:first-child { text-align: left; font-weight: 500; }
+.history-log-table tbody tr:last-child td { border-bottom: none; }
+.history-log-table tbody tr:hover { background: #fafafa; }
+
+/* Status Badges */
+.status-badge {
+    display: inline-block;
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.status-badge.present { background: #d4edda; color: #155724; }
+.status-badge.absent  { background: #f8d7da; color: #721c24; }
+.status-badge.leave   { background: #f3e5f5; color: #6a1b9a; }
+.status-badge.late    { background: #fff3cd; color: #856404; }
+.status-badge.holiday { background: #e3f2fd; color: #0d47a1; }
+
+/* Total Row */
+.total-row { background: #ebebeb !important; }
+.total-row td {
+    font-weight: 700 !important;
+    font-size: 0.95rem !important;
+    text-align: center !important;
+    color: #222 !important;
+    border-bottom: none !important;
+}
+
+/* ── History Sidebar ── */
+.history-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.employee-details-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.07);
+}
+
+.employee-details-card h3 {
+    font-size: 0.95rem;
+    color: #444;
+    font-weight: 700;
+    margin-bottom: 16px;
+    text-align: left;
+    letter-spacing: 0.02em;
+}
+
+.profile-circle {
+    width: 82px;
+    height: 82px;
+    background: #7a1a10;
+    border-radius: 50%;
+    margin: 0 auto 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 2.2rem;
+}
+
+.details-rows { text-align: left; }
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 13px;
+    border-bottom: 1px solid #f3f3f3;
+    padding-bottom: 11px;
+}
+
+.detail-item:last-child { border-bottom: none; margin-bottom: 0; }
+
+.detail-item strong {
+    font-size: 0.73rem;
+    color: #888;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 3px;
+}
+
+.detail-item span {
+    font-size: 0.92rem;
+    color: #222;
+    font-weight: 600;
+}
+
+/* Hours Summary Box */
+.hours-summary-box {
+    background: #e4e4e4;
+    border: 1px solid #ccc;
+    border-radius: 14px;
+    padding: 16px 18px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #333;
+}
+
+.hours-summary-box span {
+    display: block;
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #7a1a10;
+    margin-top: 4px;
+}
+
+/* ── Monthly Calendar Grid ── */
+.monthly-grid {
+    display: none;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    padding: 12px;
+}
+
+.monthly-grid.active { display: grid; }
+
+.month-day-header {
+    text-align: center;
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 8px 0;
+    background: #2e2e2e;
+    color: #fff;
+    border-radius: 6px;
+}
+
+.month-day-cell {
+    background: #fff;
+    border-radius: 10px;
+    padding: 8px 6px;
+    text-align: center;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    min-height: 68px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 4px;
+}
+
+.month-day-cell.empty { background: transparent; box-shadow: none; }
+
+.day-num { font-size: 0.82rem; font-weight: 700; color: #333; }
+
+.day-status {
+    font-size: 0.7rem;
+    padding: 3px 7px;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+.day-status.present { background: #d4edda; color: #155724; }
+.day-status.absent  { background: #f8d7da; color: #721c24; }
+.day-status.leave   { background: #f3e5f5; color: #6a1b9a; }
+.day-status.holiday { background: #e3f2fd; color: #0d47a1; }
+.day-status.weekend { background: #f5f5f5; color: #999; }
+
+.day-hours { font-size: 0.68rem; color: #777; }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+    .history-layout-grid { grid-template-columns: 1fr; }
+    .history-sidebar { flex-direction: row; flex-wrap: wrap; }
+    .employee-details-card,
+    .hours-summary-box { flex: 1 1 200px; }
+}

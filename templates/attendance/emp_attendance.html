@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Employee Attendance | UPH</title>
     <link rel="shortcut icon" type="image/png" href="../../static/img/general/uph.png">
-    
     <link rel="stylesheet" href="../../static/css/attendance/emp_attendance.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 </head>
@@ -13,6 +12,9 @@
 
     <div class="background"></div>
 
+    <!-- ═══════════════════════════════════════
+         SIDEBAR
+    ════════════════════════════════════════ -->
     <div class="sidebar" id="sidebar">
         <div class="top-section">
             <div class="logo-wrapper" id="logoToggle">
@@ -39,9 +41,7 @@
                     <span>Profile</span>
                 </a>
             </li>
-
             <hr>
-
             <li>
                 <a href="#" class="menu-item active">
                     <i class="fas fa-calendar-check"></i>
@@ -82,26 +82,27 @@
         </div>
     </div>
 
+    <!-- ═══════════════════════════════════════
+         MAIN CONTENT
+    ════════════════════════════════════════ -->
     <main class="main-container" id="mainContent">
-        
+
         <div class="content-card header-banner">
             <h1>Good morning, Juan! ☀️</h1>
         </div>
 
         <div class="dashboard-grid">
-            
+
             <div class="content-card attendance-section">
                 <div class="card-header">
                     <h2>Attendance</h2>
                     <span class="date-now">Monday, February 8 | 8:14 AM</span>
                 </div>
                 <p class="status-text">Let's get it started</p>
-                
                 <div class="stats-row">
                     <p id="workingTime">Working for: 0h</p>
                     <p id="timeInDisplay">Time In: --</p>
                 </div>
-                
                 <button class="btn-clock-in" id="clockBtn">Clock in</button>
             </div>
 
@@ -118,6 +119,7 @@
                     </div>
                 </div>
             </div>
+
         </div>
 
         <div class="content-card summary-section">
@@ -129,7 +131,7 @@
                     <i class="fas fa-chevron-right"></i>
                 </div>
             </div>
-            
+
             <div class="table-wrapper">
                 <table class="attendance-table">
                     <thead>
@@ -160,11 +162,108 @@
             </div>
 
             <div class="footer-actions">
-                <button class="btn-history">View Full History</button>
+                <!-- id="openHistory" is what triggers the modal -->
+                <button class="btn-history" id="openHistory">View Full History</button>
             </div>
         </div>
 
     </main>
+
+    <!-- ═══════════════════════════════════════
+         HISTORY MODAL
+    ════════════════════════════════════════ -->
+    <div class="history-modal" id="historyModal">
+        <div class="history-modal-content">
+
+            <!-- Header -->
+            <div class="history-modal-header">
+                <div class="employee-tab">Dela Cruz, Juan</div>
+
+                <div class="header-controls">
+                    <div class="view-toggle">
+                        <button class="view-btn active" id="weeklyViewBtn">Weekly View</button>
+                        <button class="view-btn" id="monthlyViewBtn">Monthly View</button>
+                    </div>
+                    <div class="date-navigator">
+                        <i class="fas fa-chevron-left" id="prevPeriod"></i>
+                        <span id="historyDateRange">February 4 – 10, 2026</span>
+                        <i class="fas fa-chevron-right" id="nextPeriod"></i>
+                    </div>
+                </div>
+
+                <span class="close-history" id="closeHistory">&times;</span>
+            </div>
+
+            <!-- Body -->
+            <div class="history-modal-body">
+                <div class="history-layout-grid">
+
+                    <!-- Table Section -->
+                    <div class="table-section">
+
+                        <!-- Weekly Table -->
+                        <table class="history-log-table" id="weeklyTable">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Day</th>
+                                    <th>Time In</th>
+                                    <th>Time Out</th>
+                                    <th>Total Hours</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="weeklyTableBody">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+
+                        <!-- Monthly Calendar Grid -->
+                        <div class="monthly-grid" id="monthlyGrid">
+                            <!-- Populated by JS -->
+                        </div>
+
+                    </div>
+
+                    <!-- Sidebar -->
+                    <aside class="history-sidebar">
+                        <div class="employee-details-card">
+                            <h3>Employee Details</h3>
+                            <div class="profile-circle">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="details-rows">
+                                <div class="detail-item">
+                                    <strong>Employee ID</strong>
+                                    <span>001</span>
+                                </div>
+                                <div class="detail-item">
+                                    <strong>Position</strong>
+                                    <span>Instructor</span>
+                                </div>
+                                <div class="detail-item">
+                                    <strong>Department</strong>
+                                    <span>CCS</span>
+                                </div>
+                                <div class="detail-item">
+                                    <strong>Employment Type</strong>
+                                    <span>Full-Time</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="hours-summary-box">
+                            Total Hours This Week
+                            <span id="totalHoursCount">42h 15m</span>
+                        </div>
+                    </aside>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <!-- END HISTORY MODAL -->
 
     <script src="../../static/js/attendance/emp_attendance.js"></script>
 </body>
