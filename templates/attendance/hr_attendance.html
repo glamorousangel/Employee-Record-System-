@@ -2,153 +2,125 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Attendance Monitoring | HR System</title>
+    <title>Attendance Monitoring</title>
     <link rel="shortcut icon" type="image/png" href="../../static/img/general/uph.png">
-    
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../../static/css/attendance/hr_attendance.css">
+
+    <!-- Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
 
     <div class="background"></div>
 
     <div class="sidebar" id="sidebar">
+
+        <!-- TOP -->
         <div class="top-section">
             <div class="logo-wrapper" id="logoToggle">
-                <img src="../../static/img/general/uph.png" class="logo" alt="Logo">
+                <img src="../../static/img/general/uph.png" class="logo">
+                <div class="open-icon">
+                    <i class="fas fa-chevron-right"></i>
+                </div>
             </div>
+
             <button class="close-btn" id="closeBtn">
                 <i class="fas fa-chevron-left"></i>
             </button>
         </div>
 
+        <!-- MENU -->
         <ul class="menu">
-            <li><a href="hr_dash.html" class="menu-item"><i class="fas fa-border-all"></i><span>Dashboard</span></a></li>
-            <li><a href="#" class="menu-item"><i class="fas fa-user"></i><span>Profile</span></a></li>
+
+            <li>
+                <a href="hr_dash.html" class="menu-item active">
+                    <i class="fas fa-border-all"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="../accounts/hr_profile_view.html?id=2024-001" class="menu-item">
+                    <i class="fas fa-user"></i>
+                    <span>Profile</span>
+                </a>
+            </li>
+
             <hr>
-            <li><a href="#" class="menu-item active"><i class="fas fa-calendar-check"></i><span>Attendance</span></a></li>
-            <li><a href="#" class="menu-item"><i class="fas fa-database"></i><span>Employee Records</span></a></li>
-            <li><a href="#" class="menu-item"><i class="fas fa-briefcase"></i><span>Leave Management</span></a></li>
+
+            <li>
+                <a href="ENTER" class="menu-item">
+                    <i class="fas fa-file"></i>
+                    <span>Application Management</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="../hr/employee_management/hr_employeelist.html" class="menu-item">
+                    <i class="fas fa-database"></i>
+                    <span>Employee Records</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="ENTER" class="menu-item">
+                    <i class="fas fa-calendar"></i>
+                    <span>Attendance Monitoring</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="../leave/hr_leaveselect.html" class="menu-item">
+                    <i class="fas fa-briefcase"></i>
+                    <span>Leave Management</span>
+                </a>
+            </li>
+
+            <!-- ADDED -->
+            <li>
+                <a href="ENTER" class="menu-item">
+                    <i class="fas fa-star"></i>
+                    <span>Performance Evaluation</span>
+                </a>
+            </li>
+
+            <!-- ADDED -->
+            <li>
+                <a href="ENTER" class="menu-item">
+                    <i class="fas fa-folder-open"></i>
+                    <span>Document Management</span>
+                </a>
+            </li>
+
+            <!-- ADDED -->
+            <li>
+                <a href="ENTER" class="menu-item">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    <span>Trainings</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="ENTER" class="menu-item">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Reports / Analytics</span>
+                </a>
+            </li>
+
         </ul>
 
+
+        <!-- LOGOUT -->
         <div class="bottom-section">
-            <a href="#" class="menu-item logout"><i class="fas fa-sign-out-alt"></i><span>Log Out</span></a>
+            <a href="../login/login.html" class="menu-item logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Log Out</span>
+            </a>
         </div>
+
     </div>
 
-    <div class="dashboard-wrapper">
-        <div class="header-row">
-            <h1>Employee Attendance</h1>
-            <div class="search-container">
-                <i class="fas fa-search" style="color: #999;"></i>
-                <input type="text" id="employeeSearch" placeholder="Search by Name / ID / Department / Position">
-            </div>
-        </div>
-
-        <div class="stats-grid">
-            <div class="stat-card"><span>Total Employees</span><strong id="totalEmployees">546</strong></div>
-            <div class="stat-card"><span>Present Today</span><strong id="presentEmployees">502</strong></div>
-            <div class="stat-card"><span>Absent Today</span><strong id="absentEmployees">12</strong></div>
-            <div class="stat-card"><span>On Leave</span><strong id="leaveEmployees">32</strong></div>
-            <div class="stat-card"><span>Late Arrivals</span><strong id="lateEmployees">15</strong></div>
-        </div>
-
-        <div class="table-container">
-            <div class="table-header-tools">
-                <div class="active-filters">
-                    <button class="btn-outline">Sample Filter <i class="fas fa-times"></i></button>
-                </div>
-                <div class="filter-actions">
-                    <button class="btn-outline"><i class="fas fa-filter"></i> Filter</button>
-                    <button class="btn-outline"><i class="fas fa-calendar-alt"></i> Select Date</button>
-                </div>
-            </div>
-
-            <table class="attendance-table">
-                <thead>
-                    <tr>
-                        <th>Employee</th>
-                        <th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th>
-                    </tr>
-                </thead>
-                <tbody id="attendanceBody">
-                    <tr class="clickable-row" onclick="openEmployeeDetail('Juan Dela Cruz')">
-                        <td>
-                            <div class="user-cell">
-                                <img src="../../static/img/general/uph.png" alt="User">
-                                <div>
-                                    <div class="emp-name">Juan Dela Cruz</div>
-                                    <div class="emp-meta">Instructor <span class="dept-tag">CCS</span></div>
-                                </div>
-                            </div>
-                        </td>
-                        <td>2</td>
-                        <td><span class="status-badge badge-green"><i class="fas fa-check-circle"></i> 8 hours</span></td>
-                        <td><span class="status-badge badge-yellow"><i class="fas fa-clock"></i> 4h 36m</span></td>
-                        <td><span class="status-badge badge-purple"><i class="fas fa-calendar-minus"></i> Leave</span></td>
-                        <td><span class="status-badge badge-green"><i class="fas fa-check-circle"></i> 8h 39m</span></td>
-                        <td><span class="status-badge badge-green">Active</span></td>
-                        <td>8</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
     </div>
-
-    <div id="detailModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="modalEmployeeName">Dela Cruz, Juan</h2>
-                <span class="close-modal" id="closeModalBtn">&times;</span>
-            </div>
-
-            <div class="modal-grid">
-                <div class="main-detail">
-                    <div class="tab-nav">
-                        <button class="tab-btn active" id="btnWeekly">Weekly View</button>
-                        <button class="tab-btn" id="btnMonthly">Monthly View</button>
-                        <div class="date-navigator">
-                            <i class="fas fa-chevron-left"></i> 
-                            <strong id="viewDateRange">February 4 - 10</strong> 
-                            <i class="fas fa-chevron-right"></i>
-                        </div>
-                    </div>
-
-                    <div class="detail-table-wrapper">
-                        <table class="attendance-table">
-                            <thead>
-                                <tr style="background: #444;">
-                                    <th>Date</th><th>Day</th><th>Time In</th><th>Time Out</th><th>Total</th><th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody id="modalTableBody">
-                                <tr>
-                                    <td>Feb 4, 2026</td><td>Monday</td><td>8:03 AM</td><td>5:02 PM</td><td>8h 59m</td><td><span class="status-badge badge-green">Present</span></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <div class="side-info">
-                    <div class="profile-sidebar">
-                        <h3>Employee Details</h3>
-                        <i class="fas fa-user-circle"></i>
-                        <div class="info-row"><strong>Employee ID</strong> <span>2024-001</span></div>
-                        <div class="info-row"><strong>Position</strong> <span>Instructor</span></div>
-                        <div class="info-row"><strong>Department</strong> <span>CCS</span></div>
-                        <div class="info-row"><strong>Type</strong> <span>Full-Time</span></div>
-                        
-                        <div class="total-box">
-                            Total Hours This <span id="periodLabel">Week</span>: <strong>42.5 hrs</strong>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script src="../../static/js/attendance/hr_attendance.js"></script>
+<script src="../../static/js/attendance/hr_attendance.js"></script>
 </body>
 </html>

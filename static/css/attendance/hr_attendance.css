@@ -1,71 +1,96 @@
-/* =========================================
-   1. GLOBAL & RESET
-   ========================================= */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-family: 'Segoe UI', sans-serif;
 }
 
 body {
     height: 100vh;
     overflow: hidden;
-    background-color: #f4f7f6; /* Light gray background for data clarity */
 }
 
-/* Background Image with Blur */
+/* Background */
 .background {
     position: fixed;
     inset: 0;
-    background: url('../../static/img/general/bg.jpeg') no-repeat center/cover;
+    background: url('../../img/general/bg.jpeg') no-repeat center/cover;
     filter: blur(10px);
     transform: scale(1.1); 
     z-index: -1;
 }
 
-/* =========================================
-   2. SIDEBAR (Glassmorphism)
-   ========================================= */
+/* Sidebar */
 .sidebar {
     position: fixed;
     top: 20px;
     left: 20px;
     height: calc(100% - 40px);
-    width: 300px;
+    width: 300px; /* widened */
     padding: 25px;
     border-radius: 20px;
     display: flex;
     flex-direction: column;
-    background: rgba(255, 255, 255, 0.1);
+    justify-content: space-between;
+    background: rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.15);
-    transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 100;
+
+    transition: width 0.35s ease;
 }
 
+/* Collapsed */
 .sidebar.collapsed {
     width: 90px;
 }
 
+/* Top */
 .top-section {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 30px;
 }
 
+/* Logo aligned with icons */
 .logo-wrapper {
     width: 45px;
     height: 45px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
 }
 
 .logo {
     width: 100%;
     border-radius: 50%;
+    transition: 0.3s;
 }
 
+/* FIXED CENTERED OPEN ICON */
+.open-icon {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    color: white;
+    transition: 0.3s;
+}
+
+/* Show open icon only when collapsed + hover */
+.sidebar.collapsed .logo-wrapper:hover .logo {
+    opacity: 0;
+}
+
+.sidebar.collapsed .logo-wrapper:hover .open-icon {
+    opacity: 1;
+}
+
+/* Close button */
 .close-btn {
     background: none;
     border: none;
@@ -78,347 +103,266 @@ body {
     display: none;
 }
 
-/* Menu Items */
+/* Menu */
+.menu a,
+.bottom-section a {
+    text-decoration: none;
+}
+
+
 .menu {
     list-style: none;
+    margin-top: 30px;
     flex: 1;
 }
 
+/* Fixed icon layout */
 .menu-item {
     position: relative;
     display: flex;
     align-items: center;
-    height: 50px;
+    height: 48px;
     color: white;
-    text-decoration: none;
-    margin-bottom: 10px;
+    cursor: pointer;
     border-radius: 12px;
     transition: background 0.3s;
 }
 
 .menu-item i {
-    width: 60px;
+    width: 50px;
     text-align: center;
-    font-size: 1.2rem;
 }
 
+/* Text absolute (prevents shifting) */
 .menu-item span {
     position: absolute;
     left: 60px;
     white-space: nowrap;
-    font-size: 15px;
     transition: opacity 0.2s ease;
 }
 
+/* Hide text smoothly */
 .sidebar.collapsed .menu-item span {
     opacity: 0;
     pointer-events: none;
 }
 
-.menu-item:hover, .menu-item.active {
-    background: rgba(255, 255, 255, 0.2);
+/* Hover */
+.menu-item:hover {
+    background: rgba(255,255,255,0.15);
 }
 
-.menu hr {
-    border: 0.5px solid rgba(255, 255, 255, 0.2);
-    margin: 15px 0;
+.menu-item.active {
+    background: rgba(255,255,255,0.25);
 }
 
-.logout {
+/* Tooltip */
+.sidebar.collapsed .menu-item:hover::after {
+    content: attr(data-text);
+    position: absolute;
+    left: 80px;
+    background: rgba(20,20,20,0.95);
+    padding: 8px 14px;
+    border-radius: 8px;
+    white-space: nowrap;
+    font-size: 14px;
+}
+
+/* Divider */
+hr {
+    border: 0.5px solid rgba(255,255,255,0.2);
+    margin: 10px 0;
+}
+
+/* Bottom logout spacing */
+.bottom-section {
     margin-top: auto;
-    color: #ffcfcf;
 }
 
-/* =========================================
-   3. MAIN CONTENT LAYOUT
-   ========================================= */
-.dashboard-wrapper {
-    margin-left: 340px;
-    padding: 40px;
-    height: 100vh;
-    overflow-y: auto;
-    transition: margin-left 0.35s ease;
+.dashboard-wrapper{
+    margin-left:340px;
+    display:grid;
+    grid-template-columns: 1fr minmax(280px, 380px);
+    gap:40px;
+    padding:40px;
+    color:white;
 }
 
-.sidebar.collapsed ~ .dashboard-wrapper {
-    margin-left: 120px;
+.sidebar.collapsed ~ .dashboard-wrapper{
+margin-left:120px;
 }
 
-.header-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 30px;
+/* WELCOME SECTION */
+
+.welcome-section{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
 }
 
-.header-row h1 {
-    font-size: 28px;
-    font-weight: 700;
-    color: #1a1a1a;
+/* LEFT SIDE */
+
+.welcome-left{
+    display:flex;
+    flex-direction:column;
 }
 
-/* Search Bar */
-.search-container {
-    display: flex;
-    align-items: center;
-    background: white;
-    padding: 12px 20px;
-    border-radius: 30px;
-    width: 450px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-    border: 1px solid #eee;
+/* DASHBOARD TITLE */
+
+.dashboard-title{
+    font-size:24px;
+    font-weight:900;
+    letter-spacing:2px;
+    margin-bottom:15px;
 }
 
-.search-container input {
-    border: none;
-    outline: none;
-    margin-left: 10px;
-    width: 100%;
-    font-size: 14px;
-    color: #333;
+/* WELCOME TEXT */
+
+.welcome-text{
+    font-size:70px;
+    font-weight:800;
+    line-height:1;
 }
 
-/* =========================================
-   4. STATS & TABLES
-   ========================================= */
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 20px;
-    margin-bottom: 30px;
+/* USERNAME */
+
+.welcome-name{
+    font-size:70px;
+    font-weight:900;
+    text-transform:uppercase;
+    line-height:1;
 }
 
-.stat-card {
-    background: white;
-    padding: 20px;
-    border-radius: 18px;
-    border: 1px solid #e0e0e0;
-    display: flex;
-    flex-direction: column;
+/* RIGHT SIDE QUOTE */
+
+.welcome-right{
+    max-width:420px;
+    margin-top: 55px;
 }
 
-.stat-card span {
-    color: #777;
-    font-size: 13px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+.welcome-right p{
+    text-align:right;
 }
 
-.stat-card strong {
-    font-size: 26px;
-    color: #222;
-    margin-top: 8px;
+#quote{
+    text-align:right;
+    font-size:18px;
+    opacity:0.9;
 }
 
-.table-container {
-    background: white;
-    border-radius: 20px;
-    padding: 25px;
-    border: 1px solid #e0e0e0;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.02);
+.quick-actions{
+    display:flex;
+    gap:15px;
+    margin-top:25px;
 }
 
-.table-header-tools {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
+.quick-actions button{
+    background:rgba(255,255,255,0.15);
+    border:none;
+    padding:14px 22px;
+    border-radius:15px;
+    color:white;
+    cursor:pointer;
+    backdrop-filter:blur(10px);
+    border:1px solid rgba(255,255,255,0.15);
+    font-weight:600;
 }
 
-.btn-outline {
-    padding: 10px 18px;
-    border: 1px solid #ddd;
-    background: white;
-    border-radius: 10px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 600;
-    transition: 0.2s;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
+.dashboard-grid{
+    display:grid;
+    grid-template-columns: 220px 220px 220px 260px;
+    grid-template-rows: 200px 200px;
+    gap:25px;
+    margin-top: 26px;
 }
 
-.btn-outline:hover {
-    background: #f8f8f8;
-    border-color: #bbb;
+.stats-row{
+    display:flex;
+    gap:25px;
+    margin-top:40px;
 }
 
-/* Table Design */
-.attendance-table {
-    width: 100%;
-    border-collapse: collapse;
+.stat{
+    width:220px;
+    height:200px;
+
+    display:flex;
+    flex-direction:column;
+
+    align-items:center;      /* horizontal center */
+    justify-content:center;  /* vertical center */
+
+    text-align:center;       /* center text */
 }
 
-.attendance-table th {
-    background: #2d2d2d;
-    color: white;
-    padding: 16px;
-    text-align: left;
-    font-size: 14px;
-    font-weight: 500;
+.stat h2{
+    font-size:42px;
+    font-weight:800;
+    margin-bottom:8px;
 }
 
-.attendance-table td {
-    padding: 16px;
-    border-bottom: 1px solid #f0f0f0;
-    font-size: 14px;
-    color: #444;
+.stat p{
+    font-size:16px;
+    opacity:0.85;
 }
 
-.clickable-row:hover {
-    background: #fcfcfc;
-    cursor: pointer;
+
+
+.card{
+    background:rgba(255,255,255,0.08);
+    backdrop-filter:blur(25px);
+    border-radius:25px;
+    padding:25px;
+    border:1px solid rgba(255,255,255,0.15);
 }
 
-/* User Identity Cell */
-.user-cell {
-    display: flex;
-    align-items: center;
-    gap: 15px;
+
+.bottom-row{
+    display:flex;
+    gap:25px;
+    margin-top:25px;
 }
 
-.user-cell img {
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid #eee;
+.help{
+    grid-column:1 / span 3;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:15px;
+
+    font-size:20px;
+    cursor:pointer;
 }
 
-.dept-tag {
-    font-size: 10px;
-    background: #e3f2fd;
-    color: #0d47a1;
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-weight: 800;
-    margin-left: 5px;
+.help i{
+    font-size:32px;
 }
 
-/* Status Badges */
-.status-badge {
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 700;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
+.attendance{
+    grid-column:4;
+    grid-row:1 / span 2;
 }
 
-.badge-green { background: #e8f5e9; color: #2e7d32; }
-.badge-yellow { background: #fff8e1; color: #f57f17; }
-.badge-purple { background: #f3e5f5; color: #7b1fa2; }
-.badge-red { background: #ffebee; color: #c62828; }
+/* RIGHT PANEL */
 
-/* =========================================
-   5. MODAL STYLES (Weekly/Monthly View)
-   ========================================= */
-.modal {
-    display: none; 
-    position: fixed; 
-    inset: 0;
-    background: rgba(0,0,0,0.5); 
-    backdrop-filter: blur(4px);
-    z-index: 1000;
+.right-panel{
+    display:flex;
+    flex-direction:column;
+    gap:20px;
+    width:100%;
+}
+/* NOTIFICATIONS */
+
+.notifications{
+    height:500px;
+    width:100%;
 }
 
-.modal-content {
-    background: #f8f9fa;
-    width: 90%;
-    max-width: 1100px;
-    margin: 40px auto;
-    border-radius: 25px;
-    padding: 30px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.2);
-    display: flex;
-    flex-direction: column;
-}
+.notif{
+    background:rgba(0,0,0,0.3);
+    padding:10px;
+    border-radius:8px;
+    margin-top:10px;
 
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 25px;
-}
-
-.close-modal {
-    font-size: 32px;
-    cursor: pointer;
-    color: #999;
-}
-
-.modal-grid {
-    display: grid;
-    grid-template-columns: 1fr 320px;
-    gap: 30px;
-}
-
-/* Tab Navigation inside Modal */
-.tab-nav {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 20px;
-    align-items: center;
-}
-
-.tab-btn {
-    padding: 12px 24px;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    font-weight: 700;
-    background: #eee;
-    color: #666;
-    transition: 0.3s;
-}
-
-.tab-btn.active {
-    background: #800000; /* UPH Crimson */
-    color: white;
-}
-
-.date-navigator {
-    margin-left: auto;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    font-size: 15px;
-    color: #444;
-}
-
-/* Profile Side Panel in Modal */
-.profile-sidebar {
-    background: white;
-    border-radius: 20px;
-    padding: 25px;
-    border: 1px solid #ddd;
-    text-align: center;
-}
-
-.profile-sidebar i {
-    font-size: 70px;
-    color: #800000;
-    margin: 15px 0;
-}
-
-.info-row {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 15px;
-    font-size: 14px;
-    border-bottom: 1px solid #f9f9f9;
-    padding-bottom: 8px;
-}
-
-.total-box {
-    background: #f0f0f0;
-    padding: 18px;
-    border-radius: 15px;
-    margin-top: 20px;
-    font-weight: 800;
-    color: #333;
 }
