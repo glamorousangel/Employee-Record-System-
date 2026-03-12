@@ -88,7 +88,16 @@ body {
 
 .sidebar.collapsed .close-btn { display: none; }
 
-.menu { list-style: none; flex: 1; margin-top: 10px; }
+.menu a,
+.bottom-section a {
+    text-decoration: none;
+}
+
+.menu {
+    list-style: none;
+    margin-top: 30px;
+    flex: 1;
+}
 
 .menu-item {
     position: relative;
@@ -96,46 +105,52 @@ body {
     align-items: center;
     height: 48px;
     color: white;
-    text-decoration: none;
+    cursor: pointer;
     border-radius: 12px;
-    margin-bottom: 5px;
-    transition: 0.3s;
+    transition: background 0.3s;
 }
 
-.menu-item i { width: 50px; text-align: center; font-size: 18px; }
+.menu-item i {
+    width: 50px;
+    text-align: center;
+}
 
 .menu-item span {
     position: absolute;
     left: 60px;
     white-space: nowrap;
-    transition: opacity 0.2s;
-    font-size: 14px;
+    transition: opacity 0.2s ease;
+}
+.sidebar.collapsed .menu-item span {
+    opacity: 0;
+    pointer-events: none;
 }
 
-.sidebar.collapsed .menu-item span { opacity: 0; pointer-events: none; }
-
-.menu-item:hover, .menu-item.active {
-    background: rgba(255, 255, 255, 0.2);
+.menu-item:hover {
+    background: rgba(255,255,255,0.15);
 }
 
-hr { border: 0.5px solid rgba(255,255,255,0.1); margin: 15px 0; }
+.menu-item.active {
+    background: rgba(255,255,255,0.25);
+}
 
-.bottom-section { margin-top: auto; }
-
-/* Tooltip for collapsed sidebar */
+hr {
+    border: 0.5px solid rgba(255,255,255,0.2);
+    margin: 10px 0;
+}
+.bottom-section {
+    margin-top: auto;
+}
 .sidebar.collapsed .menu-item:hover::after {
     content: attr(data-text);
     position: absolute;
     left: 80px;
     background: rgba(20,20,20,0.95);
-    color: white;
     padding: 8px 14px;
     border-radius: 8px;
     white-space: nowrap;
     font-size: 14px;
-    z-index: 1000;
 }
-
 
 /* --- 3. MAIN CONTENT & WHITE CONTAINER --- */
 .main-content {
