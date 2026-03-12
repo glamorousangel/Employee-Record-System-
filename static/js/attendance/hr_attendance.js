@@ -1,27 +1,33 @@
-const sidebar = document.getElementById("sidebar");
-const logoToggle = document.getElementById("logoToggle");
-const closeBtn = document.getElementById("closeBtn");
-const menuItems = document.querySelectorAll(".menu-item");
+document.addEventListener("DOMContentLoaded", () => {
+    const sidebar = document.getElementById("sidebar");
+    const logoToggle = document.getElementById("logoToggle");
+    const closeBtn = document.getElementById("closeBtn");
+    const menuItems = document.querySelectorAll(".menu-item");
 
-// Close button (only when expanded)
-closeBtn.addEventListener("click", () => {
-    sidebar.classList.add("collapsed");
-});
+    // Close sidebar when clicking the chevron
+    closeBtn.addEventListener("click", () => {
+        sidebar.classList.add("collapsed");
+    });
 
-// Open via logo hover click
-logoToggle.addEventListener("click", () => {
-    if (sidebar.classList.contains("collapsed")) {
-        sidebar.classList.remove("collapsed");
-    }
-});
+    // Expand sidebar when clicking the logo wrapper while collapsed
+    logoToggle.addEventListener("click", () => {
+        if (sidebar.classList.contains("collapsed")) {
+            sidebar.classList.remove("collapsed");
+        }
+    });
 
-// Tooltip text
-menuItems.forEach(item => {
-    const text = item.querySelector("span").innerText;
-    item.setAttribute("data-text", text);
+    // Handle Active Menu States
+    menuItems.forEach(item => {
+        item.addEventListener("click", function() {
+            // Remove active class from all items
+            menuItems.forEach(i => i.classList.remove("active"));
+            
+            // Add active class to clicked item
+            this.classList.add("active");
+        });
 
-    item.addEventListener("click", () => {
-        document.querySelector(".menu-item.active")?.classList.remove("active");
-        item.classList.add("active");
+        // Set tooltips for collapsed mode using HTML attributes
+        const spanText = item.querySelector("span").innerText;
+        item.setAttribute("title", spanText);
     });
 });
