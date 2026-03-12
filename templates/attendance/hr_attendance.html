@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Attendance Monitoring</title>
+    <title>Employee Dashboard</title>
     <link rel="shortcut icon" type="image/png" href="../../static/img/general/uph.png">
-    <link rel="stylesheet" href="../../static/css/attendance/hr_attendance.css">
+    <link rel="stylesheet" href="../../static/css/dashboard/emp_dash.css">
 
     <!-- Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
@@ -31,21 +31,79 @@
 
         <!-- MENU -->
         <ul class="menu">
-            <li><a href="emp_dash.html" class="menu-item"><i class="fas fa-border-all"></i><span>Dashboard</span></a></li>
-            <li><a href="#" class="menu-item"><i class="fas fa-user"></i><span>Profile</span></a></li>
+
+            <li>
+                <a href="emp_dash.html" class="menu-item active">
+                    <i class="fas fa-border-all"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="ENTER" class="menu-item">
+                    <i class="fas fa-user"></i>
+                    <span>Profile</span>
+                </a>
+            </li>
+
             <hr>
-            <li><a href="../new_employee/new_employee.html" class="menu-item active"><i class="fas fa-file"></i><span>Application Management</span></a></li>
-            <li><a href="../hr/employee_management/hr_employeelist.html" class="menu-item"><i class="fas fa-database"></i><span>Employee Records</span></a></li>
-            <li><a href="#" class="menu-item"><i class="fas fa-calendar-alt"></i><span>Attendance Monitoring</span></a></li>
-            <li><a href="../leave/hr_leaveselect.html" class="menu-item"><i class="fas fa-briefcase"></i><span>Leave Management</span></a></li>
-            <li><a href="#" class="menu-item"><i class="fas fa-star"></i><span>Performance Evaluation</span></a></li>
-            <li><a href="#" class="menu-item"><i class="fas fa-folder-open"></i><span>Document Management</span></a></li>
-            <li><a href="../training_management/emp_training.html" class="menu-item"><i class="fas fa-chalkboard-teacher"></i> <span>Trainings</span></a></li>
-            <li><a href="#" class="menu-item"><i class="fas fa-chart-line"></i><span>Reports / Analytics</span></a></li>
+
+            <li>
+                <a href="ENTER" class="menu-item">
+                    <i class="fas fa-user-edit"></i>
+                    <span>Position Change Request</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="ENTER" class="menu-item">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>Attendance</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="ENTER" class="menu-item">
+                    <i class="fas fa-plane-departure"></i>
+                    <span>Leave Request</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="ENTER" class="menu-item">
+                    <i class="fas fa-star"></i>
+                    <span>Performance Evaluation</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="ENTER" class="menu-item">
+                    <i class="fas fa-folder-open"></i>
+                    <span>Documents</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="ENTER" class="menu-item">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    <span>Trainings</span>
+                </a>
+            </li>
+
         </ul>
+
+        <!-- LOGOUT -->
+        <div class="bottom-section">
+            <a href="../login/login.html" class="menu-item logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Log Out</span>
+            </a>
+        </div>
 
     </div>
 
-    <script src="../../static/js/attendance/hr_attendance.js"></script>
+    </div>
+
+    <script src="../../static/js/dashboard/emp_dash.js"></script>
 </body>
 </html>
