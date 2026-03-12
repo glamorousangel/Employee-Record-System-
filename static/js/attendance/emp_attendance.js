@@ -6,12 +6,12 @@ const logoToggle = document.getElementById("logoToggle");
 const closeBtn = document.getElementById("closeBtn");
 const menuItems = document.querySelectorAll(".menu-item");
 
-// Main Attendance Dashboard Components
+// Dashboard Clock Components
 const clockBtn = document.getElementById("clockBtn");
 const workingTimeDisplay = document.getElementById("workingTime");
 const timeInDisplay = document.getElementById("timeInDisplay");
 
-// Full History Modal Components
+// History Modal Components
 const historyModal = document.getElementById("historyModal");
 const openHistoryBtn = document.getElementById("openHistory");
 const closeHistoryBtn = document.getElementById("closeHistory");
@@ -20,9 +20,8 @@ const monthlyViewBtn = document.getElementById("monthlyViewBtn");
 const historyDateRange = document.getElementById("historyDateRange");
 
 /**
- * 2. SIDEBAR NAVIGATION LOGIC
+ * 2. SIDEBAR LOGIC
  */
-// Toggle Sidebar Collapse
 closeBtn.addEventListener("click", () => {
     sidebar.classList.add("collapsed");
 });
@@ -33,7 +32,7 @@ logoToggle.addEventListener("click", () => {
     }
 });
 
-// Active State Management
+// Handle Active Menu State
 menuItems.forEach(item => {
     item.addEventListener("click", () => {
         document.querySelector(".menu-item.active")?.classList.remove("active");
@@ -42,7 +41,7 @@ menuItems.forEach(item => {
 });
 
 /**
- * 3. REAL-TIME ATTENDANCE CLOCK LOGIC
+ * 3. LIVE ATTENDANCE CLOCK LOGIC
  */
 let timerInterval = null;
 let totalSeconds = 0;
@@ -63,23 +62,24 @@ function startTimer() {
 
 clockBtn.addEventListener("click", () => {
     if (!isClockedIn) {
-        // Clocking In
+        // --- CLOCK IN ---
         isClockedIn = true;
         clockBtn.innerText = "Clock out";
-        clockBtn.style.background = "#8b0000"; // Dark red for active state
+        clockBtn.style.background = "#8b0000"; // Deep Red active state
         
         const now = new Date();
-        timeInDisplay.innerText = `Time In: ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+        const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        timeInDisplay.innerText = `Time In: ${timeStr}`;
         
         startTimer();
     } else {
-        // Clocking Out
+        // --- CLOCK OUT ---
         if (confirm("Are you sure you want to clock out?")) {
             isClockedIn = false;
             clearInterval(timerInterval);
             clockBtn.innerText = "Clock in";
-            clockBtn.style.background = "#2d5a27"; // Return to original green
-            alert(`Shift completed! Total time: ${formatDuration(totalSeconds)}`);
+            clockBtn.style.background = "#2d5a27"; // Back to Green
+            alert(`Shift ended. Total time worked: ${formatDuration(totalSeconds)}`);
         }
     }
 });
@@ -87,52 +87,54 @@ clockBtn.addEventListener("click", () => {
 /**
  * 4. FULL HISTORY MODAL LOGIC
  */
-// Open and Close Modal
-openHistoryBtn.addEventListener("click", () => {
+
+// Open Modal
+openHistoryBtn.onclick = () => {
     historyModal.style.display = "block";
-});
+};
 
-closeHistoryBtn.addEventListener("click", () => {
+// Close Modal
+closeHistoryBtn.onclick = () => {
     historyModal.style.display = "none";
-});
+};
 
-// Close modal when clicking outside of the content box
-window.addEventListener("click", (event) => {
-    if (event.target === historyModal) {
+// Close on background click
+window.onclick = (event) => {
+    if (event.target == historyModal) {
         historyModal.style.display = "none";
     }
-});
+};
 
-// Weekly vs Monthly View Toggle
-function switchHistoryView(view) {
+// Weekly vs Monthly Toggle Logic
+function updateView(view) {
     if (view === "weekly") {
         weeklyViewBtn.classList.add("active");
         monthlyViewBtn.classList.remove("active");
-        historyDateRange.innerText = "February 4 - 10, 2026";
-        // Logic to update table rows for weekly data goes here
+        historyDateRange.innerText = "February 4 - 10";
+        // To do: Add function here to fetch/render weekly rows
     } else {
         monthlyViewBtn.classList.add("active");
         weeklyViewBtn.classList.remove("active");
         historyDateRange.innerText = "February 2026";
-        // Logic to update table rows for monthly data goes here
+        // To do: Add function here to fetch/render monthly rows
     }
 }
 
-weeklyViewBtn.addEventListener("click", () => switchHistoryView("weekly"));
-monthlyViewBtn.addEventListener("click", () => switchHistoryView("monthly"));
+weeklyViewBtn.onclick = () => updateView("weekly");
+monthlyViewBtn.onclick = () => updateView("monthly");
 
 /**
- * 5. HEADER DATE/TIME UPDATER
+ * 5. HEADER REAL-TIME DATE
  */
-function updateHeader() {
-    const dateElement = document.querySelector(".date-now");
-    if (dateElement) {
+function updateHeaderDate() {
+    const dateHeader = document.querySelector(".date-now");
+    if (dateHeader) {
         const now = new Date();
-        const dateStr = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
-        const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        dateElement.innerText = `${dateStr} | ${timeStr}`;
+        const options = { weekday: 'long', month: 'long', day: 'numeric' };
+        const timeOptions = { hour: '2-digit', minute: '2-digit' };
+        dateHeader.innerText = `${now.toLocaleDateString('en-US', options)} | ${now.toLocaleTimeString([], timeOptions)}`;
     }
 }
 
-setInterval(updateHeader, 60000);
-updateHeader();
+setInterval(updateHeaderDate, 60000);
+updateHeaderDate();
