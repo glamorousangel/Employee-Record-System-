@@ -532,15 +532,31 @@ hr {
 }
 .info-group span { font-size: 14px; font-weight: 500; color: #111; }
 
-/* Modal table */
-.modal-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+/* Modal table wrapper — scrollable */
+.modal-table-wrapper {
+    max-height: 320px;
+    overflow-y: auto;
+    border-radius: 0 0 10px 10px;
+    margin-top: 20px;
+}
 
-.modal-table th {
+.modal-table-wrapper::-webkit-scrollbar          { width: 6px; }
+.modal-table-wrapper::-webkit-scrollbar-track    { background: #f0f0f0; border-radius: 10px; }
+.modal-table-wrapper::-webkit-scrollbar-thumb    { background: #d1d1d1; border-radius: 10px; }
+.modal-table-wrapper::-webkit-scrollbar-thumb:hover { background: #b0b0b0; }
+
+/* Modal table */
+.modal-table { width: 100%; border-collapse: collapse; }
+
+.modal-table thead th {
     background: #333;
     color: white;
     padding: 12px;
     text-align: left;
     font-size: 13px;
+    position: sticky;   /* keeps header visible while scrolling */
+    top: 0;
+    z-index: 1;
 }
 
 .modal-table td { padding: 12px; border-bottom: 1px solid #eee; font-size: 13px; }
