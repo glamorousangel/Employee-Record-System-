@@ -1,23 +1,20 @@
 document.addEventListener("DOMContentLoaded", () => {
-    // Select elements from the DOM
+    // --- DOM Elements ---
     const sidebar = document.getElementById("sidebar");
     const logoToggle = document.getElementById("logoToggle");
     const closeBtn = document.getElementById("closeBtn");
     const menuItems = document.querySelectorAll(".menu-item");
 
-    /**
-     * SIDEBAR INTERACTION
-     * Manages the open/close state of the navigation menu
-     */
+    // --- 1. SIDEBAR TOGGLE LOGIC ---
     
-    // Collapse the sidebar when clicking the chevron icon
+    // Collapse sidebar when the left chevron is clicked
     if (closeBtn) {
         closeBtn.addEventListener("click", () => {
             sidebar.classList.add("collapsed");
         });
     }
 
-    // Expand the sidebar when clicking the logo while collapsed
+    // Expand sidebar when the logo is clicked (only if it's currently collapsed)
     if (logoToggle) {
         logoToggle.addEventListener("click", () => {
             if (sidebar.classList.contains("collapsed")) {
@@ -26,45 +23,58 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    /**
-     * MENU MANAGEMENT
-     * Handles active highlighting and tooltips for collapsed mode
-     */
-
+    // --- 2. MENU ITEM LOGIC (Active States & Tooltips) ---
+    
     menuItems.forEach(item => {
-        // Automatically set tooltip text from the link's span text
+        // Setup Tooltips: Extract text from the span and set it as a data attribute.
+        // The CSS uses this 'data-text' attribute to show tooltips in collapsed mode.
         const span = item.querySelector("span");
         if (span) {
-            const text = span.innerText;
-            // Matches the 'attr(data-text)' used in your CSS
-            item.setAttribute("data-text", text);
+            item.setAttribute("data-text", span.innerText.trim());
         }
 
-        // Handle clicking menu items
+        // Handle Active State: Highlight the clicked menu item
         item.addEventListener("click", function() {
-            // Remove active class from any other item
+            // Find the currently active item and remove the class
             const currentActive = document.querySelector(".menu-item.active");
             if (currentActive) {
                 currentActive.classList.remove("active");
             }
             
-            // Apply active class to the clicked item
+            // Add the active class to the item that was just clicked
             this.classList.add("active");
         });
     });
 
-    /**
-     * OPTIONAL: SEARCH FILTER INTERACTION
-     * Allows the 'Sample Filter' tag to be dismissed
-     */
+    // --- 3. FILTER TAG LOGIC ---
+    
+    // Allows the user to dismiss the "Sample Filter [X]" button
     const filterTag = document.querySelector(".filter-tag");
     if (filterTag) {
         const closeIcon = filterTag.querySelector(".fa-times");
         if (closeIcon) {
             closeIcon.addEventListener("click", (e) => {
-                e.stopPropagation(); // Prevents triggering filter button logic
+                e.stopPropagation(); // Prevents clicking the text from firing too
                 filterTag.style.display = "none";
             });
         }
     }
+
+    // --- 4. RESPONSIVE BEHAVIOR ---
+    
+    // Automatically collapse the sidebar on smaller screens (like tablets or small laptops)
+    // to ensure the white attendance dashboard has enough room.
+    const handleResize = () => {
+        if (window.innerWidth <= 1100) {
+            sidebar.classList.add("collapsed");
+        } else {
+            sidebar.classList.remove("collapsed");
+        }
+    };
+
+    // Listen for screen size changes
+    window.addEventListener("resize", handleResize);
+    
+    // Run the check once immediately when the page loads
+    handleResize();
 });
