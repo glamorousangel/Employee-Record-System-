@@ -358,3 +358,149 @@ hr {
 
 }
 
+/* Dashboard Layout Spacing */
+.main-content {
+    margin-left: 330px;
+    padding: 30px 40px;
+    transition: margin-left 0.35s ease;
+    overflow-y: auto;
+    height: 100vh;
+}
+.sidebar.collapsed ~ .main-content { margin-left: 110px; }
+
+/* Header & Search */
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+.dashboard-header h1 { color: white; font-size: 32px; font-weight: 700; }
+
+.search-pill {
+    background: white;
+    padding: 8px 20px;
+    border-radius: 30px;
+    width: 450px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+.search-pill input {
+    border: none;
+    outline: none;
+    margin-left: 10px;
+    width: 100%;
+    color: #888;
+}
+
+/* Stats Grid */
+.stats-container {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 15px;
+    margin-bottom: 25px;
+}
+.stat-card {
+    background: white;
+    padding: 15px 20px;
+    border-radius: 20px;
+    border: 1px solid #333; /* Matches the thin dark border in the image */
+    height: 100px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+.stat-card .label { font-size: 14px; color: #555; font-weight: 500; line-height: 1.2; }
+.stat-card .value { font-size: 24px; font-weight: 700; color: #000; text-align: right; }
+
+/* Filter Row */
+.controls-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+.filter-tag {
+    background: white;
+    border: 1px solid #ccc;
+    padding: 6px 15px;
+    border-radius: 20px;
+    font-size: 14px;
+    cursor: pointer;
+}
+.btn-action {
+    background: white;
+    border: 1px solid #333;
+    padding: 8px 15px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    margin-left: 8px;
+    cursor: pointer;
+}
+.pagination {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: 15px;
+    font-weight: 600;
+}
+
+/* Table Design */
+.table-card {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid #333;
+}
+.attendance-table { width: 100%; border-collapse: collapse; }
+.attendance-table th {
+    background: #333;
+    color: #efefef;
+    text-align: left;
+    padding: 12px 15px;
+    font-size: 13px;
+    font-weight: 400;
+}
+.attendance-table td {
+    border: 1px solid #ddd;
+    padding: 10px 15px;
+    vertical-align: top;
+}
+
+/* Employee Column Identity */
+.user-cell { display: flex; align-items: center; gap: 10px; }
+.avatar {
+    width: 38px; height: 38px;
+    border: 1px solid #ccc;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: #999;
+}
+.user-info .name { display: block; font-weight: 700; font-size: 13px; }
+.user-info .title { display: block; font-size: 11px; color: #777; }
+.dept-badge {
+    background: #cde4ff;
+    color: #0056b3;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 5px;
+}
+
+/* Status Pills */
+.day-num { font-size: 13px; color: #444; margin-bottom: 8px; display: block; }
+.pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+}
+.pill-green { background: #d4edda; color: #155724; }
+.pill-tan { background: #f9eccd; color: #856404; }
+.pill-purple { background: #e2d9f3; color: #512da8; }
+.pill-red { background: #f8d7da; color: #721c24; }

@@ -85,7 +85,140 @@
         </div>
 
     </div>
-    
+    <main class="main-content">
+    <header class="dashboard-header">
+        <h1>Employee Attendance</h1>
+        <div class="search-pill">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Search by Name / ID / Department / Position">
+        </div>
+    </header>
+
+    <section class="stats-container">
+        <div class="stat-card">
+            <span class="label">Total Employees</span>
+            <span class="value">-</span>
+        </div>
+        <div class="stat-card">
+            <span class="label">Present Today</span>
+            <span class="value">-</span>
+        </div>
+        <div class="stat-card">
+            <span class="label">Absent Today</span>
+            <span class="value">-</span>
+        </div>
+        <div class="stat-card">
+            <span class="label">On Leave</span>
+            <span class="value">-</span>
+        </div>
+        <div class="stat-card">
+            <span class="label">Late Arrivals</span>
+            <span class="value">-</span>
+        </div>
+    </section>
+
+    <section class="controls-row">
+        <div class="active-filters">
+            <button class="filter-tag">Sample Filter <i class="fas fa-times"></i></button>
+        </div>
+        <div class="action-buttons">
+            <button class="btn-action"><i class="fas fa-filter"></i> Filter</button>
+            <button class="btn-action"><i class="fas fa-calendar-alt"></i> Sample Date</button>
+            <div class="pagination">
+                <i class="fas fa-chevron-left"></i>
+                <span>Week 5</span>
+                <i class="fas fa-chevron-right"></i>
+            </div>
+        </div>
+    </section>
+
+    <div class="table-card">
+        <table class="attendance-table">
+            <thead>
+                <tr>
+                    <th>Employee</th>
+                    <th>Sunday</th>
+                    <th>Monday</th>
+                    <th>Tuesday</th>
+                    <th>Wednesday</th>
+                    <th>Thursday</th>
+                    <th>Friday</th>
+                    <th>Saturday</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        <div class="user-cell">
+                            <div class="avatar"><i class="fas fa-user"></i></div>
+                            <div class="user-info">
+                                <span class="name">Juan Dela Cruz</span>
+                                <span class="title">Instructor</span>
+                                <span class="dept-badge">CCS</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="day-num">2</span></td>
+                    <td>
+                        <span class="day-num">3</span>
+                        <div class="pill pill-green"><i class="far fa-check-circle"></i> 8 hours</div>
+                    </td>
+                    <td>
+                        <span class="day-num">4</span>
+                        <div class="pill pill-tan"><i class="far fa-clock"></i> 4h 36m</div>
+                    </td>
+                    <td>
+                        <span class="day-num">5</span>
+                        <div class="pill pill-purple"><i class="far fa-smile"></i> Leave</div>
+                    </td>
+                    <td>
+                        <span class="day-num">6</span>
+                        <div class="pill pill-green"><i class="far fa-check-circle"></i> 8h 39m</div>
+                    </td>
+                    <td>
+                        <span class="day-num">7</span>
+                        <div class="pill pill-green">Active</div>
+                    </td>
+                    <td><span class="day-num">8</span></td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="user-cell">
+                            <div class="avatar"><i class="fas fa-user"></i></div>
+                            <div class="user-info">
+                                <span class="name">Juan Dela Cruz</span>
+                                <span class="title">Instructor</span>
+                                <span class="dept-badge">CCS</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="day-num">2</span></td>
+                    <td>
+                        <span class="day-num">3</span>
+                        <div class="pill pill-tan"><i class="far fa-clock"></i> 6h 24m</div>
+                    </td>
+                    <td>
+                        <span class="day-num">4</span>
+                        <div class="pill pill-green"><i class="far fa-check-circle"></i> 8 hours</div>
+                    </td>
+                    <td>
+                        <span class="day-num">5</span>
+                        <div class="pill pill-green"><i class="far fa-check-circle"></i> 8 hours</div>
+                    </td>
+                    <td>
+                        <span class="day-num">6</span>
+                        <div class="pill pill-red"><i class="far fa-times-circle"></i> Absent</div>
+                    </td>
+                    <td>
+                        <span class="day-num">7</span>
+                        <div class="pill pill-green">Active</div>
+                    </td>
+                    <td><span class="day-num">8</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
 
     <script src="../../static/js/attendance/hr_attendance.js"></script>
 
