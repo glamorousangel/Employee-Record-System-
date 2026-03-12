@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Trainings | Employee Management</title>
+    <title>Trainings</title>
     <link rel="shortcut icon" type="image/png" href="../../static/img/general/uph.png">
     <link rel="stylesheet" href="../../static/css/training_management/emp_training.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
@@ -61,16 +61,12 @@
             </div>
 
             <div class="trainings-layout">
+                
                 <div class="trainings-grid-wrap">
                     <div class="trainings-grid">
                         
-                        <div class="training-card" 
-                             data-description="Cybersecurity Dept" 
-                             data-trainer="IT-101 (Mr. Tech)" 
-                             data-location="Room 402" 
-                             data-email="it.admin@email.com" 
-                             data-phone="+63 123 456 7890">
-                            <div class="card-info">
+                        <div class="training-card">
+                            <div>
                                 <div class="training-card-title">Advanced Data Security & Privacy</div>
                                 <div class="training-card-category">IT & Security</div>
                                 <div class="training-card-date">April 12, 2026 • 9:00 AM</div>
@@ -79,47 +75,52 @@
                                     <span class="tag tag-slots">12 slots left</span>
                                 </div>
                             </div>
-                            <div class="card-action">
+                            <div class="training-card-footer">
                                 <button class="btn-register">Register</button>
                             </div>
                         </div>
 
-                        <div class="training-card" 
-                             data-description="College of Computer Studies" 
-                             data-trainer="CCS - 201 (Dean Reyes)" 
-                             data-location="Main building 2nd floor" 
-                             data-email="ccs.admin@email.com" 
-                             data-phone="+63 987 654 3210">
-                            <div class="card-info">
-                                <div class="training-card-title">Outcomes-Based Education Workshop</div>
-                                <div class="training-card-category">Teaching</div>
-                                <div class="training-card-date">March 12, 2026 • 8:00 AM</div>
+                        <div class="training-card">
+                            <div>
+                                <div class="training-card-title">Effective Workplace Communication</div>
+                                <div class="training-card-category">Human Resources</div>
+                                <div class="training-card-date">April 18, 2026 • 1:00 PM</div>
                                 <div class="training-card-tags">
-                                    <span class="tag tag-mode">Onsite</span>
-                                    <span class="tag tag-slots">25 / 30 slots left</span>
+                                    <span class="tag tag-mode">Face-to-Face</span>
+                                    <span class="tag tag-slots">5 slots left</span>
                                 </div>
                             </div>
-                            <div class="card-action">
+                            <div class="training-card-footer">
                                 <button class="btn-register">Register</button>
                             </div>
                         </div>
 
-                        <div class="training-card" 
-                             data-description="Human Resources & Compliance" 
-                             data-trainer="HR - 302 (Ms. Clara Ramos)" 
-                             data-location="Conference Room B / Zoom" 
-                             data-email="hr.training@email.com" 
-                             data-phone="+63 555 123 4567">
-                            <div class="card-info">
-                                <div class="training-card-title">Mental Health in the Workplace</div>
-                                <div class="training-card-category">Human Resources</div>
-                                <div class="training-card-date">May 20, 2026 • 2:00 PM</div>
+                        <div class="training-card">
+                            <div>
+                                <div class="training-card-title">Leadership Basics for New Managers</div>
+                                <div class="training-card-category">Management</div>
+                                <div class="training-card-date">April 22, 2026 • 10:00 AM</div>
                                 <div class="training-card-tags">
                                     <span class="tag tag-mode">Online</span>
-                                    <span class="tag tag-slots">10 / 50 slots left</span>
+                                    <span class="tag tag-full">Full</span>
                                 </div>
                             </div>
-                            <div class="card-action">
+                            <div class="training-card-footer">
+                                <button class="btn-register btn-register--disabled" disabled>Closed</button>
+                            </div>
+                        </div>
+
+                        <div class="training-card">
+                            <div>
+                                <div class="training-card-title">Workplace Ergonomics & Health</div>
+                                <div class="training-card-category">Health & Safety</div>
+                                <div class="training-card-date">May 05, 2026 • 2:00 PM</div>
+                                <div class="training-card-tags">
+                                    <span class="tag tag-mode">Hybrid</span>
+                                    <span class="tag tag-slots">20 slots left</span>
+                                </div>
+                            </div>
+                            <div class="training-card-footer">
                                 <button class="btn-register">Register</button>
                             </div>
                         </div>
@@ -129,55 +130,26 @@
 
                 <div class="my-trainings-panel">
                     <div class="my-trainings-title">My Trainings</div>
+                    
                     <div class="my-training-item">
                         <div class="my-training-name">Company Onboarding</div>
                         <div class="my-training-date">March 1, 2026</div>
                         <span class="status-badge completed">Completed</span>
                     </div>
+
                     <div class="my-training-item">
                         <div class="my-training-name">Fire Safety Seminar</div>
                         <div class="my-training-date">March 15, 2026</div>
                         <span class="status-badge cancelled">Cancelled</span>
                     </div>
+
+                    <div class="my-training-item">
+                        <div class="my-training-name">Agile Methodology Workshop</div>
+                        <div class="my-training-date">March 28, 2026</div>
+                        <span class="status-badge open">Upcoming</span>
+                    </div>
                 </div>
-            </div>
-        </div>
-    </div>
 
-    <div id="trainingModal" class="modal-overlay">
-        <div class="modal-content">
-            <button class="modal-close" id="closeModal">&times;</button>
-            
-            <div class="modal-header-section">
-                <h2 id="modalTitle">Loading...</h2>
-                <p id="modalSubtext">Category | Mode | Date</p>
-                <span class="status-badge open" id="modalBadge">Open</span>
-            </div>
-
-            <div class="modal-body-table">
-                <div class="table-header">Training Information</div>
-                <table>
-                    <tr>
-                        <td class="label">Description</td>
-                        <td id="modalDesc">---</td>
-                    </tr>
-                    <tr>
-                        <td class="label">Trainer/Provider</td>
-                        <td id="modalTrainer">---</td>
-                    </tr>
-                    <tr>
-                        <td class="label">Location/Link</td>
-                        <td id="modalLocation">---</td>
-                    </tr>
-                    <tr>
-                        <td class="label">Max Participants</td>
-                        <td id="modalEmail">---</td>
-                    </tr>
-                    <tr>
-                        <td class="label">Slots Filled</td>
-                        <td id="modalPhone">---</td>
-                    </tr>
-                </table>
             </div>
         </div>
     </div>
