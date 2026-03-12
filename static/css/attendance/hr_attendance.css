@@ -15,9 +15,12 @@ body {
 .background {
     position: fixed;
     inset: 0;
-    background: linear-gradient(135deg, #8b0000 0%, #ff4500 100%);
+    background: url('../../img/general/bg.jpeg') no-repeat center/cover;
+    filter: blur(10px);
+    transform: scale(1.1); 
     z-index: -1;
 }
+
 
 /* --- 2. SIDEBAR (GLASSMORPHISM) --- */
 .sidebar {
@@ -25,17 +28,17 @@ body {
     top: 20px;
     left: 20px;
     height: calc(100% - 40px);
-    width: 300px;
+    width: 300px; /* widened */
     padding: 25px;
-    border-radius: 25px;
+    border-radius: 20px;
     display: flex;
     flex-direction: column;
-    background: rgba(255, 255, 255, 0.1);
+    justify-content: space-between;
+    background: rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 100;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+
+    transition: width 0.35s ease;
 }
 
 .sidebar.collapsed {
