@@ -1,5 +1,5 @@
 /* head_leaverequest.js */
-let leaveData = JSON.parse(localStorage.getItem('allLeaveRequests')) || [];
+let leaveData = [];
 let activeRowId = null;
 const loggedHeadName = "Jose Brian Dela Peña"; 
 
@@ -7,12 +7,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const sidebar = document.getElementById("sidebar");
     const logoToggle = document.getElementById("logoToggle");
     const closeBtn = document.getElementById("closeBtn");
+    const menuItems = document.querySelectorAll(".menu-item");
 
-    renderHeadTable("Active");
+    // --- 1. SIDEBAR LABEL INITIALIZATION ---
+    menuItems.forEach(item => {
+        const span = item.querySelector("span");
+        if (span) {
+            item.setAttribute("data-text", span.textContent.trim());
+        }
+    });
 
+    // --- 2. SIDEBAR TOGGLE LOGIC ---
     if (closeBtn) closeBtn.onclick = () => sidebar.classList.add("collapsed");
-    if (logoToggle) logoToggle.onclick = () => sidebar.classList.remove("collapsed");
+    if (logoToggle) {
+        logoToggle.onclick = () => sidebar.classList.toggle("collapsed");
+    }
 
+    // --- 3. TAB LOGIC ---
     const tabRequests = document.getElementById('tab-requests');
     const tabHistory = document.getElementById('tab-history');
 
@@ -31,6 +42,11 @@ document.addEventListener('DOMContentLoaded', () => {
             renderHeadTable("History");
         };
     }
+
+    // --- 4. INITIAL RENDER (FIXED) ---
+    // Ensure data is pulled before calling the render
+    leaveData = JSON.parse(localStorage.getItem('allLeaveRequests')) || [];
+    renderHeadTable("Active");
 });
 
 function getCredits(name) {
@@ -41,23 +57,21 @@ function getCredits(name) {
 function renderHeadTable(mode) {
     const body = document.getElementById('leaveTableBody');
     if (!body) return;
+    
     body.innerHTML = "";
+    // Re-sync data from storage
     leaveData = JSON.parse(localStorage.getItem('allLeaveRequests')) || [];
 
     leaveData.forEach((leave) => {
         const isOwnRequest = leave.name === loggedHeadName;
-        // Check if head already processed it
         const isActionedByHead = leave.status.includes("- By Head");
-        // Check if HR finalized it
         const isFinal = leave.status === "Approved" || leave.status === "Rejected";
 
         let displayStatus = leave.status;
         if (isOwnRequest && displayStatus.includes("- By HR")) displayStatus = "Pending";
 
-        // ACTIVE: Only show requests that are Pending AND haven't been touched by the Head yet
+        // Logic check for tabs
         const inActive = (mode === "Active" && !isActionedByHead && !isFinal && !isOwnRequest);
-        
-        // HISTORY: Remain here if Head actioned it OR if it is finalized by HR
         const inHistory = (mode === "History" && (isActionedByHead || isFinal || (isOwnRequest && isFinal)));
 
         if (inActive || inHistory) {
@@ -121,7 +135,6 @@ function openHeadModal(id) {
     }
 
     const actions = document.getElementById('modalActions');
-    // Hide buttons if finalized, already actioned by head, or if it's the head's own request
     const isActioned = data.status.includes("- By Head") || data.status === "Approved" || data.status === "Rejected";
     actions.style.display = (!isActioned && data.name !== loggedHeadName) ? "flex" : "none";
     
@@ -133,9 +146,8 @@ function processHeadRequest(decision) {
     if (index !== -1) {
         leaveData[index].status = decision + " - By Head";
         leaveData[index].reviewedBy = loggedHeadName; 
-        
         const headStatus = decision === "Approved" ? "approved" : "rejected";
-        leaveData[index].reviewRemarks = `${loggedHeadName} (Dept. Head) has ${headStatus}. Awaiting for final review by HR.`;
+        leaveData[index].reviewRemarks = `${loggedHeadName} (Dept. Head) has ${headStatus}. Awaiting final review by HR.`;
 
         localStorage.setItem('allLeaveRequests', JSON.stringify(leaveData));
         location.reload();
