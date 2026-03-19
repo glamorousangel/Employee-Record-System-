@@ -1,43 +1,36 @@
-/* hr_leaverequest.js */
+/* head_leaverequest.js */
 let leaveData = JSON.parse(localStorage.getItem('allLeaveRequests')) || [];
 let activeRowId = null;
+const loggedHeadName = "Jose Brian Dela Peña"; 
 
 document.addEventListener('DOMContentLoaded', () => {
     const sidebar = document.getElementById("sidebar");
     const logoToggle = document.getElementById("logoToggle");
     const closeBtn = document.getElementById("closeBtn");
-    const menuItems = document.querySelectorAll('.menu-item');
 
-    menuItems.forEach(item => {
-        const span = item.querySelector("span");
-        if (span) {
-            item.setAttribute("data-text", span.textContent.trim());
-        }
-    });
+    renderHeadTable("Active");
 
-    renderHRTable("Active");
+    if (closeBtn) closeBtn.onclick = () => sidebar.classList.add("collapsed");
+    if (logoToggle) logoToggle.onclick = () => sidebar.classList.remove("collapsed");
 
-    // GLIDE TRIGGER: Clicking close button collapses it
-    if (closeBtn) {
-        closeBtn.onclick = () => sidebar.classList.add("collapsed");
-    }
-    
-    // GLIDE TRIGGER: Clicking logo toggles it back and forth
-    if (logoToggle) {
-        logoToggle.onclick = () => sidebar.classList.toggle("collapsed");
+    const tabRequests = document.getElementById('tab-requests');
+    const tabHistory = document.getElementById('tab-history');
+
+    if (tabRequests) {
+        tabRequests.onclick = () => {
+            tabRequests.classList.add('active');
+            tabHistory.classList.remove('active');
+            renderHeadTable("Active");
+        };
     }
 
-    document.getElementById('tab-requests').onclick = () => {
-        document.getElementById('tab-requests').classList.add('active');
-        document.getElementById('tab-history').classList.remove('active');
-        renderHRTable("Active");
-    };
-
-    document.getElementById('tab-history').onclick = () => {
-        document.getElementById('tab-history').classList.add('active');
-        document.getElementById('tab-requests').classList.remove('active');
-        renderHRTable("History");
-    };
+    if (tabHistory) {
+        tabHistory.onclick = () => {
+            tabHistory.classList.add('active');
+            tabRequests.classList.remove('active');
+            renderHeadTable("History");
+        };
+    }
 });
 
 function getCredits(name) {
@@ -45,37 +38,54 @@ function getCredits(name) {
     return credits[name] !== undefined ? credits[name] : 15;
 }
 
-function renderHRTable(mode) {
+function renderHeadTable(mode) {
     const body = document.getElementById('leaveTableBody');
     if (!body) return;
     body.innerHTML = "";
     leaveData = JSON.parse(localStorage.getItem('allLeaveRequests')) || [];
 
     leaveData.forEach((leave) => {
+        const isOwnRequest = leave.name === loggedHeadName;
+        // Check if head already processed it
+        const isActionedByHead = leave.status.includes("- By Head");
+        // Check if HR finalized it
         const isFinal = leave.status === "Approved" || leave.status === "Rejected";
-        if ((mode === "Active" && !isFinal) || (mode === "History" && isFinal)) {
-            const statusClass = leave.status.toLowerCase().replace(/\s+/g, '-');
+
+        let displayStatus = leave.status;
+        if (isOwnRequest && displayStatus.includes("- By HR")) displayStatus = "Pending";
+
+        // ACTIVE: Only show requests that are Pending AND haven't been touched by the Head yet
+        const inActive = (mode === "Active" && !isActionedByHead && !isFinal && !isOwnRequest);
+        
+        // HISTORY: Remain here if Head actioned it OR if it is finalized by HR
+        const inHistory = (mode === "History" && (isActionedByHead || isFinal || (isOwnRequest && isFinal)));
+
+        if (inActive || inHistory) {
+            const statusClass = displayStatus.toLowerCase().replace(/\s+/g, '-');
             body.innerHTML += `<tr>
                 <td><strong>${leave.name}</strong><br><small>${leave.role}</small></td>
                 <td>${leave.leaveType}</td>
                 <td>${leave.startDate}</td>
                 <td>${leave.endDate}</td>
                 <td>${leave.numDays}</td>
-                <td><span class="status-pill ${statusClass}">${leave.status}</span></td>
+                <td><span class="status-pill ${statusClass}">${displayStatus}</span></td>
                 <td>${leave.reviewedBy}</td>
-                <td><span class="action-link" onclick="openHRModal(${leave.id})">View Details</span></td>
+                <td><span class="action-link" onclick="openHeadModal(${leave.id})">View Details</span></td>
             </tr>`;
         }
     });
 }
 
-function openHRModal(id) {
+function openHeadModal(id) {
     activeRowId = id;
     const data = leaveData.find(l => l.id === id);
     if (!data) return;
 
+    let displayStatus = data.status;
+    if (data.name === loggedHeadName && displayStatus.includes("- By HR")) displayStatus = "Pending";
+
     document.getElementById('modalFileName').innerText = data.fileName;
-    document.getElementById('modalStatusContainer').innerHTML = `<span class="status-pill ${data.status.toLowerCase().replace(/\s+/g, '-')}">${data.status}</span>`;
+    document.getElementById('modalStatusContainer').innerHTML = `<span class="status-pill ${displayStatus.toLowerCase().replace(/\s+/g, '-')}">${displayStatus}</span>`;
     document.getElementById('modalReviewer').innerHTML = `<small>Reviewed by: ${data.reviewedBy}</small>`;
     document.getElementById('modalSubmitDate').innerText = `${data.submitDate || data.dateFiled} at ${data.submitTime}`;
 
@@ -110,26 +120,28 @@ function openHRModal(id) {
             : `<embed src="${data.fileData}" width="100%" height="100%" style="border-radius:10px;">`;
     }
 
-    const isFinal = data.status === "Approved" || data.status === "Rejected";
-    document.getElementById('modalActions').style.display = isFinal ? "none" : "flex";
+    const actions = document.getElementById('modalActions');
+    // Hide buttons if finalized, already actioned by head, or if it's the head's own request
+    const isActioned = data.status.includes("- By Head") || data.status === "Approved" || data.status === "Rejected";
+    actions.style.display = (!isActioned && data.name !== loggedHeadName) ? "flex" : "none";
+    
     document.getElementById('viewModal').style.display = 'flex';
 }
 
-function processRequest(status) {
+function processHeadRequest(decision) {
     const index = leaveData.findIndex(l => l.id === activeRowId);
     if (index !== -1) {
-        if (status === "Approved" && leaveData[index].leaveType === "Sick Leave") {
-            let credits = JSON.parse(localStorage.getItem('userCredits')) || {};
-            credits[leaveData[index].name] = getCredits(leaveData[index].name) - leaveData[index].numDays;
-            localStorage.setItem('userCredits', JSON.stringify(credits));
-        }
-        leaveData[index].status = status; 
-        leaveData[index].reviewedBy = "HR Manager";
-        leaveData[index].reviewRemarks = "This request has been finalized by HR Manager.";
+        leaveData[index].status = decision + " - By Head";
+        leaveData[index].reviewedBy = loggedHeadName; 
         
+        const headStatus = decision === "Approved" ? "approved" : "rejected";
+        leaveData[index].reviewRemarks = `${loggedHeadName} (Dept. Head) has ${headStatus}. Awaiting for final review by HR.`;
+
         localStorage.setItem('allLeaveRequests', JSON.stringify(leaveData));
         location.reload();
     }
 }
 
-function closeViewModal() { document.getElementById('viewModal').style.display = 'none'; }
+function closeViewModal() { 
+    document.getElementById('viewModal').style.display = 'none'; 
+}

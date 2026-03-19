@@ -39,11 +39,45 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Optional: Form Submission logic
+    // --- FIXED SUBMISSION LOGIC ---
     const leaveForm = document.getElementById('leaveRequestForm');
     if (leaveForm) {
         leaveForm.onsubmit = (e) => {
             e.preventDefault();
+
+            // Match the 'name' attributes from your HTML
+            const selectedType = document.querySelector('.type-btn.active')?.innerText || "General Leave";
+            const startDateVal = document.querySelector('input[name="start_date"]').value;
+            const endDateVal = document.querySelector('input[name="end_date"]').value;
+            const reasonVal = document.querySelector('.form-textarea').value;
+            
+            // Calculate Days
+            const start = new Date(startDateVal);
+            const end = new Date(endDateVal);
+            const diffTime = Math.abs(end - start);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+
+            const newRequest = {
+                id: Date.now(),
+                name: "Jose Brian Dela Peña", 
+                role: "Department Head",
+                dateFiled: new Date().toISOString().split('T')[0],
+                leaveType: selectedType,
+                startDate: startDateVal,
+                endDate: endDateVal,
+                numDays: diffDays,
+                reason: reasonVal,
+                status: "Pending", 
+                reviewedBy: "---",
+                submitTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                fileName: fileInput.files[0]?.name || "No Document Attached",
+                fileData: null 
+            };
+
+            let allRequests = JSON.parse(localStorage.getItem('allLeaveRequests')) || [];
+            allRequests.push(newRequest);
+            localStorage.setItem('allLeaveRequests', JSON.stringify(allRequests));
+
             alert("Leave Request Submitted Successfully!");
             window.location.href = 'head_leaveselect.html';
         };

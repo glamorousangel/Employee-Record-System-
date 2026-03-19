@@ -1,8 +1,4 @@
-const empInfo = { name: "Jose Brian Dela Peña" };
-const leaveData = [
-    { dateFiled: "April 01, 2026", leaveType: "Sick Leave", startDate: "April 05, 2026", endDate: "April 07, 2026", numDays: 2, status: "Pending", reviewedBy: "---", submitTime: "10:12 A.M" },
-    { dateFiled: "March 10, 2026", leaveType: "Vacation Leave", startDate: "March 20, 2026", endDate: "March 25, 2026", numDays: 5, status: "Approved", reviewedBy: "HR Manager", submitTime: "02:45 P.M" }
-];
+const empInfo = { name: "John Smith" };
 
 document.addEventListener('DOMContentLoaded', () => {
     const sidebar = document.getElementById("sidebar");
@@ -10,60 +6,105 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeBtn = document.getElementById("closeBtn");
     const tabRequests = document.getElementById('tab-requests');
     const tabHistory = document.getElementById('tab-history');
-    const requestsContent = document.getElementById('requests-content');
-    const historyContent = document.getElementById('history-content');
+    const menuItems = document.querySelectorAll(".menu-item"); // ADDED
 
-    // Set Data
-    document.getElementById('display-emp-name').innerText = empInfo.name;
-    renderTables();
-
-    // SIDEBAR TOGGLE
-    closeBtn.addEventListener("click", () => sidebar.classList.add("collapsed"));
-    logoToggle.addEventListener("click", () => {
-        if (sidebar.classList.contains("collapsed")) sidebar.classList.remove("collapsed");
-    });
-
-    // TOOLTIPS
-    document.querySelectorAll('.menu-item').forEach(item => {
+    // --- ADDED: INITIALIZE TOOLTIP LABELS ---
+    menuItems.forEach(item => {
         const span = item.querySelector("span");
-        if (span) item.setAttribute("data-text", span.innerText);
+        if (span) {
+            item.setAttribute("data-text", span.innerText);
+        }
     });
 
-    // TABS
+    renderLeaveTable("Active");
+
+    closeBtn.onclick = () => sidebar.classList.add("collapsed");
+    logoToggle.onclick = () => sidebar.classList.toggle("collapsed");
+
     tabRequests.onclick = () => {
         tabRequests.classList.add('active'); tabHistory.classList.remove('active');
-        requestsContent.style.display = 'block'; historyContent.style.display = 'none';
+        renderLeaveTable("Active");
     };
     tabHistory.onclick = () => {
         tabHistory.classList.add('active'); tabRequests.classList.remove('active');
-        historyContent.style.display = 'block'; requestsContent.style.display = 'none';
+        renderLeaveTable("History");
     };
+
+    document.getElementById('tableSearch').addEventListener('keyup', (e) => {
+        const val = e.target.value.toLowerCase();
+        document.querySelectorAll('tbody tr').forEach(row => {
+            row.style.display = row.innerText.toLowerCase().includes(val) ? "" : "none";
+        });
+    });
 });
 
-function renderTables() {
-    const reqBody = document.getElementById('requests-table-body');
-    const histBody = document.getElementById('history-table-body');
-    reqBody.innerHTML = ""; histBody.innerHTML = "";
-    leaveData.forEach((leave, index) => {
-        const row = `<tr class="table-row">
-            <td>${leave.dateFiled}</td>
-            <td><span class="type-badge">${leave.leaveType}</span></td>
-            <td>${leave.startDate}</td>
-            <td>${leave.endDate}</td>
-            <td>${leave.numDays}</td>
-            <td><span class="status-pill ${leave.status.toLowerCase()}">${leave.status}</span></td>
-            <td>${leave.reviewedBy}</td>
-            <td><button class="view-btn" onclick="openViewModal(${index})">View</button></td>
-        </tr>`;
-        leave.status === "Pending" ? reqBody.innerHTML += row : histBody.innerHTML += row;
+function renderLeaveTable(filter) {
+    const body = document.getElementById('leaveTableBody');
+    body.innerHTML = "";
+    
+    // Refresh data from shared storage
+    const leaveData = JSON.parse(localStorage.getItem('allLeaveRequests')) || [];
+    const myLeaves = leaveData.filter(l => l.name === empInfo.name);
+
+    myLeaves.forEach((leave) => {
+        const isFinal = leave.status === "Approved" || leave.status === "Rejected";
+        
+        let displayStatus = leave.status;
+        let displayReviewer = leave.reviewedBy;
+
+        if (displayStatus.includes("- By Head")) {
+            displayStatus = "Pending";
+            displayReviewer = "---"; 
+        }
+
+        if ((filter === "Active" && !isFinal) || (filter === "History" && isFinal)) {
+            const statusClass = displayStatus.toLowerCase().replace(/\s+/g, '-');
+            body.innerHTML += `<tr>
+                <td>${leave.dateFiled}</td>
+                <td><strong>${leave.leaveType}</strong></td>
+                <td>${leave.startDate}</td>
+                <td>${leave.endDate}</td>
+                <td>${leave.numDays}</td>
+                <td><span class="status-pill ${statusClass}">${displayStatus}</span></td>
+                <td>${displayReviewer}</td>
+                <td><span class="action-link" onclick="openViewModalByID(${leave.id})">View Details</span></td>
+            </tr>`;
+        }
     });
 }
 
-function openViewModal(index) {
-    const data = leaveData[index];
-    document.getElementById('modalFileName').innerText = data.leaveType.replace(" ", "_") + ".pdf";
-    document.getElementById('modalSubmitDate').innerText = `${data.dateFiled} - ${data.submitTime}`;
-    document.getElementById('modalStatusContainer').innerHTML = `<span class="status-pill ${data.status.toLowerCase()}">${data.status}</span>`;
+function openViewModalByID(id) {
+    const leaveData = JSON.parse(localStorage.getItem('allLeaveRequests')) || [];
+    const data = leaveData.find(l => l.id === id);
+    
+    document.getElementById('modalFileName').innerText = data.fileName || (data.leaveType + ".pdf");
+    document.getElementById('modalSubmitDate').innerText = `${data.dateFiled} at ${data.submitTime}`;
+    
+    let displayStatus = data.status;
+    let remarks = "";
+
+    if (displayStatus.includes("- By Head")) {
+        displayStatus = "Pending";
+        remarks = "Your application is currently being reviewed by the Department Head and HR.";
+    } else if (displayStatus === "Pending") {
+        remarks = "Awaiting initial review.";
+    } else {
+        remarks = `This request has been finalized by ${data.reviewedBy}.`;
+    }
+
+    const statusClass = displayStatus.toLowerCase().replace(/\s+/g, '-');
+    document.getElementById('modalStatusContainer').innerHTML = `<span class="status-pill ${statusClass}">${displayStatus}</span>`;
+    document.getElementById('modalRemarks').innerText = remarks;
+    
+    const preview = document.querySelector('.pdf-placeholder');
+    if (data.fileData) {
+        preview.innerHTML = data.fileData.includes("image") 
+            ? `<img src="${data.fileData}" style="width:100%; height:100%; object-fit:contain;">` 
+            : `<embed src="${data.fileData}" width="100%" height="100%">`;
+    } else {
+        preview.innerHTML = `<i class="fas fa-file-pdf"></i><p>No document attached</p>`;
+    }
+
     document.getElementById('viewModal').style.display = 'flex';
 }
 
