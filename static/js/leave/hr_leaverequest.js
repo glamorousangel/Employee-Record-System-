@@ -17,15 +17,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     renderHRTable("Active");
 
-    // GLIDE TRIGGER: Clicking close button collapses it
-    if (closeBtn) {
-        closeBtn.onclick = () => sidebar.classList.add("collapsed");
-    }
-    
-    // GLIDE TRIGGER: Clicking logo toggles it back and forth
-    if (logoToggle) {
-        logoToggle.onclick = () => sidebar.classList.toggle("collapsed");
-    }
+    if (closeBtn) closeBtn.onclick = () => sidebar.classList.add("collapsed");
+    if (logoToggle) logoToggle.onclick = () => sidebar.classList.toggle("collapsed");
 
     document.getElementById('tab-requests').onclick = () => {
         document.getElementById('tab-requests').classList.add('active');
@@ -77,37 +70,27 @@ function openHRModal(id) {
     document.getElementById('modalFileName').innerText = data.fileName;
     document.getElementById('modalStatusContainer').innerHTML = `<span class="status-pill ${data.status.toLowerCase().replace(/\s+/g, '-')}">${data.status}</span>`;
     document.getElementById('modalReviewer').innerHTML = `<small>Reviewed by: ${data.reviewedBy}</small>`;
-    document.getElementById('modalSubmitDate').innerText = `${data.submitDate || data.dateFiled} at ${data.submitTime}`;
+    document.getElementById('modalSubmitDate').innerText = `${data.dateFiled} at ${data.submitTime}`;
 
     const remarksParagraph = document.getElementById('modalRemarks');
-    
-    let modalHTML = `
-        <div class="info-item">
-            <label>REASON</label>
-            <p class="modal-text-unified">${data.reason}</p>
-        </div>`;
+    let modalHTML = `<div class="info-item"><label>REASON</label><p class="modal-text-unified">${data.reason}</p></div>`;
     
     if (data.leaveType === "Sick Leave") {
-        modalHTML += `
-        <div class="info-item" style="margin-top: 15px;">
-            <label>SICK LEAVE CREDITS</label>
-            <p class="modal-text-unified">${getCredits(data.name)} Days Remaining</p>
-        </div>`;
+        modalHTML += `<div class="info-item" style="margin-top: 15px;"><label>SICK LEAVE CREDITS</label><p class="modal-text-unified">${getCredits(data.name)} Days Remaining</p></div>`;
     }
 
-    modalHTML += `
-        <div class="info-item" style="margin-top: 15px;">
-            <label>REVIEW REMARKS</label>
-            <p class="modal-text-unified">${data.reviewRemarks}</p>
-        </div>`;
-
+    modalHTML += `<div class="info-item" style="margin-top: 15px;"><label>REVIEW REMARKS</label><p class="modal-text-unified">${data.reviewRemarks || 'Awaiting initial review.'}</p></div>`;
     remarksParagraph.parentElement.innerHTML = `<div id="modalRemarks">${modalHTML}</div>`;
 
     const preview = document.querySelector('.pdf-placeholder');
     if (data.fileData) {
-        preview.innerHTML = data.fileData.includes("image") 
-            ? `<img src="${data.fileData}" style="width:100%; height:100%; object-fit:contain; border-radius:10px;">` 
-            : `<embed src="${data.fileData}" width="100%" height="100%" style="border-radius:10px;">`;
+        if (data.fileData.includes("image")) {
+            preview.innerHTML = `<img src="${data.fileData}" style="width:100%; height:100%; object-fit:contain; border-radius:10px;">`;
+        } else {
+            preview.innerHTML = `<embed src="${data.fileData}" width="100%" height="100%" style="border-radius:10px;">`;
+        }
+    } else {
+        preview.innerHTML = `<i class="fas fa-file-alt"></i><p>No document uploaded</p>`;
     }
 
     const isFinal = data.status === "Approved" || data.status === "Rejected";
@@ -118,14 +101,32 @@ function openHRModal(id) {
 function processRequest(status) {
     const index = leaveData.findIndex(l => l.id === activeRowId);
     if (index !== -1) {
-        if (status === "Approved" && leaveData[index].leaveType === "Sick Leave") {
-            let credits = JSON.parse(localStorage.getItem('userCredits')) || {};
-            credits[leaveData[index].name] = getCredits(leaveData[index].name) - leaveData[index].numDays;
-            localStorage.setItem('userCredits', JSON.stringify(credits));
+        const request = leaveData[index];
+        const isHeadRequest = (request.role === "Department Head");
+
+        if (status === "Approved") {
+            if (isHeadRequest) {
+                // If HR approves a Head, it's NOT final. Updates status for School Director to see.
+                request.status = "Approved - By HR";
+                request.reviewedBy = "HR Manager";
+                request.reviewRemarks = "HR Manager has reviewed and approved. Waiting for final review by School Director.";
+            } else {
+                // Finalize for normal employees
+                if (request.leaveType === "Sick Leave") {
+                    let credits = JSON.parse(localStorage.getItem('userCredits')) || {};
+                    credits[request.name] = getCredits(request.name) - request.numDays;
+                    localStorage.setItem('userCredits', JSON.stringify(credits));
+                }
+                request.status = "Approved"; 
+                request.reviewedBy = "HR Manager";
+                request.reviewRemarks = "This request has been finalized by HR Manager.";
+            }
+        } else {
+            // Rejection is final for everyone
+            request.status = "Rejected"; 
+            request.reviewedBy = "HR Manager";
+            request.reviewRemarks = "This request has been rejected by HR Manager.";
         }
-        leaveData[index].status = status; 
-        leaveData[index].reviewedBy = "HR Manager";
-        leaveData[index].reviewRemarks = "This request has been finalized by HR Manager.";
         
         localStorage.setItem('allLeaveRequests', JSON.stringify(leaveData));
         location.reload();

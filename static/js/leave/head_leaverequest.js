@@ -9,7 +9,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeBtn = document.getElementById("closeBtn");
     const menuItems = document.querySelectorAll(".menu-item");
 
-    // --- 1. SIDEBAR LABEL INITIALIZATION ---
     menuItems.forEach(item => {
         const span = item.querySelector("span");
         if (span) {
@@ -17,13 +16,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- 2. SIDEBAR TOGGLE LOGIC ---
     if (closeBtn) closeBtn.onclick = () => sidebar.classList.add("collapsed");
-    if (logoToggle) {
-        logoToggle.onclick = () => sidebar.classList.toggle("collapsed");
-    }
+    if (logoToggle) logoToggle.onclick = () => sidebar.classList.toggle("collapsed");
 
-    // --- 3. TAB LOGIC ---
     const tabRequests = document.getElementById('tab-requests');
     const tabHistory = document.getElementById('tab-history');
 
@@ -43,8 +38,6 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // --- 4. INITIAL RENDER (FIXED) ---
-    // Ensure data is pulled before calling the render
     leaveData = JSON.parse(localStorage.getItem('allLeaveRequests')) || [];
     renderHeadTable("Active");
 });
@@ -59,23 +52,34 @@ function renderHeadTable(mode) {
     if (!body) return;
     
     body.innerHTML = "";
-    // Re-sync data from storage
     leaveData = JSON.parse(localStorage.getItem('allLeaveRequests')) || [];
 
     leaveData.forEach((leave) => {
-        const isOwnRequest = leave.name === loggedHeadName;
+        const isOwnRequest = (leave.name.trim() === loggedHeadName.trim());
         const isActionedByHead = leave.status.includes("- By Head");
-        const isFinal = leave.status === "Approved" || leave.status === "Rejected";
+        const isFinal = (leave.status === "Approved" || leave.status === "Rejected");
 
-        let displayStatus = leave.status;
-        if (isOwnRequest && displayStatus.includes("- By HR")) displayStatus = "Pending";
+        let shouldShow = false;
 
-        // Logic check for tabs
-        const inActive = (mode === "Active" && !isActionedByHead && !isFinal && !isOwnRequest);
-        const inHistory = (mode === "History" && (isActionedByHead || isFinal || (isOwnRequest && isFinal)));
+        if (mode === "Active") {
+            // Show staff requests needing action OR Head's own request that isn't finalized
+            if ((!isOwnRequest && !isActionedByHead && !isFinal) || (isOwnRequest && !isFinal)) {
+                shouldShow = true;
+            }
+        } else if (mode === "History") {
+            // Show staff requests already processed OR Head's own finalized requests
+            if ((!isOwnRequest && (isActionedByHead || isFinal)) || (isOwnRequest && isFinal)) {
+                shouldShow = true;
+            }
+        }
 
-        if (inActive || inHistory) {
+        if (shouldShow) {
+            let displayStatus = leave.status;
+            // Map the status for the Head's view: show as Pending until School Director finishes
+            if (isOwnRequest && !isFinal) displayStatus = "Pending";
+
             const statusClass = displayStatus.toLowerCase().replace(/\s+/g, '-');
+            
             body.innerHTML += `<tr>
                 <td><strong>${leave.name}</strong><br><small>${leave.role}</small></td>
                 <td>${leave.leaveType}</td>
@@ -95,48 +99,43 @@ function openHeadModal(id) {
     const data = leaveData.find(l => l.id === id);
     if (!data) return;
 
+    const isOwnRequest = (data.name.trim() === loggedHeadName.trim());
     let displayStatus = data.status;
-    if (data.name === loggedHeadName && displayStatus.includes("- By HR")) displayStatus = "Pending";
+    if (isOwnRequest && !data.status.includes("Approved") && !data.status.includes("Rejected")) {
+        displayStatus = "Pending";
+    }
 
     document.getElementById('modalFileName').innerText = data.fileName;
     document.getElementById('modalStatusContainer').innerHTML = `<span class="status-pill ${displayStatus.toLowerCase().replace(/\s+/g, '-')}">${displayStatus}</span>`;
     document.getElementById('modalReviewer').innerHTML = `<small>Reviewed by: ${data.reviewedBy}</small>`;
-    document.getElementById('modalSubmitDate').innerText = `${data.submitDate || data.dateFiled} at ${data.submitTime}`;
+    document.getElementById('modalSubmitDate').innerText = `${data.dateFiled} at ${data.submitTime || '---'}`;
 
     const remarksParagraph = document.getElementById('modalRemarks');
-    
-    let modalHTML = `
-        <div class="info-item">
-            <label>REASON</label>
-            <p class="modal-text-unified">${data.reason}</p>
-        </div>`;
+    let modalHTML = `<div class="info-item"><label>REASON</label><p class="modal-text-unified">${data.reason}</p></div>`;
     
     if (data.leaveType === "Sick Leave") {
-        modalHTML += `
-        <div class="info-item" style="margin-top: 15px;">
-            <label>SICK LEAVE CREDITS</label>
-            <p class="modal-text-unified">${getCredits(data.name)} Days Remaining</p>
-        </div>`;
+        modalHTML += `<div class="info-item" style="margin-top: 15px;"><label>SICK LEAVE CREDITS</label><p class="modal-text-unified">${getCredits(data.name)} Days Remaining</p></div>`;
     }
 
-    modalHTML += `
-        <div class="info-item" style="margin-top: 15px;">
-            <label>REVIEW REMARKS</label>
-            <p class="modal-text-unified">${data.reviewRemarks}</p>
-        </div>`;
-
+    modalHTML += `<div class="info-item" style="margin-top: 15px;"><label>REVIEW REMARKS</label><p class="modal-text-unified">${data.reviewRemarks || 'Awaiting HR review.'}</p></div>`;
     remarksParagraph.parentElement.innerHTML = `<div id="modalRemarks">${modalHTML}</div>`;
 
     const preview = document.querySelector('.pdf-placeholder');
     if (data.fileData) {
-        preview.innerHTML = data.fileData.includes("image") 
-            ? `<img src="${data.fileData}" style="width:100%; height:100%; object-fit:contain; border-radius:10px;">` 
-            : `<embed src="${data.fileData}" width="100%" height="100%" style="border-radius:10px;">`;
+        if (data.fileData.includes("image")) {
+            preview.innerHTML = `<img src="${data.fileData}" style="width:100%; height:100%; object-fit:contain; border-radius:10px;">`;
+        } else {
+            preview.innerHTML = `<embed src="${data.fileData}" width="100%" height="100%" style="border-radius:10px;">`;
+        }
+    } else {
+        preview.innerHTML = `<i class="fas fa-file-pdf"></i><p>No document attached</p>`;
     }
 
     const actions = document.getElementById('modalActions');
     const isActioned = data.status.includes("- By Head") || data.status === "Approved" || data.status === "Rejected";
-    actions.style.display = (!isActioned && data.name !== loggedHeadName) ? "flex" : "none";
+    
+    // ACTION FIX: No action buttons if it's the Head's own leave
+    actions.style.display = (isOwnRequest || isActioned) ? "none" : "flex";
     
     document.getElementById('viewModal').style.display = 'flex';
 }
@@ -147,7 +146,7 @@ function processHeadRequest(decision) {
         leaveData[index].status = decision + " - By Head";
         leaveData[index].reviewedBy = loggedHeadName; 
         const headStatus = decision === "Approved" ? "approved" : "rejected";
-        leaveData[index].reviewRemarks = `${loggedHeadName} (Dept. Head) has ${headStatus}. Awaiting final review by HR.`;
+        leaveData[index].reviewRemarks = `${loggedHeadName} (Dept. Head) has ${headStatus}. Awaiting HR final review.`;
 
         localStorage.setItem('allLeaveRequests', JSON.stringify(leaveData));
         location.reload();
