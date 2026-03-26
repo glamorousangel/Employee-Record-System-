@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application Form - New Employee</title>
+    <link rel="shortcut icon" type="image/png" href="../../static/img/general/uph.png">
+    <link rel="stylesheet" href="../../static/css/application/application_info.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+
+    <div class="background"></div>
+
+    <div class="sidebar" id="sidebar">
+
+        <!-- TOP -->
+        <div class="top-section">
+            <div class="logo-wrapper" id="logoToggle">
+                <img src="../../static/img/general/uph.png" class="logo">
+                <div class="open-icon">
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+
+            <button class="close-btn" id="closeBtn">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+        </div>
+
+        <!-- MENU -->
+       <ul class="menu">
+
+            <li>
+                <a href="../dashboards/hr_dash.html" class="menu-item active">
+                    <i class="fas fa-border-all"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="../accounts/hr_profile_view.html?id=2024-001" class="menu-item">
+                    <i class="fas fa-user"></i>
+                    <span>Profile</span>
+                </a>
+            </li>
+
+            <hr>
+
+            <li>
+                <a href="ENTER" class="menu-item">
+                    <i class="fas fa-user-edit"></i>
+                    <span>Position Change Request</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="../attendance/emp_attendance.html" class="menu-item">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>Attendance</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="../leave/emp_leaveselect.html" class="menu-item">
+                    <i class="fas fa-plane-departure"></i>
+                    <span>Leave Request</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="ENTER" class="menu-item">
+                    <i class="fas fa-star"></i>
+                    <span>Performance Evaluation</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="ENTER" class="menu-item">
+                    <i class="fas fa-folder-open"></i>
+                    <span>Documents</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="../training_management/emp_training.html" class="menu-item">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    <span>Trainings</span>
+                </a>
+            </li>
+
+        </ul>
+        <!-- LOGOUT -->
+        <div class="bottom-section">
+            <a href="../login/login.html" class="menu-item logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Log Out</span>
+            </a>
+        </div>
+
+    </div>
+
+    <main class="main-content">
+        <div class="form-card">
+            <div class="form-header">Applicant Information</div>
+            <form id="applicantForm" class="form-body">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>First Name</label>
+                        <input type="text" placeholder="Enter first name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Last Name</label>
+                        <input type="text" placeholder="Enter last name" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" placeholder="Enter a valid email address" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Phone Number</label>
+                        <input type="text" placeholder="Enter phone number">
+                    </div>
+                </div>
+
+                <div class="form-group full-width">
+                    <label>Department Applying To</label>
+                    <select required>
+                        <option value="" disabled selected>Select department...</option>
+                        <option>Human Resources</option>
+                        <option>Information Technology</option>
+                    </select>
+                </div>
+
+                <div class="form-group full-width">
+                    <label>Position Applying For</label>
+                    <select required>
+                        <option value="" disabled selected>Select position...</option>
+                        <option>Manager</option>
+                        <option>Staff</option>
+                    </select>
+                </div>
+
+                <div class="form-group full-width">
+                    <label>Tell us about yourself</label>
+                    <div class="upload-container">
+                        <label for="cv-upload" class="upload-btn">Upload CV</label>
+                        <input type="file" id="cv-upload" accept=".pdf" hidden>
+                        <span id="file-name">File_Name.pdf</span>
+                    </div>
+                </div>
+
+                <div class="form-footer">
+                    <button type="button" class="btn-cancel">Cancel</button>
+                    <button type="submit" class="btn-save">Save</button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script src="../../static/js/application employee/application_info.js"></script>
+</body>
+</html>

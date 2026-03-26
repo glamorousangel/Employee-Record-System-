@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Record View | HR System</title>
+    <link rel="shortcut icon" type="image/png" href="../../static/img/general/uph.png">
+    <link rel="stylesheet" href="../../static/css/accounts/hr_profile_view.css">
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+
+    <div class="background"></div>
+
+    <div class="dashboard-viewport">
+        <div class="sidebar" id="sidebar">
+            <div class="top-section">
+                <div class="logo-wrapper" id="logoToggle">
+                    <img src="../../static/img/general/uph.png" class="logo">
+                    <div class="open-icon"><i class="fas fa-chevron-right"></i></div>
+                </div>
+                <button class="close-btn" id="closeBtn"><i class="fas fa-chevron-left"></i></button>
+            </div>
+            <ul class="menu">
+                <li><a href="../dashboards/hr_dash.html" class="menu-item"><i class="fas fa-border-all"></i> <span>Dashboard</span></a></li>
+<li>
+    <a href="../accounts/hr_profile_view.html?id=2024-001" class="menu-item">
+        <i class="fas fa-user"></i> <span>Profile</span>
+    </a>
+</li>                <hr>
+                <li><a href="#" class="menu-item"><i class="fas fa-file"></i><span>Application Management</span></a></li>
+                <li><a href="../hr/employee_management/hr_employeelist.html" class="menu-item active"><i class="fas fa-database"></i> <span>Employee Records</span></a></li>
+                <li><a href="#" class="menu-item"><i class="fas fa-calendar"></i> <span>Attendance Monitoring</span></a></li>
+                <li><a href="../leave/hr_leaveselect.html" class="menu-item"><i class="fas fa-briefcase"></i> <span>Leave Management</span></a></li>
+                <li><a href="#" class="menu-item"><i class="fas fa-star"></i> <span>Performance Evaluation</span></a></li>
+                <li><a href="#" class="menu-item"><i class="fas fa-folder-open"></i> <span>Document Management</span></a></li>
+                <li><a href="#" class="menu-item"><i class="fas fa-chalkboard-teacher"></i> <span>Trainings</span></a></li>
+                <li><a href="#" class="menu-item"><i class="fas fa-chart-line"></i> <span>Reports / Analytics</span></a></li>
+            </ul>
+            <div class="bottom-section">
+                <a href="../login/login.html" class="menu-item logout"><i class="fas fa-sign-out-alt"></i> <span>Log Out</span></a>
+            </div>
+        </div>
+
+        <main class="main-content">
+            <div class="profile-page-container">
+                <div class="profile-card">
+                    <div class="profile-left">
+                        <img src="../../static/img/sample-profile-pic.jfif" class="profile-img" alt="Profile Picture" id="profImage">
+                        <div class="profile-info">
+                            <h2 id="profName">Loading...</h2>
+                            <p class="role" id="profRoleHeader">---</p>
+                            <p class="employee-id" id="profID">Employee ID: ---</p>
+
+                            <div class="employment-details">
+                                <p><strong>Status</strong> <span id="statusDot" class="status-dot"></span> <span id="profStatusText">---</span></p>
+                                <p><strong>Position</strong> <span id="profPos">---</span></p>
+                                <p><strong>Department</strong> <span id="profDept">---</span></p>
+                                <p><strong>Employment Type</strong> <span id="profType">---</span></p>
+                                <p><strong>Date Hired</strong> <span id="profDateHired">---</span></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="profile-right">
+                        <button class="edit-btn" id="editProfileBtn">Edit Record</button>
+                        <div class="contact-info">
+                            <h4>Contact Information</h4>
+                            <p>📧 <span id="profEmail">---</span></p>
+                            <p>📞 <span id="profContact">---</span></p>
+                            <p>📍 <span id="profAddress">---</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tabs">
+                    <button class="tab active" data-tab="hr_department_employee">Department</button>
+                    <button class="tab" data-tab="hr_documents_employee">Documents</button>
+                    <button class="tab" data-tab="hr_employment-history_employee">Employment History</button>
+                </div>
+                
+                <div id="tab-content-container" class="tab-content" style="flex: 1; overflow-y: auto;"></div>
+            </div>
+        </main>
+    </div>
+
+    <div id="documentModal" style="display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); align-items: center; justify-content: center;">
+        <div style="background-color: #fff; width: 750px; border-radius: 15px; padding: 35px; position: relative; box-shadow: 0 4px 25px rgba(0,0,0,0.15); font-family: sans-serif;">
+            
+            <div style="margin-bottom: 20px; display: flex; flex-direction: column; gap: 0; width: 100%; align-items: flex-start;">
+                <div style="background: #E8E8E8; padding: 6px 25px; border-radius: 50px; border: 1px solid #ccc; width: 100%; box-sizing: border-box; text-align: left; margin-bottom: -1px;">
+                    <span id="modalDocName" style="font-size: 13px; color: #333; font-weight: 600;">Document Name</span>
+                </div>
+                <div style="background: #fff; padding: 6px 25px; border-radius: 50px; border: 1px solid #ccc; width: 100%; box-sizing: border-box; text-align: left;">
+                    <span id="modalFileName" style="color: #666; font-size: 12px;">filename.pdf</span>
+                </div>
+            </div>
+
+            <div id="modalPreviewWrapper" style="width: 100%; height: 380px; border: 1px solid #ddd; border-radius: 12px; overflow: hidden; background: #f9f9f9; display: flex; justify-content: center; align-items: center; margin-bottom: 25px;">
+                </div>
+
+            <input type="file" id="fileLibraryInput" style="display: none;" accept=".pdf, .png, .jpg, .jpeg, .doc, .docx" onchange="handleFileSelection(this)">
+
+            <div style="display: flex; justify-content: space-between; width: 100%;">
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="document.getElementById('fileLibraryInput').click()" style="background: #D9D9D9; color: #333; border: none; width: 130px; height: 40px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px;">
+                        Edit records
+                    </button>
+                    <button id="deleteBtn" onclick="handleDelete()" style="background: #D9D9D9; color: #cc0000; border: none; width: 130px; height: 40px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px; display: none;">
+                        Delete
+                    </button>
+                </div>
+                
+                <div style="display: flex; gap: 12px;">
+                    <button id="saveBtn" onclick="saveDocumentChanges()" style="background: #7b3f3f; color: #fff; border: none; width: 130px; height: 40px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px; display: none;">
+                        Save
+                    </button>
+                    <button onclick="closeModal()" style="background: #D9D9D9; color: #333; border: none; width: 130px; height: 40px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px;">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../../static/js/accounts/hr_profile_view.js"></script>
+</body>
+</html>
