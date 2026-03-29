@@ -1,117 +1,203 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const tabs = document.querySelectorAll('.tab');
-    const tabContents = document.querySelectorAll('.tab-content-item');
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Profile | HR</title>
+    <link rel="shortcut icon" href="../../../static/img/general/uph.png">
+    <link rel="stylesheet" href="../../../static/css/hr/employee_management/hr_employee_view.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+</head>
 
-    // --- TAB SWITCHING LOGIC ---
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            tabs.forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
+<body>
 
-            tabContents.forEach(content => content.classList.remove('active'));
+<div class="background"></div>
 
-            const target = tab.getAttribute('data-tab');
-            document.getElementById(target).classList.add('active');
-        });
-    });
+<div class="dashboard-viewport">
 
-    // --- FILE UPLOAD & STATUS CHANGE LOGIC ---
-    const uploaders = document.querySelectorAll('.file-uploader');
+    <div class="sidebar" id="sidebar">
+        <div class="top-section">
+            <div class="logo-wrapper" id="logoToggle">
+                <img src="../../../static/img/general/uph.png" class="logo">
+                <div class="open-icon"><i class="fas fa-chevron-right"></i></div>
+            </div>
+            <button class="close-btn" id="closeBtn"><i class="fas fa-chevron-left"></i></button>
+        </div>
 
-    uploaders.forEach(uploader => {
-        uploader.addEventListener('change', function() {
-            if (this.files && this.files[0]) {
-                const file = this.files[0];
-                const row = this.closest('tr');
-                
-                const statusCell = row.querySelector('.status-cell');
-                const dateCell = row.querySelector('.date-cell');
-                const actionCell = row.querySelector('.action-cell');
+        <ul class="menu">
+           <li><a href="../../dashboards/hr_dash.html" class="menu-item"><i class="fas fa-border-all"></i> <span>Dashboard</span></a></li>
+            <li><a href="../../accounts/hr_profile_view.html" class="menu-item"><i class="fas fa-user"></i> <span>Profile</span></a></li>
+            <hr>
+            <li><a href="#" class="menu-item"><i class="fas fa-file"></i><span>Application Management</span></a></li>
+            <li><a href="hr_employeelist.html" class="menu-item active"><i class="fas fa-database"></i> <span>Employee Records</span></a></li>
+            <li><a href="#" class="menu-item"><i class="fas fa-calendar"></i> <span>Attendance Monitoring</span></a></li>
+            <li><a href="../../leave/hr_leaveselect.html" class="menu-item"><i class="fas fa-briefcase"></i> <span>Leave Management</span></a></li>
+            <li><a href="#" class="menu-item"><i class="fas fa-star"></i> <span>Performance Evaluation</span></a></li>
+            <li><a href="#" class="menu-item"><i class="fas fa-folder-open"></i> <span>Document Management</span></a></li>
+            <li><a href="#" class="menu-item"><i class="fas fa-chalkboard-teacher"></i> <span>Trainings</span></a></li>
+            <li><a href="#" class="menu-item"><i class="fas fa-chart-line"></i> <span>Reports / Analytics</span></a></li>
+        </ul>
 
-                statusCell.textContent = "Valid";
-                statusCell.style.color = "#28a745";
+        <div class="bottom-section">
+            <a href="#" class="menu-item logout"><i class="fas fa-sign-out-alt"></i> <span>Log Out</span></a>
+        </div>
+    </div>
 
-                const today = new Date().toLocaleDateString('en-US', { 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
-                });
-                dateCell.textContent = today;
+    <main class="main-content">
+        <div class="profile-page-container">
 
-                const fileURL = URL.createObjectURL(file);
+            <div class="profile-card">
+                <div class="profile-left">
+                    <img src="../../static/img/sample-profile-pic.jfif" class="profile-img">
+                    <div class="profile-info">
+                        <h2>John Smith</h2>
+                        <p class="role">School Head</p>
+                        <p class="employee-id">Employee ID: HEAD-001</p>
 
-                actionCell.innerHTML = `
-                    <a href="${fileURL}" target="_blank" title="View Document">
-                        <i class="fas fa-eye"></i>
-                    </a>
-                    <a href="${fileURL}" download="${file.name}" title="Download Document">
-                        <i class="fas fa-download"></i>
-                    </a>
-                `;
-            }
-        });
-    });
-
-    // --- HISTORY MODAL LOGIC ---
-    const modal = document.getElementById('historyModal');
-    const openBtn = document.getElementById('openHistoryModal');
-    const closeBtn = document.getElementById('closeHistoryModal');
-    const saveBtn = document.getElementById('saveEventBtn');
-
-    // Open Modal
-    if (openBtn) {
-        openBtn.addEventListener('click', () => {
-            modal.style.display = "block";
-        });
-    }
-
-    // Close Modal via 'X'
-    if (closeBtn) {
-        closeBtn.addEventListener('click', () => {
-            modal.style.display = "none";
-        });
-    }
-
-    // Close Modal by clicking outside the box
-    window.addEventListener('click', (event) => {
-        if (event.target == modal) {
-            modal.style.display = "none";
-        }
-    });
-
-    // Save Event Logic
-    if (saveBtn) {
-        saveBtn.addEventListener('click', () => {
-            const dateVal = document.getElementById('eventDate').value;
-            const titleVal = document.getElementById('eventTitle').value;
-            const descVal = document.getElementById('eventDesc').value;
-
-            if (dateVal && titleVal && descVal) {
-                const timeline = document.getElementById('timelineContainer');
-                
-                // Create the new timeline item element
-                const newItem = document.createElement('div');
-                newItem.classList.add('timeline-item');
-                
-                newItem.innerHTML = `
-                    <div class="timeline-date">${dateVal}</div>
-                    <div class="timeline-content">
-                        <h4>${titleVal}</h4>
-                        <p>${descVal}</p>
+                        <div class="employment-details">
+                            <p><strong>Status</strong> <span class="status-dot" style="background:#8ddf9b"></span> Active</p>
+                            <p><strong>Position</strong> School Head</p>
+                            <p><strong>Department</strong> Administration</p>
+                            <p><strong>Employment Type</strong> Full-time</p>
+                            <p><strong>Date Hired</strong> 2015-06-01</p>
+                        </div>
                     </div>
-                `;
+                </div>
 
-                // Add to the top of the list for better visibility
-                timeline.prepend(newItem);
+                <div class="profile-right">
+                    <a href="../../accounts/hr_profile_edit.html"><button class="edit-btn">Edit Profile</button></a>
 
-                // Reset and Close
-                modal.style.display = "none";
-                document.getElementById('eventDate').value = "";
-                document.getElementById('eventTitle').value = "";
-                document.getElementById('eventDesc').value = "";
-            } else {
-                alert("Please fill in all fields before saving.");
-            }
-        });
-    }
-});
+                    <div class="contact-info">
+                        <h4>Contact Information</h4>
+                        <p><i class="fas fa-envelope"></i> john.head@school.edu.ph</p>
+                        <p><i class="fas fa-phone"></i> +63 912 345 6789</p>
+                        <p><i class="fas fa-location-dot"></i> Manila, Philippines</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tabs">
+                <button class="tab active" data-tab="dept">Department</button>
+                <button class="tab" data-tab="docs">Documents</button>
+                <button class="tab" data-tab="history">History</button>
+            </div>
+
+            <div class="tab-content">
+
+                <div class="tab-content-item active" id="dept">
+                    <div class="info-card">
+                        <h4>Department Information</h4>
+                        <div class="info-row"><span>Department</span><span>Administration</span></div>
+                        <div class="info-row"><span>Code</span><span>ADM-001</span></div>
+                        <div class="info-row"><span>Location</span><span>2nd Floor, Admin Building</span></div>
+                        <div class="info-row"><span>Email</span><span>admin@school.edu.ph</span></div>
+                        <div class="info-row"><span>Contact</span><span>(02) 123-4567</span></div>
+                    </div>
+                </div>
+
+                <div class="tab-content-item" id="docs">
+                    <div class="doc-header"><span>2 of 3 uploaded</span></div>
+                    <table class="doc-table">
+                        <thead>
+                            <tr>
+                                <th>Document</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Date Uploaded</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Transcript of Records</td>
+                                <td>PDF</td>
+                                <td class="status-cell" style="color: #28a745; font-weight: bold;">Valid</td>
+                                <td class="date-cell">March 1, 2025</td>
+                                <td class="action-cell">
+                                    <a href="../../../static/docs/tor_sample.pdf" target="_blank" title="View Document">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="#" download><i class="fas fa-download"></i></a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Licenses / Certification</td>
+                                <td>PDF</td>
+                                <td class="status-cell" style="color: #ffc107; font-weight: bold;">Needs Update</td>
+                                <td class="date-cell">February 10, 2025</td>
+                                <td class="action-cell">
+                                    <label for="license-upload" class="add-file-label">
+                                        <i class="fas fa-file-upload"></i> Add File
+                                    </label>
+                                    <input type="file" id="license-upload" class="file-uploader" style="display: none;" accept=".pdf">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>NBI Clearance</td>
+                                <td>JPG</td>
+                                <td class="status-cell" style="color: #dc3545; font-weight: bold;">Missing</td>
+                                <td class="date-cell">------</td>
+                                <td class="action-cell">
+                                    <label for="nbi-upload" class="add-file-label">
+                                        <i class="fas fa-file-upload"></i> Add File
+                                    </label>
+                                    <input type="file" id="nbi-upload" class="file-uploader" style="display: none;" accept="image/*,.pdf">
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="tab-content-item" id="history">
+                    <div class="history-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h4>Employment History</h4>
+                        <button class="add-event-btn" id="openHistoryModal">
+                            <i class="fas fa-plus"></i> Add Event
+                        </button>
+                    </div>
+
+                    <div class="timeline" id="timelineContainer">
+                        <div class="timeline-item">
+                            <div class="timeline-date">2015</div>
+                            <div class="timeline-content">
+                                <h4>Hired</h4>
+                                <p>Joined as School Head</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+
+</div>
+
+<div id="historyModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Add New History Event</h3>
+            <span class="close-modal" id="closeHistoryModal">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>Date (Year)</label>
+                <input type="text" id="eventDate" placeholder="e.g. 2024">
+            </div>
+            <div class="form-group">
+                <label>Title</label>
+                <input type="text" id="eventTitle" placeholder="e.g. Major Promotion">
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <textarea id="eventDesc" rows="3" placeholder="Describe the event..."></textarea>
+            </div>
+            <button id="saveEventBtn" class="save-btn">Save Event</button>
+        </div>
+    </div>
+</div>
+
+<script src="../../../static/js/hr/employee_management/hr_employee_view.js"></script>
+</body>
+</html>
