@@ -15,22 +15,24 @@ body, html {
 .main-content {
     flex: 1;
     display: flex;
-    justify-content: flex-end;
+    justify-content: center; /* Centers the card in the remaining space */
     height: 100%;
+    margin-left: 320px; /* Matches sidebar width (300px) + gap (20px) */
+    transition: margin-left 0.35s ease;
 }
 
 .profile-page-container {
     width: 100%;
-    max-width: 1180px; 
+    max-width: 100%; /* Change from 1180px to 100% for auto-width */
     display: flex;
     flex-direction: column;
     height: 100%; 
     box-sizing: border-box;
-    transition: max-width 0.4s ease-in-out; 
+    padding-right: 20px; /* Adds a small buffer on the right */
 }
 
-#sidebar.close ~ .main-content .profile-page-container {
-    max-width: calc(100% - 110px);
+.sidebar.close ~ .main-content {
+    margin-left: 110px; 
 }
 
 .profile-card {

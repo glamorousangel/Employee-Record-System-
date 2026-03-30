@@ -5,8 +5,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const typeButtons = document.querySelectorAll('.type-btn');
     const dropZone = document.getElementById('dropZone');
     const fileInput = document.getElementById('fileInput');
+    const leaveForm = document.getElementById('leaveRequestForm');
 
-    const handleToggle = () => sidebar.classList.toggle('collapsed');
+    // --- Sidebar Logic ---
     if (closeBtn) closeBtn.onclick = () => sidebar.classList.add('collapsed');
     if (logoToggle) logoToggle.onclick = () => sidebar.classList.remove('collapsed');
 
@@ -15,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (span) item.setAttribute('data-text', span.innerText);
     });
 
+    // --- Leave Type Selection ---
     typeButtons.forEach(btn => {
         btn.addEventListener('click', () => {
             typeButtons.forEach(b => b.classList.remove('active'));
@@ -22,65 +24,67 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // --- File Upload UI ---
     if (dropZone && fileInput) {
         dropZone.addEventListener('click', () => fileInput.click());
         fileInput.addEventListener('change', () => {
             if (fileInput.files.length > 0) {
                 const fileName = fileInput.files[0].name;
-                dropZone.innerHTML = `<i class="fas fa-check-circle" style="color: #28a745; font-size: 24px;"></i><p>Selected: <b>${fileName}</b></p><small style="color: #666; cursor: pointer;">Click to change file</small>`;
+                dropZone.innerHTML = `
+                    <i class="fas fa-check-circle" style="color: #28a745; font-size: 24px;"></i>
+                    <p>Selected: <b>${fileName}</b></p>
+                    <small style="color: #666; cursor: pointer;">Click to change file</small>
+                `;
             }
         });
     }
 
-    const leaveForm = document.getElementById('leaveRequestForm');
+    // --- Submit Logic (Notification with Credits) ---
     if (leaveForm) {
         leaveForm.onsubmit = (e) => {
             e.preventDefault();
 
-            const selectedType = document.querySelector('.type-btn.active')?.innerText || "General Leave";
-            const startDateVal = document.querySelector('input[name="start_date"]').value;
-            const endDateVal = document.querySelector('input[name="end_date"]').value;
-            const reasonVal = document.querySelector('.form-textarea').value;
-            
-            const start = new Date(startDateVal);
-            const end = new Date(endDateVal);
-            const diffTime = Math.abs(end - start);
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+            const TOTAL_SICK_CREDITS = 15;
+            let finalMessage = "Leave request submitted successfully";
 
-            const file = fileInput.files[0];
-            const saveRequest = (fileBase64 = null) => {
-                const newRequest = {
-                    id: Date.now(),
-                    name: "Jose Brian Dela Peña", 
-                    role: "Department Head",
-                    dateFiled: new Date().toISOString().split('T')[0],
-                    leaveType: selectedType,
-                    startDate: startDateVal,
-                    endDate: endDateVal,
-                    numDays: diffDays,
-                    reason: reasonVal,
-                    status: "Pending", 
-                    reviewedBy: "---",
-                    reviewRemarks: "Awaiting initial review.", // Fixed: No longer undefined
-                    submitTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                    fileName: file ? file.name : "No Document Attached",
-                    fileData: fileBase64 // Fixed: Saves PNG/JPG/PDF data
-                };
+            // 1. Get Selected Leave Type
+            const activeBtn = document.querySelector('.type-btn.active');
+            const leaveTypeText = activeBtn ? activeBtn.innerText : "";
 
-                let allRequests = JSON.parse(localStorage.getItem('allLeaveRequests')) || [];
-                allRequests.push(newRequest);
-                localStorage.setItem('allLeaveRequests', JSON.stringify(allRequests));
+            // 2. Get Dates using Name attributes (from your HTML)
+            const startDateInput = document.querySelector('input[name="start_date"]');
+            const endDateInput = document.querySelector('input[name="end_date"]');
 
-                alert("Leave Request Submitted Successfully!");
-                window.location.href = 'head_leaveselect.html';
-            };
+            // 3. Calculate Credits if Sick Leave
+            if (leaveTypeText.includes("Sick Leave") && startDateInput.value && endDateInput.value) {
+                const start = new Date(startDateInput.value);
+                const end = new Date(endDateInput.value);
+                
+                // Difference in days (inclusive)
+                const diffTime = Math.abs(end - start);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
 
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = () => saveRequest(reader.result);
-                reader.readAsDataURL(file);
+                const remaining = TOTAL_SICK_CREDITS - diffDays;
+                finalMessage = `Success! You have ${remaining} sick leave credits remaining.`;
+            }
+
+            // 4. Trigger SweetAlert (Matching Employee style)
+            // Note: Ensure SweetAlert CDN is in your Head HTML
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: "success",
+                    title: "Request Sent",
+                    text: finalMessage,
+                    confirmButtonColor: '#4a1d1d'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = 'head_leaverequest.html';
+                    }
+                });
             } else {
-                saveRequest();
+                // Fallback if Swal is not loaded
+                alert(finalMessage);
+                window.location.href = 'head_leaverequest.html';
             }
         };
     }

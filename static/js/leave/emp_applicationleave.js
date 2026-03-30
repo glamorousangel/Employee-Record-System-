@@ -8,19 +8,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const leaveForm = document.getElementById('leaveRequestForm');
     const menuItems = document.querySelectorAll(".menu-item");
 
-    // --- sidebar tooltips ---
+    // --- Sidebar Logic ---
     menuItems.forEach(item => {
         const span = item.querySelector("span");
-        if (span) {
-            item.setAttribute("data-text", span.innerText);
-        }
+        if (span) item.setAttribute("data-text", span.innerText);
     });
 
-    // sidebar toggle logic
     if (closeBtn) closeBtn.onclick = () => sidebar.classList.add('collapsed');
     if (logoToggle) logoToggle.onclick = () => sidebar.classList.toggle('collapsed');
 
-    // leave type selection logic
+    // --- Leave Type Selection ---
     typeButtons.forEach(btn => {
         btn.addEventListener('click', () => {
             typeButtons.forEach(b => b.classList.remove('active'));
@@ -28,44 +25,57 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // --- file upload & filename display ---
+    // --- File Upload ---
     if (dropZone && fileInput) {
         dropZone.onclick = () => fileInput.click();
-
         fileInput.onchange = () => {
             if (fileInput.files.length > 0) {
-                const fileName = fileInput.files[0].name;
                 dropZone.innerHTML = `
                     <i class="fas fa-file-alt" style="color: #4a1d1d; font-size: 24px;"></i>
-                    <p>selected: <b>${fileName}</b></p>
-                    <small style="color: #666;">click again to change file</small>
+                    <p>Selected: <b>${fileInput.files[0].name}</b></p>
                 `;
             }
         };
     }
 
-    // --- submit logic (no localstorage) ---
+    // --- Submit & Credits Calculation ---
     if (leaveForm) {
         leaveForm.onsubmit = (e) => {
             e.preventDefault();
 
-            const toast = Swal.mixin({
-                toast: true,
-                position: "top",
-                showConfirmButton: false,
-                timer: 2000,
-                timerProgressBar: true,
-                didOpen: (toast) => {
-                    toast.onmouseenter = Swal.stopTimer;
-                    toast.onmouseleave = Swal.resumeTimer;
-                }
-            });
+            const TOTAL_SICK_CREDITS = 15;
+            let finalMessage = "Leave request submitted successfully";
+            
+            // Get active button text
+            const activeBtn = document.querySelector('.type-btn.active');
+            const leaveTypeText = activeBtn ? activeBtn.innerText : "";
 
-            toast.fire({
+            // Select inputs by NAME (matching your HTML)
+            const startDateInput = document.querySelector('input[name="start_date"]');
+            const endDateInput = document.querySelector('input[name="end_date"]');
+
+            if (leaveTypeText.includes("Sick Leave") && startDateInput.value && endDateInput.value) {
+                const start = new Date(startDateInput.value);
+                const end = new Date(endDateInput.value);
+                
+                // Calculate days inclusive
+                const diffTime = Math.abs(end - start);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+
+                const remaining = TOTAL_SICK_CREDITS - diffDays;
+                finalMessage = `Success! You have ${remaining} sick leave credits remaining.`;
+            }
+
+            // Notification
+            Swal.fire({
                 icon: "success",
-                title: "Leave request submitted successfully"
-            }).then(() => {
-                window.location.href = 'emp_leaverequest.html';
+                title: "Request Submitted",
+                text: finalMessage,
+                confirmButtonColor: '#4a1d1d' 
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = 'emp_leaverequest.html';
+                }
             });
         };
     }
