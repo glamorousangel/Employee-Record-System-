@@ -61,6 +61,7 @@
                 
                 <div class="form-body">
                     <form class="form-grid" id="editEmployeeForm">
+                        <!-- Basic Information Section -->
                         <section class="form-section-box">
                             <div class="section-header">Basic Information</div>
                             <div class="section-body">
@@ -72,18 +73,19 @@
                                 </div>
 
                                 <div class="inputs-row">
-                                    <div class="input-item"><label>First Name</label><input type="text" id="firstName" value="John" readonly></div>
-                                    <div class="input-item"><label>Last Name</label><input type="text" id="lastName" value="Smith" readonly></div>
-                                    <div class="input-item"><label>Employment I.D</label><input type="text" id="empID" value="HEAD-001" readonly></div>
-                                    <div class="input-item"><label>Employment Status</label><input type="text" id="empStatus" value="Active" readonly></div>
-                                    <div class="input-item"><label>Employment Type</label><input type="text" id="empType" value="Full-time" readonly></div>
-                                    <div class="input-item"><label>Department / Office</label><input type="text" id="dept" value="Administration" readonly></div>
-                                    <div class="input-item"><label>Position/Rank</label><input type="text" id="pos" value="School Head" readonly></div>
-                                    <div class="input-item"><label>Date Hired</label><input type="text" id="dateHired" value="2015-06-01" readonly></div>
+                                    <div class="input-item"><label>First Name</label><input type="text" id="firstName" value="John"></div>
+                                    <div class="input-item"><label>Last Name</label><input type="text" id="lastName" value="Smith"></div>
+                                    <div class="input-item"><label>Employment I.D</label><input type="text" id="empID" value="HEAD-001"></div>
+                                    <div class="input-item"><label>Employment Status</label><input type="text" id="empStatus" value="Active"></div>
+                                    <div class="input-item"><label>Employment Type</label><input type="text" id="empType" value="Full-time"></div>
+                                    <div class="input-item"><label>Department / Office</label><input type="text" id="dept" value="Administration"></div>
+                                    <div class="input-item"><label>Position/Rank</label><input type="text" id="pos" value="School Head"></div>
+                                    <div class="input-item"><label>Date Hired</label><input type="text" id="dateHired" value="2015-06-01"></div>
                                 </div>
                             </div>
                         </section>
 
+                        <!-- Personal Information Section -->
                         <section class="form-section-box">
                             <div class="section-header">Personal Information</div>
                             <div class="section-body">
@@ -102,10 +104,9 @@
                 </div>
 
                 <div class="form-footer">
-    <button type="button" class="btn btn-cancel" onclick="cancelHREdit()">Cancel</button>
-    
-    <button type="button" class="btn btn-save" onclick="updateHRProfile()">Update Changes</button>
-</div>
+                    <button type="button" class="btn btn-cancel" onclick="cancelHREdit()">Cancel</button>
+                    <button type="button" class="btn btn-save" onclick="updateHRProfile()">Update Changes</button>
+                </div>
             </div>
         </main>
     </div>

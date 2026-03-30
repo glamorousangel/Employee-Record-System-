@@ -35,17 +35,14 @@ function updateHRProfile() { // Pinalitan ang pangalan para mag-match sa HTML
     Toast.fire({
         icon: 'success',
         title: 'Success!',
-        text: 'HR Manager profile has been updated.' // Custom message para sa HR
+        text: 'HR Manager profile has been updated.' 
     }).then(() => {
-        // Siguraduhin na tama ang path papunta sa view page
         window.location.href = 'hr_profile_view.html';
     });
 }
 
-/**
- * Cancel Function (HR Version)
- */
-function cancelHREdit() { // Pinalitan ang pangalan para mag-match sa HTML
+
+function cancelHREdit() { 
     Swal.fire({
         title: 'Discard changes?',
         text: "Any unsaved information will be lost.",
