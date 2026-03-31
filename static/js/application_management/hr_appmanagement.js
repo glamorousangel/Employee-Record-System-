@@ -1,13 +1,13 @@
 document.addEventListener("DOMContentLoaded", () => {
 
     // --------------------------------------------------------
-    // 1. DATA
+    // 1. DATA OBJECTS
     // --------------------------------------------------------
-    const newEmployeeData = [
+    let newEmployeeData = [
         {
             id: "001",
             name: "Dela Cruz, Juan",
-            department: "College of Computer Studies",
+            department: "CCS",
             position: "Instructor",
             submitted: "02/12/2026",
             progress: "Stage 2 of 4",
@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
         {
             id: "002",
             name: "Santos, Maria",
-            department: "College of Business Administration",
+            department: "CBA",
             position: "Professor",
             submitted: "02/15/2026",
             progress: "Stage 1 of 4",
@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
         {
             id: "003",
             name: "Reyes, Ricardo",
-            department: "College of Engineering",
+            department: "COE",
             position: "Registrar",
             submitted: "02/10/2026",
             progress: "Completed",
@@ -42,27 +42,14 @@ document.addEventListener("DOMContentLoaded", () => {
             reviewedBy: "HR Manager",
             remarks: "All requirements met. Application approved.",
             fileName: "CV_Reyes.pdf"
-        },
-        {
-            id: "004",
-            name: "Garcia, Ana",
-            department: "College of Nursing",
-            position: "Clinical Instructor",
-            submitted: "03/01/2026",
-            progress: "Stage 3 of 4",
-            status: "rejected",
-            statusLabel: "Rejected",
-            reviewedBy: "HR Manager",
-            remarks: "Incomplete licensure documents submitted.",
-            fileName: "CV_Garcia.pdf"
         }
     ];
 
-    const positionChangeData = [
+    let positionChangeData = [
         {
             id: "PC-001",
             name: "Bautista, Carlo",
-            department: "College of Computer Studies",
+            department: "CCS",
             position: "Dean",
             submitted: "03/10/2026",
             progress: "Stage 1 of 2",
@@ -71,48 +58,32 @@ document.addEventListener("DOMContentLoaded", () => {
             reviewedBy: "---",
             remarks: "Pending HR review of position change request.",
             fileName: "Request_Bautista.pdf"
-        },
-        {
-            id: "PC-002",
-            name: "Mendoza, Liza",
-            department: "College of Business Administration",
-            position: "Department Head",
-            submitted: "03/05/2026",
-            progress: "Completed",
-            status: "approved",
-            statusLabel: "Approved",
-            reviewedBy: "HR Manager",
-            remarks: "Position change approved effective April 2026.",
-            fileName: "Request_Mendoza.pdf"
         }
     ];
 
     // --------------------------------------------------------
     // 2. SELECTORS
     // --------------------------------------------------------
-    const sidebar       = document.getElementById("sidebar");
-    const logoToggle    = document.getElementById("logoToggle");
-    const closeBtn      = document.getElementById("closeBtn");
-    const searchInput   = document.getElementById("tableSearch");
-    const tableBody     = document.getElementById("applicationTableBody");
-    const viewModal     = document.getElementById("viewModal");
-    const posModal      = document.getElementById("positionChangeModal");
-    const posForm       = document.getElementById("positionChangeForm");
-    const tabNew        = document.getElementById("tab-new");
-    const tabPosition   = document.getElementById("tab-position");
+    const sidebar = document.getElementById("sidebar");
+    const logoToggle = document.getElementById("logoToggle");
+    const closeBtn = document.getElementById("closeBtn");
+    const searchInput = document.getElementById("tableSearch");
+    const tableBody = document.getElementById("applicationTableBody");
+    
+    const viewModal = document.getElementById("viewModal");
+    const posModal = document.getElementById("positionChangeModal");
+    const posForm = document.getElementById("positionChangeForm");
+    
+    const tabNew = document.getElementById("tab-new");
+    const tabPosition = document.getElementById("tab-position");
 
-    let activeData = newEmployeeData; // tracks current tab data
-    let activeRecord = null;          // tracks currently opened modal record
+    let activeData = newEmployeeData; 
+    let activeRecord = null; 
 
     // --------------------------------------------------------
-    // 3. SIDEBAR
+    // 3. SIDEBAR LOGIC
     // --------------------------------------------------------
-    document.querySelectorAll('.menu-item').forEach(item => {
-        const span = item.querySelector("span");
-        if (span) item.setAttribute("data-text", span.textContent.trim());
-    });
-
-    if (closeBtn)   closeBtn.onclick   = () => sidebar.classList.add("collapsed");
+    if (closeBtn) closeBtn.onclick = () => sidebar.classList.add("collapsed");
     if (logoToggle) logoToggle.onclick = () => sidebar.classList.toggle("collapsed");
 
     // --------------------------------------------------------
@@ -138,7 +109,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td><span class="status-pill ${record.status}">${record.statusLabel}</span></td>
                 <td class="actions-cell">
                     <a href="#" class="view-link" data-id="${record.id}">View</a>
-                    ${record.status !== "approved" && record.status !== "rejected" ? `
+                    ${(record.status !== "approved" && record.status !== "rejected") ? `
                     <div class="dropdown">
                         <button class="update-link">Update <i class="fas fa-caret-down"></i></button>
                         <div class="dropdown-content">
@@ -155,60 +126,57 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // --------------------------------------------------------
-    // 5. TABLE EVENT LISTENERS
+    // 5. EVENT DELEGATION / ATTACHMENT
     // --------------------------------------------------------
     function attachTableEvents() {
-        // View links
+        // View Action
         tableBody.querySelectorAll(".view-link").forEach(link => {
-            link.addEventListener("click", (e) => {
+            link.onclick = (e) => {
                 e.preventDefault();
-                const id = e.target.getAttribute("data-id");
+                const id = link.getAttribute("data-id");
                 const record = activeData.find(r => r.id === id);
                 if (record) openViewModal(record);
-            });
+            };
         });
 
-        // Inline approve
+        // Inline Status Update
         tableBody.querySelectorAll(".approve-option").forEach(btn => {
-            btn.addEventListener("click", (e) => {
+            btn.onclick = (e) => {
                 e.preventDefault();
-                const id = e.target.getAttribute("data-id");
-                updateRecordStatus(id, "approved", "Approved");
-            });
+                updateRecordStatus(btn.getAttribute("data-id"), "approved", "Approved");
+            };
         });
 
-        // Inline reject
         tableBody.querySelectorAll(".reject-option").forEach(btn => {
-            btn.addEventListener("click", (e) => {
+            btn.onclick = (e) => {
                 e.preventDefault();
-                const id = e.target.getAttribute("data-id");
-                updateRecordStatus(id, "rejected", "Rejected");
-            });
+                updateRecordStatus(btn.getAttribute("data-id"), "rejected", "Rejected");
+            };
         });
     }
 
     // --------------------------------------------------------
-    // 6. UPDATE RECORD STATUS
+    // 6. STATUS UPDATES
     // --------------------------------------------------------
     function updateRecordStatus(id, statusClass, statusLabel) {
         const record = activeData.find(r => r.id === id);
         if (!record) return;
 
-        record.status      = statusClass;
+        record.status = statusClass;
         record.statusLabel = statusLabel;
-        record.reviewedBy  = "HR Manager";
-        record.remarks     = `${statusLabel} by HR Manager on ${new Date().toLocaleDateString()}`;
+        record.reviewedBy = "HR Manager";
+        record.remarks = `${statusLabel} by HR Manager on ${new Date().toLocaleDateString()}`;
+        record.progress = "Completed";
 
         renderTable(activeData);
 
-        // If the modal is open for this record, update it live
         if (activeRecord && activeRecord.id === id) {
             populateModal(record);
         }
     }
 
     // --------------------------------------------------------
-    // 7. VIEW MODAL
+    // 7. MODAL HELPERS
     // --------------------------------------------------------
     function openViewModal(record) {
         activeRecord = record;
@@ -217,43 +185,44 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function populateModal(record) {
-        document.getElementById("modalFileName").innerText       = record.fileName;
-        document.getElementById("modalSubmitDate").innerText     = record.submitted;
-        document.getElementById("modalDepartment").innerText     = record.department;
-        document.getElementById("modalPosition").innerText       = record.position;
-        document.getElementById("modalProgress").innerText       = record.progress;
-        document.getElementById("modalRemarks").innerText        = record.remarks;
-        document.getElementById("modalReviewerText").innerHTML   = `<small>Reviewed by: ${record.reviewedBy}</small>`;
-        document.getElementById("modalStatusContainer").innerHTML =
-            `<span class="status-pill ${record.status}">${record.statusLabel}</span>`;
-        document.querySelector(".pdf-placeholder").innerHTML =
-            `<i class="fas fa-file-pdf"></i><p>${record.fileName}</p>`;
+        document.getElementById("modalFileName").innerText = record.fileName;
+        document.getElementById("modalSubmitDate").innerText = record.submitted;
+        document.getElementById("modalDepartment").innerText = record.department;
+        document.getElementById("modalPosition").innerText = record.position;
+        document.getElementById("modalProgress").innerText = record.progress;
+        document.getElementById("modalRemarks").innerText = record.remarks;
+        document.getElementById("modalReviewerText").innerHTML = `<small>Reviewed by: ${record.reviewedBy}</small>`;
+        document.getElementById("modalStatusContainer").innerHTML = `<span class="status-pill ${record.status}">${record.statusLabel}</span>`;
 
         const isFinal = record.status === "approved" || record.status === "rejected";
         document.getElementById("modalActions").style.display = isFinal ? "none" : "flex";
     }
 
-    document.getElementById("closeViewModal")?.addEventListener("click", closeAllModals);
+    function closeAllModals() {
+        viewModal.style.display = "none";
+        posModal.style.display = "none";
+        activeRecord = null;
+    }
 
-    // Modal approve/reject buttons
+    // Modal UI Listeners
+    document.getElementById("closeViewModal")?.addEventListener("click", closeAllModals);
+    document.getElementById("cancelRequest")?.addEventListener("click", closeAllModals);
+
     document.querySelector(".btn-approve")?.addEventListener("click", () => {
-        if (!activeRecord) return;
-        updateRecordStatus(activeRecord.id, "approved", "Approved");
+        if (activeRecord) updateRecordStatus(activeRecord.id, "approved", "Approved");
     });
 
     document.querySelector(".btn-reject")?.addEventListener("click", () => {
-        if (!activeRecord) return;
-        updateRecordStatus(activeRecord.id, "rejected", "Rejected");
+        if (activeRecord) updateRecordStatus(activeRecord.id, "rejected", "Rejected");
     });
 
     // --------------------------------------------------------
-    // 8. TABS
+    // 8. TAB NAVIGATION
     // --------------------------------------------------------
     tabNew.addEventListener("click", () => {
         tabNew.classList.add("active");
         tabPosition.classList.remove("active");
         activeData = newEmployeeData;
-        searchInput.value = "";
         renderTable(activeData);
     });
 
@@ -261,79 +230,63 @@ document.addEventListener("DOMContentLoaded", () => {
         tabPosition.classList.add("active");
         tabNew.classList.remove("active");
         activeData = positionChangeData;
-        searchInput.value = "";
         renderTable(activeData);
+        // Automatically open the form to log a change when switching to this tab
         posModal.style.display = "flex";
     });
 
     // --------------------------------------------------------
-    // 9. SEARCH
+    // 9. SEARCH FILTER
     // --------------------------------------------------------
-    searchInput.addEventListener("keyup", () => {
-        const filter = searchInput.value.toLowerCase();
-        tableBody.querySelectorAll("tr").forEach(row => {
-            row.style.display = row.innerText.toLowerCase().includes(filter) ? "" : "none";
-        });
+    searchInput.addEventListener("input", () => {
+        const query = searchInput.value.toLowerCase();
+        const filtered = activeData.filter(r => 
+            r.name.toLowerCase().includes(query) || 
+            r.id.toLowerCase().includes(query) || 
+            r.department.toLowerCase().includes(query)
+        );
+        renderTable(filtered);
     });
 
     // --------------------------------------------------------
-    // 10. POSITION CHANGE FORM
+    // 10. POSITION CHANGE FORM SUBMISSION
     // --------------------------------------------------------
     if (posForm) {
-        posForm.addEventListener("submit", (e) => {
+        posForm.onsubmit = (e) => {
             e.preventDefault();
 
-            const nameInput = posForm.querySelector("input[type='text']:not([disabled])");
-            const selectInput = posForm.querySelector("select");
-            const dateInput = posForm.querySelector("input[type='date']");
-            const reasonInput = posForm.querySelector("textarea");
+            const name = posForm.querySelector("input[type='text']:not([disabled])").value;
+            const pos = posForm.querySelector("select").value;
+            const remarks = posForm.querySelector("textarea").value;
 
-            const newRecord = {
-                id: `PC-00${positionChangeData.length + 1}`,
-                name: nameInput?.value || "New Employee",
-                department: "Pending",
-                position: selectInput?.value || "Pending",
-                submitted: new Date().toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric" }),
+            const newEntry = {
+                id: `PC-0${positionChangeData.length + 10}`,
+                name: name || "Unknown Employee",
+                department: "Pending Dept",
+                position: pos || "Unspecified",
+                submitted: new Date().toLocaleDateString(),
                 progress: "Stage 1 of 2",
                 status: "pending-hr",
                 statusLabel: "Pending - HR Evaluator",
                 reviewedBy: "---",
-                remarks: reasonInput?.value || "Awaiting review.",
-                fileName: "No Document Attached"
+                remarks: remarks || "No remarks provided.",
+                fileName: "Request_Form.pdf"
             };
 
-            positionChangeData.push(newRecord);
-
-            // Switch to position change tab and show new record
-            tabPosition.classList.add("active");
-            tabNew.classList.remove("active");
-            activeData = positionChangeData;
-            renderTable(activeData);
-
+            positionChangeData.push(newEntry);
+            renderTable(positionChangeData);
             posForm.reset();
             closeAllModals();
-        });
+        };
     }
 
-    document.getElementById("cancelRequest")?.addEventListener("click", closeAllModals);
-
-    // --------------------------------------------------------
-    // 11. CLOSE MODALS
-    // --------------------------------------------------------
-    function closeAllModals() {
-        [viewModal, posModal].forEach(m => { if (m) m.style.display = "none"; });
-    }
-
-    window.addEventListener("click", (e) => {
+    // Global click-to-close modal
+    window.onclick = (e) => {
         if (e.target === viewModal || e.target === posModal) closeAllModals();
-    });
-
-    document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") closeAllModals();
-    });
+    };
 
     // --------------------------------------------------------
-    // 12. INITIAL RENDER
+    // 11. INIT
     // --------------------------------------------------------
     renderTable(newEmployeeData);
 });
