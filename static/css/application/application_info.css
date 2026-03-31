@@ -1,20 +1,26 @@
-/* --- 1. Reset & Base --- */
+/* ----------------------------------------------------------- */
+/* 1. Reset & Base Styles                                      */
+/* ----------------------------------------------------------- */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Segoe UI', Roboto, sans-serif;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
 body {
     height: 100vh;
     width: 100vw;
     overflow: hidden;
-    background-color: #ffffff;
+    display: flex;
+    background-color: #ffffff; 
 }
 
-/* --- 2. Layout --- */
+/* ----------------------------------------------------------- */
+/* 2. Main Layout - Centering Content                          */
+/* ----------------------------------------------------------- */
 .main-content.full-view {
+    flex: 1;
     width: 100%;
     height: 100vh;
     display: flex;
@@ -23,70 +29,67 @@ body {
 }
 
 .form-card.transparent-layout {
+    background: #ffffff;
     width: 100%;
     height: 100vh;
     display: flex;
     flex-direction: column;
 }
 
-/* --- 3. Updated Header (Two Sections) --- */
-.form-header-container {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
+/* ----------------------------------------------------------- */
+/* 3. Header - Centered Title & Left-Aligned Logo              */
+/* ----------------------------------------------------------- */
+.form-header.centered-header {
     background: #ffffff;
-}
-
-/* Section 1: Logo */
-.logo-row {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 10px 0;
+    padding: 20px 60px;
+    border-bottom: 1px solid #eeeeee;
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    width: 100%;
+    position: relative; 
 }
 
 .header-logo {
-    width: 60px;
-    height: auto;
-    margin-top: 35px; /* Requested top margin */
+    width: 50px;
+    height: 50px;
     object-fit: contain;
-}
-
-/* Section 2: Title Bar */
-.title-row {
-    text-align: center;
-    padding: 15px 0;
-    border-bottom: 1px solid #eeeeee;
-    margin-top: 10px;
+    position: absolute;
+    left: 60px; 
 }
 
 .header-title {
-    font-size: 1.3rem;
+    font-size: 1.4rem;
     color: #333;
     font-weight: 700;
     letter-spacing: 1.5px;
     text-transform: uppercase;
 }
 
-/* --- 4. Form & Panels --- */
-.form-body {
+/* ----------------------------------------------------------- */
+/* 4. Panels - Vertical & Horizontal Centering                 */
+/* ----------------------------------------------------------- */
+.form-body { 
     flex: 1;
     display: flex;
     flex-direction: column;
+    width: 100%;
 }
 
 .split-container {
     flex: 1;
-    display: flex;
+    display: flex; 
+    width: 100%;
 }
 
 .panel {
     flex: 1;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
+    justify-content: center; /* Centers items vertically */
+    align-items: center;     /* Centers items horizontally */
     padding: 40px;
+    background: #ffffff;
 }
 
 .left-panel {
@@ -95,21 +98,23 @@ body {
 
 .section-title {
     width: 100%;
-    max-width: 450px;
-    font-size: 1rem;
-    font-weight: 800;
+    max-width: 480px;
+    font-size: 1.1rem;
+    font-weight: 700;
     color: #5c2b2b;
-    margin-bottom: 25px;
+    margin-bottom: 30px;
     text-transform: uppercase;
     border-bottom: 2px solid #f8f8f8;
-    padding-bottom: 8px;
+    padding-bottom: 10px;
 }
 
-/* --- 5. Form Elements --- */
-.form-group {
+/* ----------------------------------------------------------- */
+/* 5. Form Elements Width Control                              */
+/* ----------------------------------------------------------- */
+.form-group { 
     width: 100%;
-    max-width: 450px;
-    margin-bottom: 20px;
+    max-width: 480px; 
+    margin-bottom: 22px;
     display: flex;
     flex-direction: column;
 }
@@ -121,64 +126,98 @@ body {
     margin-bottom: 8px;
 }
 
-.form-group input, .form-group select {
-    padding: 12px;
+.form-group input, 
+.form-group select {
+    padding: 12px 15px;
     border: 1px solid #e0e0e0;
     border-radius: 6px;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
+    outline: none;
     background-color: #fafafa;
+    transition: 0.2s;
 }
 
-/* --- 6. Drop Zone --- */
+.form-group input:focus, 
+.form-group select:focus {
+    border-color: #5c2b2b;
+    background-color: #ffffff;
+    box-shadow: 0 0 0 3px rgba(92, 43, 43, 0.05);
+}
+
+/* ----------------------------------------------------------- */
+/* 6. Upload Zone                                              */
+/* ----------------------------------------------------------- */
 .drop-zone {
     width: 100%;
-    min-height: 120px;
+    min-height: 140px;
     border: 2px dashed #cccccc;
     border-radius: 8px;
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
+    text-align: center;
     cursor: pointer;
     transition: 0.3s;
 }
 
-.drop-zone.over { border-color: #5c2b2b; background: #fffafa; }
+.drop-zone:hover, .drop-zone.over {
+    border-color: #5c2b2b;
+    background-color: #fffafb;
+}
 
-.drop-zone-content i { font-size: 1.8rem; color: #ccc; margin-bottom: 8px; }
-.drop-zone-text { font-size: 0.85rem; font-weight: 600; color: #444; }
-.drop-zone-subtext { font-size: 0.75rem; color: #999; }
+.drop-zone-content i {
+    font-size: 2rem;
+    color: #bbb;
+    margin-bottom: 10px;
+}
 
-/* --- 7. Footer --- */
+.drop-zone-text {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #444;
+}
+
+/* ----------------------------------------------------------- */
+/* 7. Footer & Action Buttons                                  */
+/* ----------------------------------------------------------- */
 .form-footer.aligned-right {
+    background: #ffffff;
     padding: 25px 60px;
     border-top: 1px solid #eeeeee;
-    display: flex;
+    display: flex; 
     justify-content: flex-end;
     gap: 15px;
 }
 
-.btn-cancel {
-    background: #f0f0f0;
+.btn-cancel { 
+    background: #f0f0f0; 
     border: none;
     color: #444;
-    padding: 12px 25px;
-    border-radius: 6px;
-    font-weight: 600;
+    padding: 12px 30px; 
+    border-radius: 6px; 
+    font-weight: 600; 
     cursor: pointer;
+    transition: 0.2s;
 }
 
-.btn-save {
+.btn-cancel:hover {
+    background: #e4e4e4;
+}
+
+.btn-save { 
     background: #5c2b2b;
-    color: white;
-    border: none;
-    padding: 12px 45px;
-    border-radius: 6px;
-    font-weight: 700;
+    color: white; 
+    border: none; 
+    padding: 12px 50px; 
+    border-radius: 6px; 
+    font-weight: 700; 
     cursor: pointer;
+    text-transform: uppercase;
 }
 
-/* --- 8. Modals --- */
+/* ----------------------------------------------------------- */
+/* 8. Modals & Notifications (Timer Styling Included)           */
+/* ----------------------------------------------------------- */
 .modal-overlay {
     position: fixed;
     inset: 0;
@@ -187,39 +226,55 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 9999;
+    z-index: 2000;
 }
 
 .modal-content {
     background: white;
     padding: 40px;
-    border-radius: 12px;
+    border-radius: 15px;
     text-align: center;
-    width: 400px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    max-width: 420px;
+    width: 90%;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.2);
 }
 
-.success-icon { color: #4CAF50; font-size: 50px; margin-bottom: 15px; }
-.warning-icon { color: #f39c12; font-size: 50px; margin-bottom: 15px; }
+/* Countdown Timer Styling */
+#redirect-timer {
+    background: #f9f9f9;
+    padding: 10px;
+    border-radius: 8px;
+    margin-top: 20px;
+    font-size: 0.9rem;
+    color: #666;
+    border: 1px solid #eee;
+}
+
+#redirect-timer b {
+    color: #5c2b2b;
+    font-size: 1.1rem;
+}
+
+.success-icon {
+    font-size: 60px;
+    color: #4CAF50;
+    margin-bottom: 20px;
+}
+
+.warning-icon {
+    font-size: 60px;
+    color: #f39c12;
+    margin-bottom: 20px;
+}
 
 .btn-ok {
     background: #5c2b2b;
     color: white;
     border: none;
-    padding: 12px;
+    padding: 14px 0;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
     width: 100%;
     margin-top: 20px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 700;
-}
-
-/* Success Redirect Timer Styling */
-#redirect-timer {
-    background: #f9f9f9;
-    padding: 8px;
-    border-radius: 6px;
-    margin-top: 15px;
-    font-size: 0.85rem;
-    border: 1px solid #eee;
 }
