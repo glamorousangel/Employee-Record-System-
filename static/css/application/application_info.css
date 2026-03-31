@@ -153,6 +153,18 @@ body, html {
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
 }
 
+.sidebar.collapsed .menu-item:hover::before {
+    content: "";
+    position: absolute;
+    left: 72px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent rgba(20, 20, 20, 0.95) transparent transparent;
+    z-index: 2000;
+}
+
 hr {
     border: 0.5px solid rgba(255, 255, 255, 0.2);
     margin: 10px 0;
@@ -187,7 +199,7 @@ hr {
 }
 
 /* ----------------------------------------------------------- */
-/* 5. Card & Table Styles                                      */
+/* 5. Leave Card (White Content Card)                          */
 /* ----------------------------------------------------------- */
 .leave-card {
     background: #ffffff;
@@ -203,6 +215,9 @@ hr {
     box-sizing: border-box;
 }
 
+/* ----------------------------------------------------------- */
+/* 6. Header                                                   */
+/* ----------------------------------------------------------- */
 .header {
     display: flex;
     justify-content: space-between;
@@ -214,6 +229,8 @@ hr {
 .header h1 {
     font-size: 30px;
     color: #1a1a1a;
+    white-space: nowrap;
+    margin: 0;
 }
 
 .search-add {
@@ -227,8 +244,13 @@ hr {
     width: 280px;
     border: 1px solid #ccc;
     border-radius: 12px;
+    font-size: 13px;
+    outline: none;
 }
 
+/* ----------------------------------------------------------- */
+/* 7. Tab Group                                                */
+/* ----------------------------------------------------------- */
 .tab-group {
     display: flex;
     gap: 5px;
@@ -246,6 +268,7 @@ hr {
     font-weight: 600;
     transition: 0.3s;
     color: #666;
+    white-space: nowrap;
     background: transparent;
 }
 
@@ -254,9 +277,19 @@ hr {
     color: white;
 }
 
+/* ----------------------------------------------------------- */
+/* 8. Table                                                    */
+/* ----------------------------------------------------------- */
 .form-body {
     flex: 1;
     overflow-y: auto;
+    padding-right: 5px;
+}
+
+.form-body::-webkit-scrollbar { width: 6px; }
+.form-body::-webkit-scrollbar-thumb {
+    background: #e0e0e0;
+    border-radius: 10px;
 }
 
 table {
@@ -264,113 +297,354 @@ table {
     border-collapse: collapse;
 }
 
-th, td {
-    padding: 15px;
+thead {
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 10;
+}
+
+thead th {
     text-align: left;
-    border-bottom: 1px solid #eee;
-}
-
-.status-pill {
-    padding: 6px 12px;
-    border-radius: 20px;
+    padding: 12px 10px;
+    border-bottom: 2px solid #eee;
+    color: #555;
     font-size: 12px;
-    font-weight: 600;
+    text-transform: uppercase;
 }
 
-.status-pill.approved { background: #e6f4ea; color: #1e7e34; }
-.status-pill.rejected { background: #fce8e6; color: #d93025; }
-.status-pill.pending-hr { background: #fef7e0; color: #b06000; }
+tbody td {
+    padding: 12px 10px;
+    border-bottom: 1px solid #f5f5f5;
+    font-size: 13px;
+    color: #333;
+}
 
 /* ----------------------------------------------------------- */
-/* 6. Notification Toasts (NEW)                                */
+/* 9. Status Pills                                             */
 /* ----------------------------------------------------------- */
-.notification-container {
-    position: fixed;
-    top: 25px;
-    right: 25px;
-    z-index: 9999;
+.status-pill {
+    padding: 5px 12px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 11px;
+    display: inline-block;
+    min-width: 85px;
+    text-align: center;
+}
+
+.status-pill.pending-hr {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.status-pill.approved {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.status-pill.rejected {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+/* ----------------------------------------------------------- */
+/* 10. Actions Column                                          */
+/* ----------------------------------------------------------- */
+.actions-cell {
     display: flex;
-    flex-direction: column;
+    align-items: center;
     gap: 12px;
 }
 
-.notification {
-    min-width: 320px;
-    padding: 18px 25px;
-    border-radius: 15px;
-    color: white;
+.view-link {
+    color: #4a1d1d;
+    text-decoration: none;
     font-weight: 600;
-    font-size: 14px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    animation: slideIn 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-    transition: all 0.4s ease;
+    cursor: pointer;
+    font-size: 13px;
 }
 
-.notification.success {
-    background: #28a745;
-    border-left: 8px solid #1e7e34;
+.view-link:hover { text-decoration: underline; }
+
+.update-link {
+    background: none;
+    border: none;
+    color: #4a1d1d;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 13px;
 }
 
-.notification.error {
-    background: #dc3545;
-    border-left: 8px solid #bd2130;
+.dropdown {
+    position: relative;
+    display: inline-block;
 }
 
-@keyframes slideIn {
-    from {
-        transform: translateX(120%);
-        opacity: 0;
-    }
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
+.dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    background-color: white;
+    min-width: 110px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    border: 1px solid #eee;
+    z-index: 10;
+    border-radius: 8px;
+    padding: 5px 0;
 }
+
+.dropdown:hover .dropdown-content { display: block; }
+
+.dropdown-content a {
+    padding: 8px 15px;
+    display: block;
+    text-decoration: none;
+    font-size: 0.85rem;
+}
+
+.dropdown-content a:hover { background-color: #f9f9f9; }
+.approve-option { color: green; }
+.reject-option { color: red; }
 
 /* ----------------------------------------------------------- */
-/* 7. Modal Styles (Existing)                                  */
+/* 11. Modal Styles                                            */
 /* ----------------------------------------------------------- */
 .modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.5);
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(8px);
     display: none;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     z-index: 2000;
 }
 
 .view-modal-content {
     background: white;
-    padding: 30px;
-    border-radius: 20px;
-    width: 80%;
-    max-width: 900px;
+    width: 950px;
+    max-width: 95%;
+    border-radius: 25px;
+    padding: 35px;
+    animation: slideUp 0.3s ease-out;
+}
+
+.modal-sm {
+    width: 520px;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to   { transform: translateY(0); opacity: 1; }
+}
+
+.modal-header {
+    border-bottom: 1px solid #eee;
+    padding-bottom: 12px;
+    margin-bottom: 25px;
+}
+
+.modal-header h3 {
+    font-size: 1.1rem;
+    color: #1a1a1a;
+}
+
+.modal-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 35px;
+}
+
+.info-item {
+    margin-bottom: 18px;
+}
+
+.info-item label {
+    display: block;
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #888;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.info-item p {
+    font-size: 14px;
+    color: #333;
+    line-height: 1.4;
+}
+
+.doc-tab-label {
+    background: #e0e0e0;
+    padding: 8px 15px;
+    border-radius: 10px 10px 0 0;
+    font-weight: 700;
+    font-size: 12px;
+    display: inline-block;
+    border: 1px solid #ddd;
+    border-bottom: none;
+}
+
+.doc-box {
+    border: 1px solid #ddd;
+    border-radius: 0 15px 15px 15px;
+    overflow: hidden;
+}
+
+.doc-header {
+    background: #fff;
+    padding: 10px 15px;
+    font-size: 13px;
+    border-bottom: 1px solid #eee;
+}
+
+.pdf-placeholder {
+    height: 320px;
+    background: #f9f9f9;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #bbb;
+}
+
+.pdf-placeholder i {
+    font-size: 50px;
+    margin-bottom: 10px;
+}
+
+#modalStatusContainer {
+    padding: 3px 0;
+    display: block;
 }
 
 .modal-footer {
     display: flex;
-    gap: 10px;
+    gap: 12px;
     margin-top: 20px;
 }
 
 .btn-approve {
-    background: #1e7e34;
-    color: white;
+    background: #d4edda;
+    color: #155724;
     border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
+    padding: 14px;
+    flex: 1;
+    border-radius: 12px;
+    font-weight: 700;
     cursor: pointer;
 }
 
 .btn-reject {
-    background: #d93025;
-    color: white;
+    background: #f8d7da;
+    color: #721c24;
     border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
+    padding: 14px;
+    flex: 1;
+    border-radius: 12px;
+    font-weight: 700;
     cursor: pointer;
 }
+
+.modal-close-btn {
+    width: 100%;
+    padding: 12px;
+    background: #4a1d1d;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 15px;
+}
+
+/* ----------------------------------------------------------- */
+/* 12. Position Change Modal Form                              */
+/* ----------------------------------------------------------- */
+.modal-body-form {
+    padding: 5px 0;
+}
+
+.log-request-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px 20px;
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.form-field.full-width {
+    grid-column: span 2;
+}
+
+.form-field label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #333;
+}
+
+.form-field input,
+.form-field select,
+.form-field textarea {
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: #333;
+    outline: none;
+    background-color: #fafafa;
+    transition: border-color 0.2s;
+}
+
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus {
+    border-color: #4a1d1d;
+}
+
+.form-field input:disabled {
+    background-color: #f0f0f0;
+    color: #aaa;
+}
+
+.form-field textarea {
+    resize: none;
+}
+
+.pos-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 5px;
+}
+
+.btn-cancel-modal {
+    background: #e0e0e0;
+    border: none;
+    color: #444;
+    padding: 10px 30px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn-cancel-modal:hover { background: #d0d0d0; }
+
+.btn-save-modal {
+    background: #4a1d1d;
+    color: white;
+    border: none;
+    padding: 10px 40px;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn-save-modal:hover { background: #3a1515; }
