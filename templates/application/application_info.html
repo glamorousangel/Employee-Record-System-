@@ -4,32 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Application Form - New Employee</title>
-    <!-- Favicon -->
     <link rel="shortcut icon" type="image/png" href="../../static/img/general/uph.png">
-    <!-- Custom CSS -->
     <link rel="stylesheet" href="../../static/css/application/application_info.css">
-    <!-- Font Awesome for Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
 
-    <!-- Blurred Background Image -->
     <div class="background"></div>
 
     <main class="main-content full-view">
         <div class="form-card transparent-layout">
             
-            <!-- Header with Logo and Centered Title -->
             <div class="form-header centered-header">
                 <img src="../../static/img/general/uph.png" alt="Logo" class="header-logo">
-                <span class="header-title">Applicant Information</span>
+                <span class="header-title">APPLICANT INFORMATION</span>
             </div>
             
             <form id="applicantForm" class="form-body">
-                <!-- Vertical Split Container -->
                 <div class="split-container">
                     
-                    <!-- Left Panel: Contact Details -->
                     <div class="panel left-panel">
                         <div class="form-group">
                             <label>First Name</label>
@@ -49,7 +42,6 @@
                         </div>
                     </div>
 
-                    <!-- Right Panel: Application Details & Upload -->
                     <div class="panel right-panel">
                         <div class="form-group">
                             <label>Department Applying To</label>
@@ -72,7 +64,6 @@
                             </select>
                         </div>
 
-                        <!-- Drag and Drop Upload Zone -->
                         <div class="form-group drop-zone-group">
                             <label>Tell us about yourself (CV)</label>
                             <div class="drop-zone" id="drop-zone">
@@ -88,16 +79,25 @@
                     </div>
                 </div>
 
-                <!-- Footer with Action Buttons aligned to the Right -->
                 <div class="form-footer aligned-right">
-                    <button type="button" class="btn-cancel">Cancel</button>
-                    <button type="submit" class="btn-save">Submit</button>
+                    <button type="button" id="cancelBtn" class="btn-cancel">CANCEL</button>
+                    <button type="submit" class="btn-save">SUBMIT</button>
                 </div>
             </form>
         </div>
     </main>
 
-    <!-- External JavaScript -->
+    <div id="successModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="success-icon">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <h2>Application Sent</h2>
+            <p>Success! Your application information has been submitted.</p>
+            <button id="modalOkBtn" class="btn-ok">OK</button>
+        </div>
+    </div>
+
     <script src="../../static/js/application employee/application_info.js"></script>
 </body>
 </html>

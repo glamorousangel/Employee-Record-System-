@@ -1,104 +1,91 @@
 document.addEventListener("DOMContentLoaded", () => {
     // Select core elements
+    const applicantForm = document.getElementById("applicantForm");
     const cvInput = document.getElementById("cv-upload");
     const fileNameDisplay = document.getElementById("file-name");
     const dropZone = document.getElementById("drop-zone");
-    const applicantForm = document.getElementById("applicantForm");
+    
+    // Select Modal elements
+    const successModal = document.getElementById("successModal");
+    const modalOkBtn = document.getElementById("modalOkBtn");
+    const cancelBtn = document.getElementById("cancelBtn");
 
     /**
-     * 1. Drag and Drop Functionality
-     * Implements the interactive dashed zone from the drawing
+     * 1. Drag and Drop & File Upload Logic
+     * Matches the dashed zone requirement from the layout drawing
      */
     if (dropZone && cvInput) {
-        
-        // Clicking the dashed box triggers the hidden file input
-        dropZone.addEventListener("click", () => {
-            cvInput.click();
-        });
+        // Click zone to open file explorer
+        dropZone.addEventListener("click", () => cvInput.click());
 
-        // Visual feedback when dragging a file over the zone
+        // Visual states for dragging
         dropZone.addEventListener("dragover", (e) => {
             e.preventDefault();
             dropZone.classList.add("over");
         });
 
-        // Remove feedback when dragging leaves the zone
         ["dragleave", "dragend"].forEach(type => {
-            dropZone.addEventListener(type, () => {
-                dropZone.classList.remove("over");
-            });
+            dropZone.addEventListener(type, () => dropZone.classList.remove("over"));
         });
 
-        // Handle the drop event
+        // Handle dropped files
         dropZone.addEventListener("drop", (e) => {
             e.preventDefault();
             dropZone.classList.remove("over");
-
             if (e.dataTransfer.files.length) {
                 cvInput.files = e.dataTransfer.files;
-                handleFileDisplay(e.dataTransfer.files[0]);
+                displayFileName(e.dataTransfer.files[0]);
             }
         });
 
-        // Handle standard file selection via browser dialog
+        // Handle selected files
         cvInput.addEventListener("change", (e) => {
             if (e.target.files.length) {
-                handleFileDisplay(e.target.files[0]);
+                displayFileName(e.target.files[0]);
             }
         });
     }
 
-    /**
-     * 2. File Display Helper
-     * Updates the UI to show the name of the uploaded file
-     */
-    function handleFileDisplay(file) {
+    // Helper to show file name in the UI
+    function displayFileName(file) {
         if (file) {
             fileNameDisplay.textContent = `Selected: ${file.name}`;
             fileNameDisplay.style.display = "block";
-            fileNameDisplay.style.color = "#5c2b2b"; // Matches the submit button theme
-            fileNameDisplay.style.fontWeight = "bold";
         } else {
             fileNameDisplay.textContent = "No file chosen";
-            fileNameDisplay.style.display = "none";
         }
     }
 
     /**
-     * 3. Form Submission
-     * Provides feedback for the "SUBMIT" action
+     * 2. Submission & Success Notification
+     * Triggers the "Application Sent" modal instead of a simple alert
      */
     if (applicantForm) {
         applicantForm.addEventListener("submit", (e) => {
             e.preventDefault();
             
-            const submitBtn = document.querySelector(".btn-save");
-            const originalText = submitBtn.innerText;
-            
-            // Visual feedback for submission
-            submitBtn.innerText = "SUBMITTING...";
-            submitBtn.disabled = true;
-
-            // Simulate server delay
-            setTimeout(() => {
-                alert("Application Submitted Successfully!");
-                submitBtn.innerText = originalText;
-                submitBtn.disabled = false;
-                
-                // Optional: Reset form after success
-                // applicantForm.reset();
-                // handleFileDisplay(null);
-            }, 1500);
+            // Show the custom success modal
+            successModal.style.display = "flex";
         });
     }
 
-    // "Cancel" button functionality
-    const cancelBtn = document.querySelector(".btn-cancel");
+    /**
+     * 3. Navigation & Redirection
+     * Handles routing after the application process
+     */
+    
+    // OK button inside the modal leads to another page (Dashboard)
+    if (modalOkBtn) {
+        modalOkBtn.addEventListener("click", () => {
+            window.location.href = "../dashboard/dashboard.html"; 
+        });
+    }
+
+    // Cancel button leads back to the dashboard/previous page
     if (cancelBtn) {
         cancelBtn.addEventListener("click", () => {
-            if (confirm("Are you sure you want to clear the form?")) {
-                applicantForm.reset();
-                handleFileDisplay(null);
+            if (confirm("Are you sure you want to cancel? Progress will be lost.")) {
+                window.location.href = "../dashboard/dashboard.html";
             }
         });
     }
