@@ -100,7 +100,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function handleRedirect() {
-        window.location.href = "../dashboard/dashboard.html";
+        window.location.href = "success.html";
     }
 
     /**
@@ -115,7 +115,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (confirmCancelBtn) {
         confirmCancelBtn.addEventListener("click", () => {
             // Redirect to dashboard immediately on cancel
-            window.location.href = "../dashboard/dashboard.html";
+            window.location.href = "welcomepage.html";
         });
     }
 
