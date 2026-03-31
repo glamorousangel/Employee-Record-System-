@@ -74,8 +74,8 @@ body {
 }
 
 .header-logo {
-    width: 30px;            /* Adjust size to match your preference */
-    height: 30px;           /* Keep it square to match the icon feel */
+  width: 45px;
+    height: 45px;          /* Keep it square to match the icon feel */
     margin-right: 12px;     /* Space between logo and text */
     vertical-align: middle; /* Aligns with the middle of the text */
     object-fit: contain;    /* Prevents stretching */
