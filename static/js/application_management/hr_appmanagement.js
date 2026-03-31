@@ -100,40 +100,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const posForm       = document.getElementById("positionChangeForm");
     const tabNew        = document.getElementById("tab-new");
     const tabPosition   = document.getElementById("tab-position");
-    const notificationContainer = document.getElementById("notification-container");
 
     let activeData = newEmployeeData; // tracks current tab data
     let activeRecord = null;          // tracks currently opened modal record
 
     // --------------------------------------------------------
-    // 3. NOTIFICATION SYSTEM
-    // --------------------------------------------------------
-    function showNotification(message, type) {
-        if (!notificationContainer) return;
-
-        const notification = document.createElement("div");
-        
-        // Use 'success' for approved and 'error' for rejected (based on CSS)
-        const statusClass = type === "approved" ? "success" : "error";
-        notification.className = `notification ${statusClass}`;
-        
-        notification.innerHTML = `
-            <span>${message}</span>
-            <i class="fas fa-times" style="cursor:pointer; margin-left:10px;" onclick="this.parentElement.remove()"></i>
-        `;
-
-        notificationContainer.appendChild(notification);
-
-        // Auto-remove notification after 4 seconds
-        setTimeout(() => {
-            notification.style.opacity = "0";
-            notification.style.transform = "translateX(20px)";
-            setTimeout(() => notification.remove(), 400);
-        }, 4000);
-    }
-
-    // --------------------------------------------------------
-    // 4. SIDEBAR LOGIC
+    // 3. SIDEBAR
     // --------------------------------------------------------
     document.querySelectorAll('.menu-item').forEach(item => {
         const span = item.querySelector("span");
@@ -144,7 +116,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (logoToggle) logoToggle.onclick = () => sidebar.classList.toggle("collapsed");
 
     // --------------------------------------------------------
-    // 5. RENDER TABLE
+    // 4. RENDER TABLE
     // --------------------------------------------------------
     function renderTable(data) {
         tableBody.innerHTML = "";
@@ -182,33 +154,41 @@ document.addEventListener("DOMContentLoaded", () => {
         attachTableEvents();
     }
 
+    // --------------------------------------------------------
+    // 5. TABLE EVENT LISTENERS
+    // --------------------------------------------------------
     function attachTableEvents() {
+        // View links
         tableBody.querySelectorAll(".view-link").forEach(link => {
-            link.onclick = (e) => {
+            link.addEventListener("click", (e) => {
                 e.preventDefault();
                 const id = e.target.getAttribute("data-id");
                 const record = activeData.find(r => r.id === id);
                 if (record) openViewModal(record);
-            };
+            });
         });
 
+        // Inline approve
         tableBody.querySelectorAll(".approve-option").forEach(btn => {
-            btn.onclick = (e) => {
+            btn.addEventListener("click", (e) => {
                 e.preventDefault();
-                updateRecordStatus(e.target.getAttribute("data-id"), "approved", "Approved");
-            };
+                const id = e.target.getAttribute("data-id");
+                updateRecordStatus(id, "approved", "Approved");
+            });
         });
 
+        // Inline reject
         tableBody.querySelectorAll(".reject-option").forEach(btn => {
-            btn.onclick = (e) => {
+            btn.addEventListener("click", (e) => {
                 e.preventDefault();
-                updateRecordStatus(e.target.getAttribute("data-id"), "rejected", "Rejected");
-            };
+                const id = e.target.getAttribute("data-id");
+                updateRecordStatus(id, "rejected", "Rejected");
+            });
         });
     }
 
     // --------------------------------------------------------
-    // 6. UPDATE STATUS & TRIGGER NOTIFICATION
+    // 6. UPDATE RECORD STATUS
     // --------------------------------------------------------
     function updateRecordStatus(id, statusClass, statusLabel) {
         const record = activeData.find(r => r.id === id);
@@ -219,13 +199,12 @@ document.addEventListener("DOMContentLoaded", () => {
         record.reviewedBy  = "HR Manager";
         record.remarks     = `${statusLabel} by HR Manager on ${new Date().toLocaleDateString()}`;
 
-        // Re-render the UI
         renderTable(activeData);
-        if (activeRecord && activeRecord.id === id) populateModal(record);
 
-        // Show Notification
-        const message = `Application ID: ${id} (${record.name}) has been ${statusLabel.toLowerCase()}.`;
-        showNotification(message, statusClass);
+        // If the modal is open for this record, update it live
+        if (activeRecord && activeRecord.id === id) {
+            populateModal(record);
+        }
     }
 
     // --------------------------------------------------------
@@ -243,60 +222,118 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("modalDepartment").innerText     = record.department;
         document.getElementById("modalPosition").innerText       = record.position;
         document.getElementById("modalProgress").innerText       = record.progress;
-        document.getElementById("modalRemarks").innerText         = record.remarks;
+        document.getElementById("modalRemarks").innerText        = record.remarks;
         document.getElementById("modalReviewerText").innerHTML   = `<small>Reviewed by: ${record.reviewedBy}</small>`;
-        document.getElementById("modalStatusContainer").innerHTML = `<span class="status-pill ${record.status}">${record.statusLabel}</span>`;
-        
+        document.getElementById("modalStatusContainer").innerHTML =
+            `<span class="status-pill ${record.status}">${record.statusLabel}</span>`;
+        document.querySelector(".pdf-placeholder").innerHTML =
+            `<i class="fas fa-file-pdf"></i><p>${record.fileName}</p>`;
+
         const isFinal = record.status === "approved" || record.status === "rejected";
         document.getElementById("modalActions").style.display = isFinal ? "none" : "flex";
     }
 
     document.getElementById("closeViewModal")?.addEventListener("click", closeAllModals);
 
+    // Modal approve/reject buttons
     document.querySelector(".btn-approve")?.addEventListener("click", () => {
-        if (activeRecord) updateRecordStatus(activeRecord.id, "approved", "Approved");
+        if (!activeRecord) return;
+        updateRecordStatus(activeRecord.id, "approved", "Approved");
     });
 
     document.querySelector(".btn-reject")?.addEventListener("click", () => {
-        if (activeRecord) updateRecordStatus(activeRecord.id, "rejected", "Rejected");
+        if (!activeRecord) return;
+        updateRecordStatus(activeRecord.id, "rejected", "Rejected");
     });
 
     // --------------------------------------------------------
-    // 8. TABS & SEARCH
+    // 8. TABS
     // --------------------------------------------------------
-    tabNew.onclick = () => {
+    tabNew.addEventListener("click", () => {
         tabNew.classList.add("active");
         tabPosition.classList.remove("active");
         activeData = newEmployeeData;
+        searchInput.value = "";
         renderTable(activeData);
-    };
+    });
 
-    tabPosition.onclick = () => {
+    tabPosition.addEventListener("click", () => {
         tabPosition.classList.add("active");
         tabNew.classList.remove("active");
         activeData = positionChangeData;
+        searchInput.value = "";
         renderTable(activeData);
         posModal.style.display = "flex";
-    };
+    });
 
-    searchInput.onkeyup = () => {
+    // --------------------------------------------------------
+    // 9. SEARCH
+    // --------------------------------------------------------
+    searchInput.addEventListener("keyup", () => {
         const filter = searchInput.value.toLowerCase();
         tableBody.querySelectorAll("tr").forEach(row => {
             row.style.display = row.innerText.toLowerCase().includes(filter) ? "" : "none";
         });
-    };
+    });
 
     // --------------------------------------------------------
-    // 9. MODAL HELPERS
+    // 10. POSITION CHANGE FORM
+    // --------------------------------------------------------
+    if (posForm) {
+        posForm.addEventListener("submit", (e) => {
+            e.preventDefault();
+
+            const nameInput = posForm.querySelector("input[type='text']:not([disabled])");
+            const selectInput = posForm.querySelector("select");
+            const dateInput = posForm.querySelector("input[type='date']");
+            const reasonInput = posForm.querySelector("textarea");
+
+            const newRecord = {
+                id: `PC-00${positionChangeData.length + 1}`,
+                name: nameInput?.value || "New Employee",
+                department: "Pending",
+                position: selectInput?.value || "Pending",
+                submitted: new Date().toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric" }),
+                progress: "Stage 1 of 2",
+                status: "pending-hr",
+                statusLabel: "Pending - HR Evaluator",
+                reviewedBy: "---",
+                remarks: reasonInput?.value || "Awaiting review.",
+                fileName: "No Document Attached"
+            };
+
+            positionChangeData.push(newRecord);
+
+            // Switch to position change tab and show new record
+            tabPosition.classList.add("active");
+            tabNew.classList.remove("active");
+            activeData = positionChangeData;
+            renderTable(activeData);
+
+            posForm.reset();
+            closeAllModals();
+        });
+    }
+
+    document.getElementById("cancelRequest")?.addEventListener("click", closeAllModals);
+
+    // --------------------------------------------------------
+    // 11. CLOSE MODALS
     // --------------------------------------------------------
     function closeAllModals() {
         [viewModal, posModal].forEach(m => { if (m) m.style.display = "none"; });
-        activeRecord = null;
     }
 
-    window.onclick = (e) => { if (e.target === viewModal || e.target === posModal) closeAllModals(); };
-    document.onkeydown = (e) => { if (e.key === "Escape") closeAllModals(); };
+    window.addEventListener("click", (e) => {
+        if (e.target === viewModal || e.target === posModal) closeAllModals();
+    });
 
-    // Initial Render
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeAllModals();
+    });
+
+    // --------------------------------------------------------
+    // 12. INITIAL RENDER
+    // --------------------------------------------------------
     renderTable(newEmployeeData);
 });
