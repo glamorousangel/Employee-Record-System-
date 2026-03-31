@@ -51,9 +51,12 @@ body {
 }
 
 .header-logo {
-    width: 45px;
+      width: 45px;
     height: 45px;
-    object-fit: contain;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* ----------------------------------------------------------- */
