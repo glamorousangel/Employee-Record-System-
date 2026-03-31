@@ -37,37 +37,39 @@ body {
 }
 
 /* ----------------------------------------------------------- */
-/* 3. Header - Logo & Blue Section Title                       */
+/* 3. Header - Logo & Circular Blue Title                      */
 /* ----------------------------------------------------------- */
 .form-header.centered-header {
     background: #ffffff;
     display: flex; 
-    flex-direction: column; /* Stacks logo over the title bar */
+    flex-direction: column; 
     align-items: center; 
     width: 100%;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eeeeee;
 }
 
-/* Logo with the requested margin-top */
 .header-logo {
     width: 70px;
     height: auto;
     object-fit: contain;
-    margin-top: 40px; /* Adjust this value to move the logo down */
-    margin-bottom: 20px;
+    /* Margin top for the logo as requested */
+    margin-top: 50px; 
+    margin-bottom: 25px;
 }
 
-/* The "Blue Circle/Section" equivalent for the title */
+/* The Blue "Circle"/Pill shape for the Applicant Info */
 .header-title {
-    width: 100%;
-    background-color: #003366; /* Deep blue/navy bar */
+    background-color: #004a99; /* Adjust to your specific blue */
     color: #ffffff;
-    text-align: center;
-    padding: 15px 0;
-    font-size: 1.2rem;
+    padding: 12px 40px;
+    font-size: 1.1rem;
     font-weight: 700;
-    letter-spacing: 2px;
+    letter-spacing: 1px;
     text-transform: uppercase;
-    display: block;
+    border-radius: 50px; /* Creates the circular/pill look */
+    display: inline-block;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 /* ----------------------------------------------------------- */
@@ -90,10 +92,9 @@ body {
     flex: 1;
     display: flex;
     flex-direction: column;
-    justify-content: center; /* Vertical center */
-    align-items: center;     /* Horizontal center */
+    justify-content: center; 
+    align-items: center;     
     padding: 40px;
-    background: #ffffff;
 }
 
 .left-panel {
@@ -136,15 +137,7 @@ body {
     border: 1px solid #e0e0e0;
     border-radius: 6px;
     font-size: 0.95rem;
-    outline: none;
     background-color: #fafafa;
-    transition: 0.2s;
-}
-
-.form-group input:focus, 
-.form-group select:focus {
-    border-color: #5c2b2b;
-    background-color: #ffffff;
 }
 
 /* ----------------------------------------------------------- */
@@ -152,38 +145,20 @@ body {
 /* ----------------------------------------------------------- */
 .drop-zone {
     width: 100%;
-    min-height: 140px;
+    min-height: 130px;
     border: 2px dashed #cccccc;
     border-radius: 8px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    text-align: center;
     cursor: pointer;
-    transition: 0.3s;
-}
-
-.drop-zone:hover, .drop-zone.over {
-    border-color: #5c2b2b;
-    background-color: #fffafb;
 }
 
 .drop-zone-content i {
     font-size: 2rem;
     color: #bbb;
     margin-bottom: 10px;
-}
-
-.drop-zone-text {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: #444;
-}
-
-.drop-zone-subtext {
-    font-size: 0.75rem;
-    color: #999;
 }
 
 /* ----------------------------------------------------------- */
@@ -200,7 +175,6 @@ body {
 .btn-cancel { 
     background: #f0f0f0; 
     border: none;
-    color: #444;
     padding: 12px 30px; 
     border-radius: 6px; 
     font-weight: 600; 
@@ -215,7 +189,6 @@ body {
     border-radius: 6px; 
     font-weight: 700; 
     cursor: pointer;
-    text-transform: uppercase;
 }
 
 /* ----------------------------------------------------------- */
@@ -225,7 +198,6 @@ body {
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(4px);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -237,32 +209,5 @@ body {
     padding: 40px;
     border-radius: 15px;
     text-align: center;
-    max-width: 420px;
-    width: 90%;
-    box-shadow: 0 15px 40px rgba(0,0,0,0.2);
-}
-
-.success-icon { color: #4CAF50; font-size: 60px; margin-bottom: 20px; }
-.warning-icon { color: #f39c12; font-size: 60px; margin-bottom: 20px; }
-
-.btn-ok {
-    background: #5c2b2b;
-    color: white;
-    border: none;
-    padding: 14px 0;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
-    width: 100%;
-    margin-top: 20px;
-}
-
-#redirect-timer {
-    background: #f9f9f9;
-    padding: 10px;
-    border-radius: 8px;
-    margin-top: 15px;
-    font-size: 0.9rem;
-    color: #666;
-    border: 1px solid #eee;
+    width: 400px;
 }
