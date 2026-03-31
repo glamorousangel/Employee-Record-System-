@@ -5,20 +5,22 @@ document.addEventListener("DOMContentLoaded", () => {
     const fileNameDisplay = document.getElementById("file-name");
     const dropZone = document.getElementById("drop-zone");
     
-    // Select Modal elements
+    // Success Modal elements
     const successModal = document.getElementById("successModal");
     const modalOkBtn = document.getElementById("modalOkBtn");
+
+    // Cancel Modal elements
     const cancelBtn = document.getElementById("cancelBtn");
+    const cancelModal = document.getElementById("cancelModal");
+    const confirmCancelBtn = document.getElementById("confirmCancelBtn");
+    const stayBtn = document.getElementById("stayBtn");
 
     /**
      * 1. Drag and Drop & File Upload Logic
-     * Matches the dashed zone requirement from the layout drawing
      */
     if (dropZone && cvInput) {
-        // Click zone to open file explorer
         dropZone.addEventListener("click", () => cvInput.click());
 
-        // Visual states for dragging
         dropZone.addEventListener("dragover", (e) => {
             e.preventDefault();
             dropZone.classList.add("over");
@@ -28,7 +30,6 @@ document.addEventListener("DOMContentLoaded", () => {
             dropZone.addEventListener(type, () => dropZone.classList.remove("over"));
         });
 
-        // Handle dropped files
         dropZone.addEventListener("drop", (e) => {
             e.preventDefault();
             dropZone.classList.remove("over");
@@ -38,7 +39,6 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
 
-        // Handle selected files
         cvInput.addEventListener("change", (e) => {
             if (e.target.files.length) {
                 displayFileName(e.target.files[0]);
@@ -46,7 +46,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Helper to show file name in the UI
     function displayFileName(file) {
         if (file) {
             fileNameDisplay.textContent = `Selected: ${file.name}`;
@@ -57,36 +56,45 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     /**
-     * 2. Submission & Success Notification
-     * Triggers the "Application Sent" modal instead of a simple alert
+     * 2. Submission Logic
      */
     if (applicantForm) {
         applicantForm.addEventListener("submit", (e) => {
             e.preventDefault();
-            
-            // Show the custom success modal
             successModal.style.display = "flex";
         });
     }
 
-    /**
-     * 3. Navigation & Redirection
-     * Handles routing after the application process
-     */
-    
-    // OK button inside the modal leads to another page (Dashboard)
     if (modalOkBtn) {
         modalOkBtn.addEventListener("click", () => {
             window.location.href = "../dashboard/dashboard.html"; 
         });
     }
 
-    // Cancel button leads back to the dashboard/previous page
+    /**
+     * 3. Custom Cancel Modal Logic
+     */
     if (cancelBtn) {
         cancelBtn.addEventListener("click", () => {
-            if (confirm("Are you sure you want to cancel? Progress will be lost.")) {
-                window.location.href = "../dashboard/dashboard.html";
-            }
+            cancelModal.style.display = "flex";
         });
     }
+
+    if (confirmCancelBtn) {
+        confirmCancelBtn.addEventListener("click", () => {
+            window.location.href = "../dashboard/dashboard.html";
+        });
+    }
+
+    if (stayBtn) {
+        stayBtn.addEventListener("click", () => {
+            cancelModal.style.display = "none";
+        });
+    }
+
+    // Close modals if clicking on the darkened backdrop
+    window.addEventListener("click", (e) => {
+        if (e.target === successModal) successModal.style.display = "none";
+        if (e.target === cancelModal) cancelModal.style.display = "none";
+    });
 });

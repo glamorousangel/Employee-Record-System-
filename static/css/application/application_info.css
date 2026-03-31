@@ -16,10 +16,6 @@ body {
     background-color: #ffffff; 
 }
 
-.background {
-    display: none;
-}
-
 /* ----------------------------------------------------------- */
 /* 2. Layout Containers                                        */
 /* ----------------------------------------------------------- */
@@ -41,7 +37,7 @@ body {
 }
 
 /* ----------------------------------------------------------- */
-/* 3. Header - Centered Title & Left-Aligned Logo              */
+/* 3. Header - Centered Title & Left Logo                      */
 /* ----------------------------------------------------------- */
 .form-header.centered-header {
     background: #ffffff;
@@ -71,7 +67,7 @@ body {
 }
 
 /* ----------------------------------------------------------- */
-/* 4. Panels - Centering Content Inside                        */
+/* 4. Panels - Maximizing Space & Centering Content            */
 /* ----------------------------------------------------------- */
 .form-body { 
     flex: 1;
@@ -90,35 +86,33 @@ body {
     flex: 1;
     display: flex;
     flex-direction: column;
-    justify-content: center; /* Vertically centers the fields */
-    align-items: center;     /* Horizontally centers the fields */
+    justify-content: center; /* Vertically centers the details */
+    align-items: center;     /* Horizontally centers the details */
     padding: 40px;
-    background: #ffffff;
 }
 
 .left-panel {
-    border-right: 1px solid #f5f5f5; /* Very subtle divider */
+    border-right: 1px solid #f5f5f5; 
 }
 
 .section-title {
     width: 100%;
-    max-width: 450px; /* Limits the width of the content area */
+    max-width: 500px;
     font-size: 1.1rem;
     font-weight: 700;
     color: #5c2b2b;
     margin-bottom: 30px;
     text-transform: uppercase;
-    text-align: left; /* Keeps text aligned to the start of the inputs */
     border-bottom: 2px solid #f8f8f8;
     padding-bottom: 10px;
 }
 
 /* ----------------------------------------------------------- */
-/* 5. Form Groups - Centered Width                             */
+/* 5. Form Elements                                            */
 /* ----------------------------------------------------------- */
 .form-group { 
     width: 100%;
-    max-width: 450px; /* This makes the details look "centered" and tidy */
+    max-width: 500px; 
     margin-bottom: 20px;
     display: flex;
     flex-direction: column;
@@ -139,7 +133,6 @@ body {
     font-size: 0.95rem;
     outline: none;
     background-color: #fafafa;
-    transition: all 0.2s ease;
 }
 
 .form-group input:focus {
@@ -155,17 +148,11 @@ body {
     min-height: 140px;
     border: 2px dashed #cccccc;
     border-radius: 8px;
-    background: #ffffff;
     display: flex;
     justify-content: center;
     align-items: center;
     text-align: center;
     cursor: pointer;
-}
-
-.drop-zone:hover {
-    border-color: #5c2b2b;
-    background-color: #fffafb;
 }
 
 .drop-zone-content i {
@@ -178,18 +165,6 @@ body {
     font-size: 0.9rem;
     font-weight: 600;
     color: #444;
-}
-
-.drop-zone-subtext {
-    font-size: 0.8rem;
-    color: #888;
-}
-
-.drop-zone-filename {
-    margin-top: 10px;
-    font-weight: bold;
-    color: #5c2b2b;
-    display: block;
 }
 
 /* ----------------------------------------------------------- */
@@ -226,12 +201,13 @@ body {
 }
 
 /* ----------------------------------------------------------- */
-/* 8. Modal Styles                                             */
+/* 8. Modal & Notifications                                    */
 /* ----------------------------------------------------------- */
 .modal-overlay {
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -243,8 +219,9 @@ body {
     padding: 40px;
     border-radius: 12px;
     text-align: center;
-    max-width: 400px;
+    max-width: 450px;
     width: 90%;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
 }
 
 .success-icon {
