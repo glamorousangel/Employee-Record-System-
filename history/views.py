@@ -1,3 +1,5 @@
 from django.shortcuts import render
 
-# Create your views here.
+def timeline(request):
+    # This is a placeholder view
+    return render(request, 'history/timeline.html')
