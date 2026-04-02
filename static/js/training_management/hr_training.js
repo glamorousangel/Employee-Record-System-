@@ -10,8 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const searchInput = document.getElementById("tableSearch");
     const tableBody = document.getElementById("trainingTableBody");
     const noResultsRow = document.getElementById("noResultsRow");
-    // Handle case where the table might not exist on the current page
-    const rows = tableBody ? tableBody.querySelectorAll("tr:not(#noResultsRow)") : [];
+    const rows = tableBody.querySelectorAll("tr:not(#noResultsRow)");
 
     const modal = document.getElementById("addTrainingModal");
     const addTrainingBtn = document.getElementById("addTrainingBtn");
@@ -23,22 +22,20 @@ document.addEventListener("DOMContentLoaded", () => {
     const viewModalCancel = document.getElementById("viewModalCancel");
     const viewModalCloseStatus = document.getElementById("viewModalCloseStatus");
 
+    
 
-    // --- Sidebar Toggle (IMPROVED) ---
-    // Best practice: Let CSS handle the margin transitions via the `.collapsed` class.
-    if (closeBtn && sidebar) {
-        closeBtn.addEventListener("click", () => {
-            sidebar.classList.add("collapsed");
-        });
-    }
+    // --- Sidebar Toggle ---
+    closeBtn.addEventListener("click", () => {
+        sidebar.classList.add("collapsed");
+        mainContent.style.marginLeft = "110px";
+    });
 
-    if (logoToggle && sidebar) {
-        logoToggle.addEventListener("click", () => {
-            if (sidebar.classList.contains("collapsed")) {
-                sidebar.classList.remove("collapsed");
-            }
-        });
-    }
+    logoToggle.addEventListener("click", () => {
+        if (sidebar.classList.contains("collapsed")) {
+            sidebar.classList.remove("collapsed");
+            mainContent.style.marginLeft = "340px";
+        }
+    });
 
     // --- Tooltip Text for Collapsed Sidebar ---
     menuItems.forEach(item => {
@@ -47,33 +44,30 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // --- Search / Filter ---
-    if (searchInput && rows.length > 0) {
-        searchInput.addEventListener("keyup", () => {
-            const filter = searchInput.value.toLowerCase();
-            let visibleCount = 0;
+    searchInput.addEventListener("keyup", () => {
+        const filter = searchInput.value.toLowerCase();
+        let visibleCount = 0;
 
-            rows.forEach(row => {
-                const match = row.innerText.toLowerCase().includes(filter);
-                row.style.display = match ? "" : "none";
-                if (match) visibleCount++;
-            });
-
-            if (noResultsRow) {
-                noResultsRow.style.display = visibleCount === 0 ? "" : "none";
-            }
+        rows.forEach(row => {
+            const match = row.innerText.toLowerCase().includes(filter);
+            row.style.display = match ? "" : "none";
+            if (match) visibleCount++;
         });
-    }
+
+        noResultsRow.style.display = visibleCount === 0 ? "" : "none";
+    });
 
     // --- Add Training Modal Open / Close ---
-    const openModal = () => { if (modal) modal.style.display = "flex"; };
-    const closeModal = () => { if (modal) modal.style.display = "none"; };
+    const openModal = () => modal.style.display = "flex";
+    const closeModal = () => modal.style.display = "none";
 
-    if (addTrainingBtn) addTrainingBtn.addEventListener("click", openModal);
-    if (modalClose) modalClose.addEventListener("click", closeModal);
-    if (cancelBtn) cancelBtn.addEventListener("click", closeModal);
-
+    addTrainingBtn.addEventListener("click", openModal);
+    modalClose.addEventListener("click", closeModal);
+    cancelBtn.addEventListener("click", closeModal);
 
     // --- View Training Modal ---
+
+    // Training data keyed by ID (mirrors the table rows)
     const trainingData = {
         "001": {
             name: "Outcomes-Based Education Workshop",
@@ -123,7 +117,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const openViewModal = (id) => {
         const data = trainingData[id];
-        if (!data || !viewModal) return;
+        if (!data) return;
 
         document.getElementById("viewTrainingName").textContent = data.name;
         document.getElementById("viewTrainingMeta").innerHTML = data.meta;
@@ -134,15 +128,13 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("viewSlotsFilled").textContent = data.slotsFilled;
 
         const statusBadge = document.getElementById("viewTrainingStatus");
-        if (statusBadge) {
-            statusBadge.className = `status-badge ${data.status} view-status-badge`;
-            statusBadge.textContent = data.statusLabel;
-        }
+        statusBadge.className = `status-badge ${data.status} view-status-badge`;
+        statusBadge.textContent = data.statusLabel;
 
         viewModal.style.display = "flex";
     };
 
-    const closeViewModal = () => { if (viewModal) viewModal.style.display = "none"; };
+    const closeViewModal = () => viewModal.style.display = "none";
 
     // Wire up all "View" links in the table
     document.querySelectorAll(".action-links a:first-child").forEach(link => {
@@ -154,8 +146,8 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    if (viewModalCancel) viewModalCancel.addEventListener("click", closeViewModal);
-    if (viewModalCloseStatus) viewModalCloseStatus.addEventListener("click", closeViewModal);
+    viewModalCancel.addEventListener("click", closeViewModal);
+    viewModalCloseStatus.addEventListener("click", closeViewModal);
 
     // Close on backdrop click or Escape
     window.addEventListener("click", (e) => {
@@ -171,11 +163,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // --- Form Submission ---
-    if (addTrainingForm) {
-        addTrainingForm.addEventListener("submit", (e) => {
-            e.preventDefault();
-            alert("Training saved successfully.");
-            closeModal();
-        });
-    }
+    addTrainingForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        alert("Training saved successfully.");
+        closeModal();
+    });
+
 });
