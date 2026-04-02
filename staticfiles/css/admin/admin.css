@@ -15,6 +15,121 @@
 }
 
 /* =================================
+   SIDEBAR STYLES
+   ================================= */
+
+.sidebar {
+    width: 260px;
+    height: 100vh;
+    background: #4a1d1d; /* Deep Maroon consistent with UPH logo */
+    color: white;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    left: 0;
+    top: 0;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    box-shadow: 4px 0 10px rgba(0, 0, 0, 0.2);
+}
+
+.sidebar.collapsed {
+    width: 80px;
+}
+
+.sidebar .top-section {
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 80px;
+}
+
+.sidebar .logo-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    cursor: pointer;
+}
+
+.sidebar .logo {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+}
+
+.sidebar.collapsed .logo-wrapper span,
+.sidebar.collapsed .close-btn {
+    display: none;
+}
+
+.sidebar .menu {
+    list-style: none;
+    padding: 1rem 0;
+    flex: 1;
+}
+
+.sidebar .menu-item {
+    display: flex;
+    align-items: center;
+    padding: 14px 1.5rem;
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    gap: 1rem;
+    white-space: nowrap;
+    border-left: 4px solid transparent;
+}
+
+.sidebar .menu-item:hover, 
+.sidebar .menu-item.active {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border-left-color: var(--admin-warning);
+}
+
+.sidebar .menu-item i {
+    width: 20px;
+    text-align: center;
+    font-size: 1.1rem;
+}
+
+.sidebar.collapsed .menu-item span {
+    display: none;
+}
+
+.sidebar .bottom-section {
+    padding: 1.5rem 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar .menu-item.logout:hover {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ff4d4d;
+}
+
+/* Layout adjustment for fixed sidebar */
+body {
+    padding-left: 260px;
+    transition: padding-left 0.3s ease;
+    background-color: var(--admin-light);
+}
+
+body:has(.sidebar.collapsed) {
+    padding-left: 80px;
+}
+
+.background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    z-index: -1;
+}
+
+/* =================================
    ADMIN HEADER & LAYOUT
    ================================= */
 
