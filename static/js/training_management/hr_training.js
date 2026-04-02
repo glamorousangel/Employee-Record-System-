@@ -22,6 +22,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const viewModalCancel = document.getElementById("viewModalCancel");
     const viewModalCloseStatus = document.getElementById("viewModalCloseStatus");
 
+    closeBtn.addEventListener('click', () => {
+    sidebar.classList.add('collapsed');
+});
+
+logoToggle.addEventListener('click', () => {
+    sidebar.classList.toggle('collapsed');
+});
+
     // --- Sidebar Toggle ---
     closeBtn.addEventListener("click", () => {
         sidebar.classList.add("collapsed");
