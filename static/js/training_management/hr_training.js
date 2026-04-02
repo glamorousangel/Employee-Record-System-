@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-    // --- UI Elements ---
+    /* --- UI Elements --- */
     const sidebar = document.getElementById("sidebar");
     const logoToggle = document.getElementById("logoToggle");
     const closeBtn = document.getElementById("closeBtn");
@@ -10,7 +10,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const searchInput = document.getElementById("tableSearch");
     const tableBody = document.getElementById("trainingTableBody");
     const noResultsRow = document.getElementById("noResultsRow");
-    const rows = tableBody.querySelectorAll("tr:not(#noResultsRow)");
 
     const modal = document.getElementById("addTrainingModal");
     const addTrainingBtn = document.getElementById("addTrainingBtn");
@@ -22,28 +21,31 @@ document.addEventListener("DOMContentLoaded", () => {
     const viewModalCancel = document.getElementById("viewModalCancel");
     const viewModalCloseStatus = document.getElementById("viewModalCloseStatus");
 
-    // --- Sidebar Toggle ---
-    closeBtn.addEventListener("click", () => {
+    /* --- Sidebar & Layout Logic --- */
+    // This handles the "gap" transition between the sidebar and content card
+    const collapseSidebar = () => {
         sidebar.classList.add("collapsed");
-        mainContent.style.marginLeft = "110px";
-    });
+    };
 
-    logoToggle.addEventListener("click", () => {
+    const expandSidebar = () => {
         if (sidebar.classList.contains("collapsed")) {
             sidebar.classList.remove("collapsed");
-            mainContent.style.marginLeft = "340px";
         }
-    });
+    };
 
-    // --- Tooltip Text for Collapsed Sidebar ---
+    closeBtn.addEventListener("click", collapseSidebar);
+    logoToggle.addEventListener("click", expandSidebar);
+
+    // Set tooltip text for when the sidebar is collapsed
     menuItems.forEach(item => {
         const span = item.querySelector("span");
         if (span) item.setAttribute("data-text", span.innerText);
     });
 
-    // --- Search / Filter ---
+    /* --- Table Search / Filter --- */
     searchInput.addEventListener("keyup", () => {
         const filter = searchInput.value.toLowerCase();
+        const rows = tableBody.querySelectorAll("tr:not(#noResultsRow)");
         let visibleCount = 0;
 
         rows.forEach(row => {
@@ -55,24 +57,14 @@ document.addEventListener("DOMContentLoaded", () => {
         noResultsRow.style.display = visibleCount === 0 ? "" : "none";
     });
 
-    // --- Add Training Modal Open / Close ---
-    const openModal = () => modal.style.display = "flex";
-    const closeModal = () => modal.style.display = "none";
-
-    addTrainingBtn.addEventListener("click", openModal);
-    modalClose.addEventListener("click", closeModal);
-    cancelBtn.addEventListener("click", closeModal);
-
-    // --- View Training Modal ---
-
-    // Training data keyed by ID (mirrors the table rows)
+    /* --- Training Data Store --- */
     const trainingData = {
         "001": {
             name: "Outcomes-Based Education Workshop",
-            meta: "Teaching &nbsp;|&nbsp; Onsite &nbsp;|&nbsp; March 12, 2026",
+            meta: "Teaching | Onsite | March 12, 2026",
             status: "open",
             statusLabel: "Open",
-            description: "College of Computer Studies",
+            description: "College of Computer Studies curriculum alignment.",
             trainer: "CCS - 201",
             location: "Main building 2nd floor",
             maxSlots: "30",
@@ -80,10 +72,10 @@ document.addEventListener("DOMContentLoaded", () => {
         },
         "002": {
             name: "Research Writing Seminar",
-            meta: "Research &nbsp;|&nbsp; Online &nbsp;|&nbsp; March 20, 2026",
+            meta: "Research | Online | March 20, 2026",
             status: "full",
             statusLabel: "Full",
-            description: "Research writing and publication skills",
+            description: "Advanced techniques for research publication.",
             trainer: "Dr. Santos",
             location: "Zoom / Online",
             maxSlots: "30",
@@ -91,10 +83,10 @@ document.addEventListener("DOMContentLoaded", () => {
         },
         "003": {
             name: "Faculty Development Program",
-            meta: "Development &nbsp;|&nbsp; Onsite &nbsp;|&nbsp; Feb. 28, 2026",
+            meta: "Development | Onsite | Feb. 28, 2026",
             status: "completed",
             statusLabel: "Completed",
-            description: "Annual faculty development seminar",
+            description: "Annual faculty development and ethics seminar.",
             trainer: "External Agency",
             location: "Auditorium",
             maxSlots: "20",
@@ -102,10 +94,10 @@ document.addEventListener("DOMContentLoaded", () => {
         },
         "004": {
             name: "Safety & Emergency Response Training",
-            meta: "Safety &nbsp;|&nbsp; Onsite &nbsp;|&nbsp; March 5, 2026",
+            meta: "Safety | Onsite | March 5, 2026",
             status: "cancelled",
             statusLabel: "Cancelled",
-            description: "Emergency procedures and safety protocols",
+            description: "Emergency procedures and first aid protocols.",
             trainer: "Safety Officer",
             location: "Gymnasium",
             maxSlots: "25",
@@ -113,6 +105,15 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
+    /* --- Modal Handlers (Add Training) --- */
+    const openAddModal = () => modal.style.display = "flex";
+    const closeAddModal = () => modal.style.display = "none";
+
+    addTrainingBtn.addEventListener("click", openAddModal);
+    modalClose.addEventListener("click", closeAddModal);
+    cancelBtn.addEventListener("click", closeAddModal);
+
+    /* --- Modal Handlers (View Training) --- */
     const openViewModal = (id) => {
         const data = trainingData[id];
         if (!data) return;
@@ -134,37 +135,38 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const closeViewModal = () => viewModal.style.display = "none";
 
-    // Wire up all "View" links in the table
-    document.querySelectorAll(".action-links a:first-child").forEach(link => {
-        link.addEventListener("click", (e) => {
+    // Bind click events to "View" links in the table
+    tableBody.addEventListener("click", (e) => {
+        const viewBtn = e.target.closest(".action-links a:first-child");
+        if (viewBtn) {
             e.preventDefault();
-            const row = e.target.closest("tr");
+            const row = viewBtn.closest("tr");
             const id = row.querySelector("td:first-child").textContent.trim();
             openViewModal(id);
-        });
+        }
     });
 
     viewModalCancel.addEventListener("click", closeViewModal);
     viewModalCloseStatus.addEventListener("click", closeViewModal);
 
-    // Close on backdrop click or Escape
+    /* --- Global Click/Key Listeners --- */
     window.addEventListener("click", (e) => {
-        if (e.target === modal) closeModal();
+        if (e.target === modal) closeAddModal();
         if (e.target === viewModal) closeViewModal();
     });
 
     document.addEventListener("keydown", (e) => {
         if (e.key === "Escape") {
-            closeModal();
+            closeAddModal();
             closeViewModal();
         }
     });
 
-    // --- Form Submission ---
+    /* --- Form Submission --- */
     addTrainingForm.addEventListener("submit", (e) => {
         e.preventDefault();
-        alert("Training saved successfully.");
-        closeModal();
+        alert("Training data has been updated successfully.");
+        closeAddModal();
     });
 
 });
