@@ -37,10 +37,15 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // --- Tooltip Text for Collapsed Sidebar ---
+    // --- Sidebar: tooltip data-text + active state ─────────────────────────
     menuItems.forEach(item => {
-        const span = item.querySelector("span");
-        if (span) item.setAttribute("data-text", span.innerText);
+        const text = item.querySelector('span')?.innerText;
+        if (text) item.setAttribute('data-text', text);
+
+        item.addEventListener('click', () => {
+            document.querySelector('.menu-item.active')?.classList.remove('active');
+            item.classList.add('active');
+        });
     });
 
     // --- Search / Filter ---
