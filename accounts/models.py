@@ -20,7 +20,6 @@ class User(AbstractUser):
     failed_login_attempts = models.IntegerField(default=0)
     must_change_password = models.BooleanField(default=True) # Enforce password change on first login
     last_password_change = models.DateTimeField(null=True, blank=True)
-    # ADD THESE TWO BLOCKS TO FIX THE ERROR:
     groups = models.ManyToManyField(
         Group,
         related_name="accounts_user_groups",  # Unique name

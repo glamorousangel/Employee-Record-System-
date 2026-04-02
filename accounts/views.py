@@ -108,6 +108,13 @@ def admin_dashboard(request):
         except ValueError:
             pass
 
+    # Dashboard Statistics
+    stats = {
+        'total_users': User.objects.count(),
+        'active_users': User.objects.filter(is_active=True, is_locked=False).count(),
+        'total_departments': Department.objects.count(),
+    }
+
     context = {
         'users': users,
         'roles': User.ROLE_CHOICES,
@@ -116,6 +123,7 @@ def admin_dashboard(request):
         'current_role_filter': role_filter,
         'current_status_filter': status_filter,
         'current_department_filter': department_filter,
+        'stats': stats,
     }
     return render(request, 'admin/user_management.html', context) # Changed to user_management.html
 
