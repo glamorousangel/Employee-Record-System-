@@ -20,8 +20,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     logoToggle?.addEventListener('click', function () {
-        if (sidebar.classList.contains('collapsed')) {
-            sidebar.classList.remove('collapsed');
-        }
+        sidebar.classList.toggle('collapsed');
     });
 });

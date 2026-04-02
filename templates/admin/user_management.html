@@ -187,12 +187,28 @@
             <button class="close-btn" id="closeBtn"><i class="fas fa-chevron-left"></i></button>
         </div>
 
-        <ul class="menu">
-            <li><a href="{% url 'admin_dashboard' %}" class="menu-item"><i class="fas fa-home"></i> <span>Dashboard</span></a></li>
-            <li><a href="{% url 'admin_dashboard' %}" class="menu-item active"><i class="fas fa-users"></i> <span>User Management</span></a></li> {# Link to admin_dashboard for user list #}
-            <li><a href="#" class="menu-item"><i class="fas fa-sitemap"></i> <span>Department Management</span></a></li>
-            <li><a href="#" class="menu-item"><i class="fas fa-history"></i> <span>Audit Trails</span></a></li>
-        </ul>
+       <ul class="menu">
+    <li>
+        <a href="{% url 'admin_dashboard' %}" class="menu-item">
+            <i class="fas fa-home"></i> <span>Dashboard</span>
+        </a>
+    </li>
+    <li>
+        <a href="{% url 'admin_dashboard' %}" class="menu-item active">
+            <i class="fas fa-users"></i> <span>User Management</span>
+        </a>
+    </li>
+    <li>
+        <a href="{% url 'department_management' %}" class="menu-item">
+            <i class="fas fa-sitemap"></i> <span>Department Management</span>
+        </a>
+    </li>
+    <li>
+        <a href="#" class="menu-item">
+            <i class="fas fa-history"></i> <span>Audit Trails</span>
+        </a>
+    </li>
+</ul>
 
         <div class="bottom-section"> 
             <form action="{% url 'logout' %}" method="post" id="logout-form" style="display:none;">

@@ -8,10 +8,10 @@ from django.views.decorators.http import require_POST
 from django.conf import settings
 from django.utils import timezone
 import json # For parsing JSON requests
-from django.db.models import Q
+from django.db.models import Q, Count
 
 from .models import User, Department # Import Department
-from .forms import CustomUserCreationForm, CustomUserChangeForm, AssignRoleForm, AccountStatusForm, AdminPasswordResetForm
+from .forms import CustomUserCreationForm, CustomUserChangeForm, AssignRoleForm, AccountStatusForm, AdminPasswordResetForm, DepartmentForm
 
 # Helper function for admin check
 def is_admin(user):
@@ -288,3 +288,56 @@ def password_change(request):
     else:
         form = PasswordChangeForm(request.user)
     return render(request, 'accounts/password_change.html', {'form': form})
+
+@login_required
+@user_passes_test(is_admin)
+def department_management(request):
+    departments = Department.objects.all().annotate(employee_count=Count('user')).order_by('name')
+    users = User.objects.filter(is_active=True).order_by('last_name')
+    
+    context = {
+        'departments': departments,
+        'users': users,
+    }
+    return render(request, 'admin/department_management.html', context)
+
+@login_required
+@user_passes_test(is_admin)
+@require_POST
+def create_department(request):
+    form = DepartmentForm(request.POST)
+    if form.is_valid():
+        form.save()
+        return JsonResponse({'status': 'success', 'message': 'Department created successfully.'})
+    return JsonResponse({'status': 'error', 'errors': json.loads(form.errors.as_json())}, status=400)
+
+@login_required
+@user_passes_test(is_admin)
+@require_POST
+def edit_department(request, dept_id):
+    dept = get_object_or_404(Department, pk=dept_id)
+    form = DepartmentForm(request.POST, instance=dept)
+    if form.is_valid():
+        form.save()
+        return JsonResponse({'status': 'success', 'message': 'Department updated successfully.'})
+    return JsonResponse({'status': 'error', 'errors': json.loads(form.errors.as_json())}, status=400)
+
+@login_required
+@user_passes_test(is_admin)
+def get_department_data(request, dept_id):
+    dept = get_object_or_404(Department, pk=dept_id)
+    return JsonResponse({
+        'name': dept.name,
+        'college': dept.college,
+        'head_id': dept.head.id if dept.head else None,
+        'is_active': dept.is_active
+    })
+
+@login_required
+@user_passes_test(is_admin)
+@require_POST
+def deactivate_department(request, dept_id):
+    dept = get_object_or_404(Department, pk=dept_id)
+    dept.is_active = False
+    dept.save()
+    return JsonResponse({'status': 'success', 'message': 'Department deactivated successfully.'})

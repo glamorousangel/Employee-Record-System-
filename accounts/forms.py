@@ -52,3 +52,8 @@ class AdminPasswordResetForm(forms.Form):
         if new_password1 and new_password2 and new_password1 != new_password2:
             raise forms.ValidationError("The two password fields didn't match.")
         return cleaned_data
+
+class DepartmentForm(forms.ModelForm):
+    class Meta:
+        model = Department
+        fields = ['name', 'college', 'head', 'is_active'] # Added is_active

@@ -42,5 +42,8 @@ class User(AbstractUser):
 
 class Department(models.Model):
     name = models.CharField(max_length=100, unique=True)
+    college = models.CharField(max_length=100, null=True, blank=True)
+    head = models.ForeignKey('User', on_delete=models.SET_NULL, null=True, blank=True, related_name='headed_department')
+    is_active = models.BooleanField(default=True)
     def __str__(self):
         return self.name

@@ -114,22 +114,27 @@ function closeDepartmentModal() {
     document.getElementById('departmentModal').classList.remove('show');
 }
 
-function editDepartment(deptId) {
+async function editDepartment(deptId) {
     currentEditingDeptId = deptId;
-    
-    const card = document.querySelector(`[data-dept-id="${deptId}"]`);
-    const deptName = card?.querySelector('h3')?.textContent || '';
+    try {
+        const response = await fetch(`/accounts/get-department-data/${deptId}/`);
+        if (!response.ok) throw new Error('Failed to fetch department data.');
+        const data = await response.json();
 
-    document.getElementById('deptModalTitle').textContent = 'Edit Department';
-    document.getElementById('deptId').value = deptId;
-    document.getElementById('deptName').value = deptName;
+        document.getElementById('deptModalTitle').textContent = 'Edit Department';
+        document.getElementById('deptId').value = deptId;
+        document.getElementById('deptName').value = data.name;
+        document.getElementById('deptCollege').value = data.college || '';
 
-    document.getElementById('departmentModal').classList.add('show');
+        document.getElementById('departmentModal').classList.add('show');
+    } catch (error) {
+        showAlert('Error fetching department details.', 'danger');
+    }
 }
 
 function openAssignHeadModal(deptId) {
     const card = document.querySelector(`[data-dept-id="${deptId}"]`);
-    const deptName = card?.querySelector('h3')?.textContent || '';
+    const deptName = card?.querySelector('h3')?.textContent || 'this department';
     
     document.getElementById('assignHeadDeptId').value = deptId;
     document.getElementById('deptNameDisplay').textContent = `Department: ${deptName}`;
@@ -156,37 +161,63 @@ function searchHeads(e) {
     });
 }
 
-function handleDepartmentFormSubmit(e) {
+async function handleDepartmentFormSubmit(e) {
     e.preventDefault();
+    const form = e.target;
+    const formData = new FormData(form);
+    const deptId = document.getElementById('deptId').value;
+    const url = deptId ? `/accounts/edit-department/${deptId}/` : '/accounts/create-department/';
 
-    const deptName = document.getElementById('deptName').value.trim();
-
-    if (!deptName) {
-        showAlert('Department name is required!', 'danger');
-        return;
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-CSRFToken': getCookie('csrftoken') }
+        });
+        const data = await response.json();
+        if (response.ok) {
+            showAlert(data.message, 'success');
+            location.reload();
+        } else {
+            showAlert(data.message || 'Error saving department.', 'danger');
+        }
+    } catch (error) {
+        showAlert('An unexpected error occurred.', 'danger');
     }
-
-    // Submit form (in real app, would send to backend)
-    console.log('Submitting department form:', new FormData(this));
-    showAlert(currentEditingDeptId ? 'Department updated successfully!' : 'Department created successfully!', 'success');
-    closeDepartmentModal();
 }
 
-function handleAssignHeadSubmit(e) {
+async function handleAssignHeadSubmit(e) {
     e.preventDefault();
-
     const deptId = document.getElementById('assignHeadDeptId').value;
-    const headId = document.querySelector('input[name="head_id"]:checked')?.value;
+    const headId = document.querySelector('input[name="head"]:checked')?.value;
 
     if (!headId) {
         showAlert('Please select a department head!', 'danger');
         return;
     }
 
-    // Submit head assignment (in real app, would send to backend)
-    console.log('Assigning head:', {deptId, headId});
-    showAlert('Department head assigned successfully!', 'success');
-    closeAssignHeadModal();
+    const formData = new FormData();
+    formData.append('head', headId);
+    const card = document.querySelector(`.department-card[data-dept-id="${deptId}"]`);
+    const deptName = card.querySelector('h3').textContent;
+    formData.append('name', deptName);
+
+    try {
+        const response = await fetch(`/accounts/edit-department/${deptId}/`, {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-CSRFToken': getCookie('csrftoken') }
+        });
+        const data = await response.json();
+        if (response.ok) {
+            showAlert('Head assigned successfully!', 'success');
+            location.reload();
+        } else {
+            showAlert('Error assigning head.', 'danger');
+        }
+    } catch (error) {
+        showAlert('An unexpected error occurred.', 'danger');
+    }
 }
 
 function filterDepartments(searchTerm) {
@@ -233,31 +264,53 @@ function confirmDeleteDepartment(deptId) {
     const modal = document.getElementById('confirmModal');
     const message = document.getElementById('confirmMessage');
     
-    message.textContent = 'Are you sure you want to delete this department? This action cannot be undone.';
+    message.textContent = 'Are you sure you want to deactivate this department? This will preserve existing records but prevent new assignments.';
     
     document.getElementById('confirmBtn').onclick = function() {
-        deleteDepartment(deptId);
+        deactivateDepartment(deptId);
         closeConfirmModal();
     };
 
     modal.classList.add('show');
 }
 
-function deleteDepartment(deptId) {
-    // Remove from grid view
-    const card = document.querySelector(`[data-dept-id="${deptId}"]`);
-    card?.remove();
+async function deactivateDepartment(deptId) {
+    try {
+        const response = await fetch(`/accounts/deactivate-department/${deptId}/`, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': getCookie('csrftoken') }
+        });
+        const data = await response.json();
+        if (response.ok) {
+            showAlert(data.message, 'success');
+            location.reload();
+        } else {
+            showAlert('Error deactivating department.', 'danger');
+        }
+    } catch (error) {
+        showAlert('An unexpected error occurred.', 'danger');
+    }
+}
 
-    // Remove from table view
-    const row = document.querySelector(`tr[data-dept-id="${deptId}"]`);
-    row?.remove();
-
-    console.log(`Deleting department ${deptId}`);
-    showAlert('Department deleted successfully!', 'success');
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
 }
 
 function executeConfirmedAction() {
-    // This is handled by individual action handlers
+    if (typeof confirmedAction !== 'undefined' && confirmedAction) {
+        // Implementation logic if needed for this specific page
+    }
 }
 
 function toggleDropdown(button) {

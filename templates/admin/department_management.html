@@ -20,6 +20,10 @@
         }
 
         .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
             z-index: 1000;
         }
 
@@ -179,8 +183,7 @@
         <ul class="menu">
             <li><a href="{% url 'admin_dashboard' %}" class="menu-item"><i class="fas fa-home"></i> <span>Dashboard</span></a></li>
             <li><a href="{% url 'admin_dashboard' %}" class="menu-item"><i class="fas fa-users"></i> <span>User Management</span></a></li>
-            <li><a href="#" class="menu-item active"><i class="fas fa-sitemap"></i> <span>Department Management</span></a></li>
-            <li><a href="#" class="menu-item"><i class="fas fa-history"></i> <span>Audit Trails</span></a></li>
+<li><a href="{% url 'department_management' %}" class="menu-item active"><i class="fas fa-sitemap"></i> <span>Department Management</span></a></li>
         </ul>
 
         <div class="bottom-section">
@@ -222,110 +225,52 @@
                     </div>
 
                     <div id="departmentsGrid" class="departments-grid">
-                        <div class="department-card" data-dept-id="1">
+                        {% for dept in departments %}
+                        <div class="department-card" data-dept-id="{{ dept.id }}">
                             <div class="card-header">
-                                <h3>Human Resources</h3>
+                                <h3>{{ dept.name }}</h3>
                                 <button class="action-btn" onclick="toggleCardDropdown(this)">
                                     <i class="fas fa-ellipsis-v"></i>
                                 </button>
                                 <div class="dropdown-menu">
-                                    <a href="#" class="dropdown-item edit-dept" data-dept-id="1"><i class="fas fa-edit"></i> Edit</a>
-                                    <a href="#" class="dropdown-item assign-head" data-dept-id="1"><i class="fas fa-user-tie"></i> Assign Head</a>
+                                    <a href="#" class="dropdown-item edit-dept" data-dept-id="{{ dept.id }}"><i class="fas fa-edit"></i> Edit</a>
+                                    <a href="#" class="dropdown-item assign-head" data-dept-id="{{ dept.id }}"><i class="fas fa-user-tie"></i> Assign Head</a>
                                     <hr>
-                                    <a href="#" class="dropdown-item delete-dept" data-dept-id="1"><i class="fas fa-trash"></i> Delete</a>
+                                    <a href="#" class="dropdown-item delete-dept" data-dept-id="{{ dept.id }}"><i class="fas fa-ban"></i> Deactivate</a>
                                 </div>
                             </div>
                             <div class="card-body">
                                 <div class="dept-info">
                                     <div class="info-group">
                                         <span class="info-label">Department Head</span>
-                                        <p class="info-value"><i class="fas fa-user-circle"></i> Sarah Johnson</p>
+                                        {% if dept.head %}
+                                            <p class="info-value"><i class="fas fa-user-circle"></i> {{ dept.head.get_full_name }}</p>
+                                        {% else %}
+                                            <p class="info-value unassigned"><i class="fas fa-user-slash"></i> Not Assigned</p>
+                                        {% endif %}
                                     </div>
                                     <div class="info-group">
                                         <span class="info-label">Total Employees</span>
-                                        <p class="info-value">15</p>
+                                        <p class="info-value">{{ dept.employee_count }}</p>
                                     </div>
                                     <div class="info-group">
-                                        <span class="info-label">Email</span>
-                                        <p class="info-value">hr@company.com</p>
+                                        <span class="info-label">College</span>
+                                        <p class="info-value">{{ dept.college|default:"N/A" }}</p>
                                     </div>
                                     <div class="info-group">
-                                        <span class="info-label">Location</span>
-                                        <p class="info-value">Building A, 2nd Floor</p>
+                                        <span class="info-label">Status</span>
+                                        <p class="info-value">
+                                            {% if dept.is_active %}
+                                                <span class="status-badge active">Active</span>
+                                            {% else %}
+                                                <span class="status-badge inactive">Inactive</span>
+                                            {% endif %}
+                                        </p>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
-                        <div class="department-card" data-dept-id="2">
-                            <div class="card-header">
-                                <h3>Information Technology</h3>
-                                <button class="action-btn" onclick="toggleCardDropdown(this)">
-                                    <i class="fas fa-ellipsis-v"></i>
-                                </button>
-                                <div class="dropdown-menu">
-                                    <a href="#" class="dropdown-item edit-dept" data-dept-id="2"><i class="fas fa-edit"></i> Edit</a>
-                                    <a href="#" class="dropdown-item assign-head" data-dept-id="2"><i class="fas fa-user-tie"></i> Assign Head</a>
-                                    <hr>
-                                    <a href="#" class="dropdown-item delete-dept" data-dept-id="2"><i class="fas fa-trash"></i> Delete</a>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <div class="dept-info">
-                                    <div class="info-group">
-                                        <span class="info-label">Department Head</span>
-                                        <p class="info-value"><i class="fas fa-user-circle"></i> Mike Brown</p>
-                                    </div>
-                                    <div class="info-group">
-                                        <span class="info-label">Total Employees</span>
-                                        <p class="info-value">22</p>
-                                    </div>
-                                    <div class="info-group">
-                                        <span class="info-label">Email</span>
-                                        <p class="info-value">it@company.com</p>
-                                    </div>
-                                    <div class="info-group">
-                                        <span class="info-label">Location</span>
-                                        <p class="info-value">Building B, 3rd Floor</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="department-card" data-dept-id="3">
-                            <div class="card-header">
-                                <h3>Finance</h3>
-                                <button class="action-btn" onclick="toggleCardDropdown(this)">
-                                    <i class="fas fa-ellipsis-v"></i>
-                                </button>
-                                <div class="dropdown-menu">
-                                    <a href="#" class="dropdown-item edit-dept" data-dept-id="3"><i class="fas fa-edit"></i> Edit</a>
-                                    <a href="#" class="dropdown-item assign-head" data-dept-id="3"><i class="fas fa-user-tie"></i> Assign Head</a>
-                                    <hr>
-                                    <a href="#" class="dropdown-item delete-dept" data-dept-id="3"><i class="fas fa-trash"></i> Delete</a>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <div class="dept-info">
-                                    <div class="info-group">
-                                        <span class="info-label">Department Head</span>
-                                        <p class="info-value unassigned"><i class="fas fa-user-slash"></i> Not Assigned</p>
-                                    </div>
-                                    <div class="info-group">
-                                        <span class="info-label">Total Employees</span>
-                                        <p class="info-value">10</p>
-                                    </div>
-                                    <div class="info-group">
-                                        <span class="info-label">Email</span>
-                                        <p class="info-value">finance@company.com</p>
-                                    </div>
-                                    <div class="info-group">
-                                        <span class="info-label">Location</span>
-                                        <p class="info-value">Building A, 4th Floor</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        {% endfor %}
                     </div>
 
                     <div id="departmentsTable" class="table-view" style="display: none;">
@@ -336,70 +281,38 @@
                                         <th>Department Name</th>
                                         <th>Department Head</th>
                                         <th>Total Employees</th>
-                                        <th>Email</th>
-                                        <th>Location</th>
-                                        <th>Created Date</th>
+                                        <th>College</th>
+                                        <th>Status</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr class="dept-row" data-dept-id="1">
-                                        <td><strong>Human Resources</strong></td>
-                                        <td>Sarah Johnson</td>
-                                        <td>15</td>
-                                        <td>hr@company.com</td>
-                                        <td>Building A, 2nd Floor</td>
-                                        <td>Jan 10, 2024</td>
+                                    {% for dept in departments %}
+                                    <tr class="dept-row" data-dept-id="{{ dept.id }}">
+                                        <td><strong>{{ dept.name }}</strong></td>
+                                        <td>{{ dept.head.get_full_name|default:"Not Assigned" }}</td>
+                                        <td>{{ dept.employee_count }}</td>
+                                        <td>{{ dept.college|default:"N/A" }}</td>
+                                        <td>
+                                            {% if dept.is_active %}
+                                                <span class="status-badge active">Active</span>
+                                            {% else %}
+                                                <span class="status-badge inactive">Inactive</span>
+                                            {% endif %}
+                                        </td>
                                         <td class="action-cell">
                                             <button class="action-btn" onclick="toggleDropdown(this)">
                                                 <i class="fas fa-ellipsis-v"></i>
                                             </button>
                                             <div class="dropdown-menu">
-                                                <a href="#" class="dropdown-item edit-dept" data-dept-id="1"><i class="fas fa-edit"></i> Edit</a>
-                                                <a href="#" class="dropdown-item assign-head" data-dept-id="1"><i class="fas fa-user-tie"></i> Assign Head</a>
+                                                <a href="#" class="dropdown-item edit-dept" data-dept-id="{{ dept.id }}"><i class="fas fa-edit"></i> Edit</a>
+                                                <a href="#" class="dropdown-item assign-head" data-dept-id="{{ dept.id }}"><i class="fas fa-user-tie"></i> Assign Head</a>
                                                 <hr>
-                                                <a href="#" class="dropdown-item delete-dept" data-dept-id="1"><i class="fas fa-trash"></i> Delete</a>
+                                                <a href="#" class="dropdown-item delete-dept" data-dept-id="{{ dept.id }}"><i class="fas fa-ban"></i> Deactivate</a>
                                             </div>
                                         </td>
                                     </tr>
-                                    <tr class="dept-row" data-dept-id="2">
-                                        <td><strong>Information Technology</strong></td>
-                                        <td>Mike Brown</td>
-                                        <td>22</td>
-                                        <td>it@company.com</td>
-                                        <td>Building B, 3rd Floor</td>
-                                        <td>Feb 05, 2024</td>
-                                        <td class="action-cell">
-                                            <button class="action-btn" onclick="toggleDropdown(this)">
-                                                <i class="fas fa-ellipsis-v"></i>
-                                            </button>
-                                            <div class="dropdown-menu">
-                                                <a href="#" class="dropdown-item edit-dept" data-dept-id="2"><i class="fas fa-edit"></i> Edit</a>
-                                                <a href="#" class="dropdown-item assign-head" data-dept-id="2"><i class="fas fa-user-tie"></i> Assign Head</a>
-                                                <hr>
-                                                <a href="#" class="dropdown-item delete-dept" data-dept-id="2"><i class="fas fa-trash"></i> Delete</a>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr class="dept-row" data-dept-id="3">
-                                        <td><strong>Finance</strong></td>
-                                        <td><span class="unassigned">Not Assigned</span></td>
-                                        <td>10</td>
-                                        <td>finance@company.com</td>
-                                        <td>Building A, 4th Floor</td>
-                                        <td>Mar 01, 2024</td>
-                                        <td class="action-cell">
-                                            <button class="action-btn" onclick="toggleDropdown(this)">
-                                                <i class="fas fa-ellipsis-v"></i>
-                                            </button>
-                                            <div class="dropdown-menu">
-                                                <a href="#" class="dropdown-item edit-dept" data-dept-id="3"><i class="fas fa-edit"></i> Edit</a>
-                                                <a href="#" class="dropdown-item assign-head" data-dept-id="3"><i class="fas fa-user-tie"></i> Assign Head</a>
-                                                <hr>
-                                                <a href="#" class="dropdown-item delete-dept" data-dept-id="3"><i class="fas fa-trash"></i> Delete</a>
-                                            </div>
-                                        </td>
-                                    </tr>
+                                    {% endfor %}
                                 </tbody>
                             </table>
                         </div>
@@ -416,26 +329,16 @@
             <h2 id="deptModalTitle">Add Department</h2>
 
             <form id="departmentForm">
+                {% csrf_token %}
                 <input type="hidden" id="deptId">
 
                 <div class="form-group">
                     <label>Department Name *</label>
                     <input type="text" id="deptName" name="name" required>
                 </div>
-
                 <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" id="deptEmail" name="email" placeholder="department@company.com">
-                </div>
-
-                <div class="form-group">
-                    <label>Location</label>
-                    <input type="text" id="deptLocation" name="location" placeholder="Building, Floor">
-                </div>
-
-                <div class="form-group">
-                    <label>Budget (Optional)</label>
-                    <input type="number" id="deptBudget" name="budget" step="0.01" min="0">
+                    <label>College (If applicable)</label>
+                    <input type="text" id="deptCollege" name="college" placeholder="e.g. College of Arts and Sciences">
                 </div>
 
                 <div class="form-actions">
@@ -453,6 +356,7 @@
             <p id="deptNameDisplay"></p>
 
             <form id="assignHeadForm">
+                {% csrf_token %}
                 <input type="hidden" id="assignHeadDeptId">
 
                 <div class="form-group">
@@ -460,34 +364,15 @@
                     <div class="head-selection">
                         <input type="text" id="headSearch" placeholder="Search by name or email...">
                         <div id="headList" class="head-list">
-                            <div class="head-option" data-user-id="1">
-                                <input type="radio" name="head_id" value="1" id="head_1">
-                                <label for="head_1">
-                                    <span class="head-name">Sarah Johnson</span>
-                                    <span class="head-email">sarah.johnson@company.com</span>
+                            {% for user in users %}
+                            <div class="head-option" data-user-id="{{ user.id }}">
+                                <input type="radio" name="head" value="{{ user.id }}" id="head_{{ user.id }}">
+                                <label for="head_{{ user.id }}">
+                                    <span class="head-name">{{ user.get_full_name }}</span>
+                                    <span class="head-email">{{ user.email }}</span>
                                 </label>
                             </div>
-                            <div class="head-option" data-user-id="2">
-                                <input type="radio" name="head_id" value="2" id="head_2">
-                                <label for="head_2">
-                                    <span class="head-name">Mike Brown</span>
-                                    <span class="head-email">mike.brown@company.com</span>
-                                </label>
-                            </div>
-                            <div class="head-option" data-user-id="3">
-                                <input type="radio" name="head_id" value="3" id="head_3">
-                                <label for="head_3">
-                                    <span class="head-name">Lisa Davis</span>
-                                    <span class="head-email">lisa.davis@company.com</span>
-                                </label>
-                            </div>
-                            <div class="head-option" data-user-id="4">
-                                <input type="radio" name="head_id" value="4" id="head_4">
-                                <label for="head_4">
-                                    <span class="head-name">Robert Wilson</span>
-                                    <span class="head-email">robert.wilson@company.com</span>
-                                </label>
-                            </div>
+                            {% endfor %}
                         </div>
                     </div>
                 </div>
