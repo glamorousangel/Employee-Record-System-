@@ -1,6 +1,5 @@
 /* ============================================================
    hr_appmanagement.css
-   Path: static/css/application_management/hr_appmanagement.css
    ============================================================ */
 
 /* ── Reset & Base ── */
@@ -147,6 +146,7 @@ body, html {
     background: rgba(255, 255, 255, 0.25);
 }
 
+/* ── Tooltip for collapsed sidebar ── */
 .sidebar.collapsed .menu-item:hover::after {
     content: attr(data-text);
     position: absolute;
@@ -185,7 +185,7 @@ hr {
     margin-top: auto;
 }
 
-/* ── Viewport & Main ── */
+/* ── MASTER LAYOUT — sidebar is now a sibling of .dashboard-viewport ── */
 .dashboard-viewport {
     display: flex;
     height: 100vh;
@@ -198,14 +198,15 @@ hr {
 .main-content {
     flex: 1;
     height: 100%;
-    margin-left: 320px;
+    margin-left: 320px; /* 300px sidebar + 20px gap */
     display: flex;
     min-width: 0;
     transition: margin-left 0.35s ease;
 }
 
+/* KEY FIX: sidebar is now a true sibling → ~ selector works */
 .sidebar.collapsed ~ .dashboard-viewport .main-content {
-    margin-left: 110px;
+    margin-left: 110px; /* 90px collapsed + 20px gap */
 }
 
 /* ── Content Card ── */
@@ -321,6 +322,13 @@ tbody td {
     color: #333;
 }
 
+.no-records {
+    text-align: center;
+    color: #888;
+    padding: 40px;
+    font-size: 13px;
+}
+
 /* ── Status Pills ── */
 .status-pill {
     padding: 5px 12px;
@@ -420,15 +428,10 @@ tbody td {
     background: #f9f9f9;
 }
 
-.approve-option {
-    color: green;
-}
+.approve-option { color: green; }
+.reject-option  { color: red; }
 
-.reject-option {
-    color: red;
-}
-
-/* ── Modal ── */
+/* ── Modal Overlay ── */
 .modal-overlay {
     position: fixed;
     inset: 0;
@@ -547,9 +550,7 @@ tbody td {
     cursor: pointer;
 }
 
-.btn-approve:hover {
-    background: #b8dfc5;
-}
+.btn-approve:hover { background: #b8dfc5; }
 
 .btn-reject {
     background: #f8d7da;
@@ -562,9 +563,7 @@ tbody td {
     cursor: pointer;
 }
 
-.btn-reject:hover {
-    background: #f1b8bc;
-}
+.btn-reject:hover { background: #f1b8bc; }
 
 .modal-close-btn {
     width: 100%;
@@ -630,14 +629,6 @@ tbody td {
     resize: none;
 }
 
-/* Validation error highlight */
-.form-group input.field-error,
-.form-group select.field-error,
-.form-group textarea.field-error {
-    border-color: #dc3545;
-    animation: shake 0.3s ease;
-}
-
 @keyframes shake {
     0%, 100% { transform: translateX(0); }
     25%       { transform: translateX(-4px); }
@@ -661,9 +652,7 @@ tbody td {
     cursor: pointer;
 }
 
-#cancelRequest:hover {
-    background: #cacaca;
-}
+#cancelRequest:hover { background: #cacaca; }
 
 .btn-save {
     background: #4a1d1d;
@@ -675,9 +664,7 @@ tbody td {
     cursor: pointer;
 }
 
-.btn-save:hover {
-    background: #3a1515;
-}
+.btn-save:hover { background: #3a1515; }
 
 /* ── Toast Notifications ── */
 #toast-container {
@@ -720,9 +707,7 @@ tbody td {
 .toast.rejected .toast-icon { color: #dc3545; }
 .toast.info     .toast-icon { color: #4a1d1d; }
 
-.toast-body {
-    flex: 1;
-}
+.toast-body { flex: 1; }
 
 .toast-title {
     font-weight: 700;
@@ -771,5 +756,5 @@ tbody td {
 
 @keyframes shrink {
     from { width: 100%; }
-    to   { width: 0%;   }
+    to   { width: 0%; }
 }
