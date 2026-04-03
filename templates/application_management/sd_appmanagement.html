@@ -97,7 +97,6 @@
                     <input type="text" id="tableSearch" placeholder="Search by Name / ID / Dept">
                     <div class="tab-group">
                         <button class="tab-btn active" id="tab-new">New Employee Applications</button>
-                        <button class="tab-btn" id="tab-position">Position Change Requests</button>
                     </div>
                 </div>
             </div>
@@ -171,60 +170,6 @@
                     <button class="btn-reject" id="modalRejectBtn">Reject Application</button>
                 </div>
                 <button class="modal-close-btn" id="modalCloseBtn">Close View</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div id="positionChangeModal" class="modal-overlay">
-    <div class="view-modal-content modal-sm">
-        <div class="modal-header">
-            <h3>Log New Position Change Request</h3>
-        </div>
-        <div class="modal-body-form">
-            <div class="log-request-grid">
-                <div class="form-group">
-                    <label>Employee Name</label>
-                    <input type="text" id="pcEmpName" placeholder="e.g. Dela Cruz, Juan">
-                </div>
-                <div class="form-group">
-                    <label>Employee ID</label>
-                    <input type="text" id="pcEmpId" disabled placeholder="Auto-filled">
-                </div>
-                <div class="form-group">
-                    <label>Current Position</label>
-                    <input type="text" id="pcCurrentPos" disabled placeholder="Auto-filled">
-                </div>
-                <div class="form-group">
-                    <label>Department</label>
-                    <input type="text" id="pcDept" disabled placeholder="Auto-filled">
-                </div>
-                <div class="form-group full-width">
-                    <label>Requested Position</label>
-                    <select id="pcRequestedPos">
-                        <option disabled selected value="">Select position...</option>
-                        <option>Dean</option>
-                        <option>Department Head</option>
-                        <option>Senior Instructor</option>
-                        <option>Instructor</option>
-                        <option>Professor</option>
-                        <option>Assistant Professor</option>
-                        <option>Registrar</option>
-                        <option>Clinical Instructor</option>
-                    </select>
-                </div>
-                <div class="form-group full-width">
-                    <label>Effective Date</label>
-                    <input type="date" id="pcEffectiveDate">
-                </div>
-                <div class="form-group full-width">
-                    <label>Reason</label>
-                    <textarea id="pcReason" rows="4" placeholder="Input reason for position change..."></textarea>
-                </div>
-                <div class="action-btns full-width">
-                    <button type="button" id="cancelRequest">Cancel</button>
-                    <button type="button" class="btn-save" id="saveRequest">Save</button>
-                </div>
             </div>
         </div>
     </div>

@@ -293,8 +293,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const logoToggle  = document.getElementById('logoToggle');
     const closeBtn    = document.getElementById('closeBtn');
     const tabNew      = document.getElementById('tab-new');
-    const tabPosition = document.getElementById('tab-position');
-    const posModal    = document.getElementById('positionChangeModal');
     const viewModal   = document.getElementById('viewModal');
 
     document.querySelectorAll('.menu-item').forEach(function (item) {
@@ -307,80 +305,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     tabNew.addEventListener('click', function () {
         tabNew.classList.add('active');
-        tabPosition.classList.remove('active');
         renderTable('Active');
-    });
-
-    tabPosition.addEventListener('click', function () {
-        tabPosition.classList.add('active');
-        tabNew.classList.remove('active');
-        posModal.style.display = 'flex';
-    });
-
-    document.getElementById('pcEmpName').addEventListener('blur', function () {
-        autoFillEmployee(this.value);
-    });
-
-    document.getElementById('saveRequest').addEventListener('click', function () {
-        var empName      = document.getElementById('pcEmpName').value.trim();
-        var empId        = document.getElementById('pcEmpId').value.trim();
-        var requestedPos = document.getElementById('pcRequestedPos').value;
-        var effectDate   = document.getElementById('pcEffectiveDate').value;
-        var reason       = document.getElementById('pcReason').value.trim();
-
-        var valid = true;
-        [
-            { id: 'pcEmpName',       val: empName      },
-            { id: 'pcRequestedPos',  val: requestedPos },
-            { id: 'pcEffectiveDate', val: effectDate   },
-            { id: 'pcReason',        val: reason       }
-        ].forEach(function (field) {
-            var el = document.getElementById(field.id);
-            if (!field.val) {
-                el.style.borderColor = '#dc3545';
-                valid = false;
-            } else {
-                el.style.borderColor = '';
-            }
-        });
-
-        if (!valid) {
-            showToast('info', 'Incomplete Form', 'Please fill in all required fields.');
-            return;
-        }
-
-        var currentPos = document.getElementById('pcCurrentPos').value.trim() || 'N/A';
-        var dept       = document.getElementById('pcDept').value.trim()       || 'N/A';
-
-        var newEntry = {
-            id:          generatePCRId(),
-            name:        empName,
-            empId:       empId || 'N/A',
-            dept:        dept,
-            position:    currentPos,
-            requestedPos: requestedPos,
-            effectiveDate: effectDate,
-            reason:      reason,
-            submitted:   new Date().toLocaleDateString(),
-            progress:    'Stage 1 of 3',
-            status:      'pending-hr',
-            statusLabel: 'Pending - HR Evaluator',
-            reviewedBy:  '---',
-            remarks:     'Position change request logged by ' + sdName + '.',
-            fileName:    'PCR_' + (positionChangeData.length + 1) + '.pdf'
-        };
-
-        positionChangeData.push(newEntry);
-        appData.push(newEntry);
-
-        posModal.style.display = 'none';
-        resetPositionForm();
-        tabNew.classList.add('active');
-        tabPosition.classList.remove('active');
-        renderTable('Active');
-
-        showToast('info', 'Request Saved',
-            'Position change request for ' + empName + ' has been logged successfully.');
     });
 
     document.getElementById('modalApproveBtn').addEventListener('click', function () {
@@ -392,35 +317,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.getElementById('modalCloseBtn').addEventListener('click', closeViewModal);
 
-    document.getElementById('cancelRequest').addEventListener('click', function () {
-        posModal.style.display = 'none';
-        resetPositionForm();
-        tabNew.classList.add('active');
-        tabPosition.classList.remove('active');
-        renderTable('Active');
-    });
-
     window.addEventListener('click', function (e) {
         if (e.target === viewModal) {
             closeViewModal();
-        }
-        if (e.target === posModal) {
-            posModal.style.display = 'none';
-            resetPositionForm();
-            tabNew.classList.add('active');
-            tabPosition.classList.remove('active');
-            renderTable('Active');
         }
     });
 
     document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') {
             closeViewModal();
-            posModal.style.display = 'none';
-            resetPositionForm();
-            tabNew.classList.add('active');
-            tabPosition.classList.remove('active');
-            renderTable('Active');
         }
     });
 
