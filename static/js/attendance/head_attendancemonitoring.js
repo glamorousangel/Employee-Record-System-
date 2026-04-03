@@ -98,14 +98,9 @@ document.addEventListener("DOMContentLoaded", () => {
         filterPopover.style.display = open ? "block" : "none";
     }
 
-    // ---------- Date picker (no HTML changes required) ----------
-    const dateInput = document.createElement("input");
-    dateInput.type = "date";
-    dateInput.style.position = "fixed";
-    dateInput.style.opacity = "0";
-    dateInput.style.pointerEvents = "none";
-    dateInput.style.zIndex = "9999";
-    document.body.appendChild(dateInput);
+    // ---------- Date picker (Sample Date) ----------
+    // Uses a real hidden input in the Head HTML for better browser support.
+    const dateInput = document.getElementById("sampleDateInput");
 
     function setDateButtonLabel() {
         if (!dateBtn) return;
@@ -331,25 +326,44 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // ---------- Wire: Date button ----------
-    if (dateBtn) {
+    if (dateBtn && dateInput) {
         dateBtn.addEventListener("click", (e) => {
             e.preventDefault();
-            const rect = dateBtn.getBoundingClientRect();
-            dateInput.style.left = rect.left + "px";
-            dateInput.style.top = rect.top + "px";
-            dateInput.style.pointerEvents = "auto";
-            dateInput.focus();
-            dateInput.click();
+            // keep input value in sync so picker opens at current selection
+            if (filterState.date) {
+                const y = filterState.date.getFullYear();
+                const m = String(filterState.date.getMonth() + 1).padStart(2, "0");
+                const d = String(filterState.date.getDate()).padStart(2, "0");
+                dateInput.value = `${y}-${m}-${d}`;
+            } else {
+                dateInput.value = "";
+            }
+
+            // Some browsers block programmatic click on hidden inputs; showPicker is best.
+            if (typeof dateInput.showPicker === "function") {
+                dateInput.showPicker();
+            } else {
+                dateInput.focus({ preventScroll: true });
+                dateInput.click();
+            }
         });
     }
 
-    dateInput.addEventListener("change", () => {
-        if (!dateInput.value) return;
-        filterState.date = new Date(dateInput.value + "T12:00:00");
-        setDateButtonLabel();
-        dateInput.style.pointerEvents = "none";
-        applyFilters();
-    });
+    if (dateInput) {
+        dateInput.addEventListener("change", () => {
+            if (!dateInput.value) return;
+            const picked = new Date(dateInput.value + "T12:00:00");
+            filterState.date = picked;
+            setDateButtonLabel();
+
+            // Jump table pager to the week containing the picked date
+            const diffDays = Math.floor((stripTime(picked) - stripTime(baseWeekStart)) / (24 * 3600 * 1000));
+            weekOffset = Math.floor(diffDays / 7);
+
+            updateDayNumbers();
+            applyFilters();
+        });
+    }
 
     // ---------- Wire: Week pager ----------
     if (pagerPrev) {

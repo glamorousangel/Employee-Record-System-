@@ -400,6 +400,15 @@ hr {
     color: #fff;
 }
 
+/* Hidden date input used by Sample Date button */
+.head-hidden-date {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    width: 1px;
+    height: 1px;
+}
+
 
 /* --- 7. ATTENDANCE TABLE --- */
 .table-card {
