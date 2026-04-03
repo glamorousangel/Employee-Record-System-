@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Employee Attendance | UPH</title>
     <link rel="shortcut icon" type="image/png" href="../../static/img/general/uph.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../../static/css/attendance/emp_attendance.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 </head>
@@ -31,7 +34,7 @@
        <ul class="menu">
 
             <li>
-                <a href="emp_dash.html" class="menu-item active">
+                <a href="emp_dash.html" class="menu-item">
                     <i class="fas fa-border-all"></i>
                     <span>Dashboard</span>
                 </a>
@@ -54,7 +57,7 @@
             </li>
 
             <li>
-                <a href="../attendance/emp_attendance.html" class="menu-item">
+                <a href="../attendance/emp_attendance.html" class="menu-item active">
                     <i class="fas fa-calendar-check"></i>
                     <span>Attendance</span>
                 </a>
@@ -105,22 +108,37 @@
     <main class="main-container" id="mainContent">
 
         <div class="content-card header-banner">
-            <h1>Good morning, Juan! ☀️</h1>
+            <p class="greeting-eyebrow"><i class="fas fa-fingerprint" aria-hidden="true"></i> Time &amp; attendance</p>
+            <h1>Good morning, Juan!</h1>
+            <p class="greeting-sub">Track your hours and review your week at a glance.</p>
         </div>
 
         <div class="dashboard-grid">
 
             <div class="content-card attendance-section">
-                <div class="card-header">
-                    <h2>Attendance</h2>
-                    <span class="date-now">Monday, February 8 | 8:14 AM</span>
+                <div class="attendance-section-inner">
+                    <div class="clock-accent" aria-hidden="true">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="card-header">
+                        <div>
+                            <h2>Today</h2>
+                            <span class="date-now">Monday, February 8 | 8:14 AM</span>
+                        </div>
+                    </div>
+                    <p class="status-text">Ready when you are — clock in to start your shift.</p>
+                    <div class="stats-row">
+                        <div class="stat-chip">
+                            <span class="stat-chip-label">Elapsed</span>
+                            <span class="stat-chip-value" id="workingTime">0h 00m</span>
+                        </div>
+                        <div class="stat-chip">
+                            <span class="stat-chip-label">Time in</span>
+                            <span class="stat-chip-value" id="timeInDisplay">--</span>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-clock-in" id="clockBtn">Clock in</button>
                 </div>
-                <p class="status-text">Let's get it started</p>
-                <div class="stats-row">
-                    <p id="workingTime">Working for: 0h</p>
-                    <p id="timeInDisplay">Time In: --</p>
-                </div>
-                <button class="btn-clock-in" id="clockBtn">Clock in</button>
             </div>
 
             <div class="content-card profile-preview">
@@ -130,9 +148,9 @@
                     </div>
                     <div class="profile-details">
                         <h3>Juan Dela Cruz</h3>
-                        <p>Department Head</p>
-                        <p class="emp-id">Employee ID: 001</p>
-                        <button class="btn-secondary">View Profile</button>
+                        <p class="profile-role">Department Head</p>
+                        <p class="emp-id">Employee ID · 001</p>
+                        <button type="button" class="btn-secondary">View Profile</button>
                     </div>
                 </div>
             </div>
@@ -141,11 +159,14 @@
 
         <div class="content-card summary-section">
             <div class="summary-header">
-                <h2>Weekly Summary</h2>
+                <div class="summary-title-block">
+                    <h2>Weekly summary</h2>
+                    <p class="summary-hint">Hours and status for the current week range</p>
+                </div>
                 <div class="week-picker">
-                    <i class="fas fa-chevron-left"></i>
+                    <button type="button" class="week-nav" aria-label="Previous week"><i class="fas fa-chevron-left"></i></button>
                     <span>Week 5</span>
-                    <i class="fas fa-chevron-right"></i>
+                    <button type="button" class="week-nav" aria-label="Next week"><i class="fas fa-chevron-right"></i></button>
                 </div>
             </div>
 
@@ -179,8 +200,7 @@
             </div>
 
             <div class="footer-actions">
-                <!-- id="openHistory" is what triggers the modal -->
-                <button class="btn-history" id="openHistory">View Full History</button>
+                <button type="button" class="btn-history" id="openHistory"><i class="fas fa-history" aria-hidden="true"></i> View full history</button>
             </div>
         </div>
 

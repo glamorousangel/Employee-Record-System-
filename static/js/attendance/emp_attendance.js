@@ -53,9 +53,7 @@ closeBtn.addEventListener("click", () => {
 });
 
 logoToggle.addEventListener("click", () => {
-    if (sidebar.classList.contains("collapsed")) {
-        sidebar.classList.remove("collapsed");
-    }
+    sidebar.classList.toggle("collapsed");
 });
 
 // Active state + tooltip data-text
@@ -85,29 +83,32 @@ function formatDuration(seconds) {
 function startTimer() {
     timerInterval = setInterval(() => {
         totalSeconds++;
-        workingTimeDisplay.innerText = `Working for: ${formatDuration(totalSeconds)}`;
+        workingTimeDisplay.textContent = formatDuration(totalSeconds);
     }, 1000);
 }
 
 clockBtn.addEventListener("click", () => {
     if (!isClockedIn) {
-        // Clock In
         isClockedIn = true;
-        clockBtn.innerText        = "Clock out";
-        clockBtn.style.background = "#8b0000";
+        clockBtn.textContent = "Clock out";
+        clockBtn.classList.add("is-clocked-in");
 
         const now = new Date();
-        timeInDisplay.innerText = `Time In: ${now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+        timeInDisplay.textContent = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
         startTimer();
     } else {
-        // Clock Out
         if (confirm("Are you sure you want to clock out?")) {
             isClockedIn = false;
             clearInterval(timerInterval);
-            clockBtn.innerText        = "Clock in";
-            clockBtn.style.background = "#2d5a27";
-            alert(`Shift completed! Total time: ${formatDuration(totalSeconds)}`);
+            timerInterval = null;
+            const worked = formatDuration(totalSeconds);
+            totalSeconds = 0;
+            workingTimeDisplay.textContent = formatDuration(0);
+            timeInDisplay.textContent = "—";
+            clockBtn.textContent = "Clock in";
+            clockBtn.classList.remove("is-clocked-in");
+            alert(`Shift completed! Total time: ${worked}`);
         }
     }
 });
