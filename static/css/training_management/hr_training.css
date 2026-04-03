@@ -6,10 +6,11 @@
     font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
-body {
-    height: 100vh;
+body, html {
+    height: 100%;
+    width: 100%;
+    margin: 0;
     overflow: hidden;
-    background-color: #f9f9f9;
 }
 
 /* --- Background --- */
@@ -38,6 +39,7 @@ body {
     backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.15);
     transition: width 0.35s ease;
+    z-index: 1000;
 }
 
 .sidebar.collapsed { width: 90px; }
@@ -129,17 +131,35 @@ body {
 .menu-item:hover { background: rgba(255,255,255,0.15); }
 .menu-item.active { background: rgba(255,255,255,0.25); }
 
+/* --- Tooltip for collapsed sidebar --- */
 .sidebar.collapsed .menu-item:hover::after {
     content: attr(data-text);
     position: absolute;
     left: 80px;
-    background: rgba(20,20,20,0.95);
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(20, 20, 20, 0.95);
+    color: white;
     padding: 8px 14px;
     border-radius: 8px;
-    white-space: nowrap;
     font-size: 14px;
-    color: white;
-    z-index: 100;
+    white-space: nowrap;
+    z-index: 2000;
+    opacity: 1;
+    pointer-events: none;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.sidebar.collapsed .menu-item:hover::before {
+    content: "";
+    position: absolute;
+    left: 72px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent rgba(20, 20, 20, 0.95) transparent transparent;
+    z-index: 2000;
 }
 
 hr {
@@ -149,50 +169,66 @@ hr {
 
 .bottom-section { margin-top: auto; }
 
-/* --- Main Content --- */
-.main-content {
-    margin-left: 340px;
-    padding: 20px 20px 20px 0;
-    transition: margin-left 0.35s ease;
-    height: 100vh;
-    overflow: hidden;
+/* --- MASTER LAYOUT (mirrors emp_leaverequest.css) --- */
+.dashboard-viewport {
     display: flex;
-    flex-direction: column;
+    height: 100vh;
+    width: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+    gap: 20px;
 }
 
-.sidebar.collapsed ~ .main-content {
-    margin-left: 110px;
+/* IMPORTANT: main-content reserves sidebar space */
+.main-content {
+    flex: 1;
+    height: 100%;
+    margin-left: 320px; /* 300px sidebar + 20px gap */
+    display: flex;
+    min-width: 0;
+    transition: margin-left 0.35s ease;
+}
+
+/* When sidebar is collapsed */
+.sidebar.collapsed ~ .dashboard-viewport .main-content {
+    margin-left: 110px; /* 90px collapsed + 20px gap */
 }
 
 /* --- White Content Card --- */
 .content-card {
     background: #ffffff;
-    border-radius: 35px;
-    padding: 35px 40px;
+    border-radius: 25px;
+    padding: 25px 40px;
+    width: 100%;
+    height: 100%;
     flex: 1;
-    overflow-y: auto;
+    min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    box-sizing: border-box;
 }
 
-/* --- Card Top Row (Title + optional actions) --- */
+/* --- Card Top Row --- */
 .card-top-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-bottom: 5px;
 }
 
-/* --- Page Title (inside card) --- */
+/* --- Page Title --- */
 .page-title {
     color: #1a1a1a;
-    font-size: 1.8rem;
+    font-size: 30px;
     font-weight: 700;
+    white-space: nowrap;
+    margin: 0;
 }
 
 /* --- Search & Filter --- */
 .search-filter-section {
-    margin-bottom: 0;
+    margin-bottom: 10px;
 }
 
 .search-bar-container {
@@ -216,10 +252,10 @@ hr {
 
 .search-input-wrapper input {
     width: 100%;
-    padding: 12px 15px 12px 45px;
-    border: 1px solid #ddd;
-    border-radius: 30px;
-    font-size: 0.95rem;
+    padding: 10px 15px 10px 45px;
+    border: 1px solid #ccc;
+    border-radius: 12px;
+    font-size: 13px;
     outline: none;
     background: #f5f5f5;
     transition: border-color 0.3s ease;
@@ -283,18 +319,32 @@ hr {
 
 .btn-add-training:hover { background: #d0d0d0; }
 
-/* --- Table --- */
+/* --- Table Container --- */
 .table-container {
     background: white;
     border-radius: 10px;
     border: 1px solid #e0e0e0;
-    overflow: hidden;
+    overflow-y: auto;
     flex: 1;
+
+    /* Hide scrollbar */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.table-container::-webkit-scrollbar {
+    display: none;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
+}
+
+thead {
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
 thead th {
@@ -303,17 +353,19 @@ thead th {
     padding: 12px 15px;
     text-align: left;
     font-weight: 500;
-    font-size: 0.95rem;
+    font-size: 12px;
+    text-transform: uppercase;
 }
 
 tbody td {
     padding: 12px 15px;
-    font-size: 0.9rem;
+    font-size: 13px;
     color: #333;
+    border-bottom: 1px solid #f5f5f5;
     height: 50px;
 }
 
-tbody tr:nth-child(even) { background-color: #f0f0f0; }
+tbody tr:nth-child(even):not(#noResultsRow) { background-color: #f0f0f0; }
 
 /* --- No Results Row --- */
 .no-results-row {
@@ -322,55 +374,63 @@ tbody tr:nth-child(even) { background-color: #f0f0f0; }
 
 .no-results-row td {
     text-align: center;
-    padding: 30px;
+    padding: 40px;
     color: #888;
     font-style: italic;
 }
 
 /* --- Status Badges --- */
 .status-badge {
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: 500;
+    padding: 5px 12px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
     display: inline-block;
     text-align: center;
-    min-width: 90px;
+    min-width: 85px;
 }
 
-.open      { background-color: #f7e9c3; color: #4d3d0f; }
-.full      { background-color: #f4c2c2; color: #7a1f1f; }
-.completed { background-color: #c9f7c9; color: #1b4d1b; }
-.cancelled { background-color: #f4c2c2; color: #7a1f1f; }
+.open      { background-color: #fff3cd; color: #856404; }
+.full      { background-color: #f8d7da; color: #721c24; }
+.completed { background-color: #d4edda; color: #155724; }
+.cancelled { background-color: #f8d7da; color: #721c24; }
 
 /* --- Action Links --- */
 .action-links a {
     color: #8c2d2d;
     text-decoration: none;
-    font-size: 0.9rem;
+    font-size: 13px;
+    font-weight: 600;
     margin-right: 10px;
 }
 
 .action-links a:hover { text-decoration: underline; }
 
-/* --- Modal --- */
+/* --- Modal Overlay --- */
 .modal-overlay {
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(2px);
-    z-index: 1000;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+    z-index: 2000;
     justify-content: center;
     align-items: center;
 }
 
+/* --- Add Training Modal --- */
 .modal-content {
     background: white;
     width: 520px;
-    border-radius: 16px;
+    border-radius: 20px;
     overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
 }
 
 .modal-header {
@@ -453,7 +513,7 @@ tbody tr:nth-child(even) { background-color: #f0f0f0; }
 }
 
 .btn-save {
-    background: #5b2a2a;
+    background: #4a1d1d;
     color: white;
     border: none;
     padding: 10px 40px;
@@ -463,13 +523,14 @@ tbody tr:nth-child(even) { background-color: #f0f0f0; }
 }
 
 .btn-cancel:hover { background: #c0c0c0; }
-.btn-save:hover   { background: #4a2222; }
+.btn-save:hover   { background: #3a1515; }
 
 /* --- View Training Modal --- */
 .modal-content--view {
     width: 860px;
+    max-width: 95%;
     max-height: 90vh;
-    border-radius: 16px;
+    border-radius: 20px;
     overflow: hidden;
     padding: 0;
 }
@@ -531,9 +592,7 @@ tbody tr:nth-child(even) { background-color: #f0f0f0; }
     gap: 10px;
 }
 
-.view-info-row:last-child {
-    border-bottom: none;
-}
+.view-info-row:last-child { border-bottom: none; }
 
 .view-info-key {
     color: #666;
@@ -592,6 +651,7 @@ tbody tr:nth-child(even) { background-color: #f0f0f0; }
     font-size: 0.85rem;
     font-weight: 600;
     border-bottom: 1px solid #e0e0e0;
+    text-transform: none;
 }
 
 .participants-table tbody td {
@@ -602,13 +662,8 @@ tbody tr:nth-child(even) { background-color: #f0f0f0; }
     border-bottom: 1px solid #f0f0f0;
 }
 
-.participants-table tbody tr:last-child td {
-    border-bottom: none;
-}
-
-.participants-table tbody tr:nth-child(even) {
-    background-color: #fafafa;
-}
+.participants-table tbody tr:last-child td { border-bottom: none; }
+.participants-table tbody tr:nth-child(even) { background-color: #fafafa; }
 
 .edit-icon {
     color: #aaa;
@@ -639,7 +694,7 @@ tbody tr:nth-child(even) { background-color: #f0f0f0; }
 }
 
 .btn-view-close {
-    background: #5b2a2a;
+    background: #4a1d1d;
     color: white;
     border: none;
     padding: 9px 28px;
@@ -650,4 +705,4 @@ tbody tr:nth-child(even) { background-color: #f0f0f0; }
 }
 
 .btn-view-edit:hover  { background: #d0d0d0; }
-.btn-view-close:hover { background: #4a2222; }
+.btn-view-close:hover { background: #3a1515; }
