@@ -1,152 +1,435 @@
-document.addEventListener("DOMContentLoaded", () => {
-    const sidebar = document.getElementById("sidebar");
-    const logoToggle = document.getElementById("logoToggle");
-    const closeBtn = document.getElementById("closeBtn");
-    const mainContent = document.getElementById("mainContent");
+/* ============================================================
+   head_appmanagement.js — same behavior as hr_appmanagement.js;
+   reviewer name uses Department Head for this role.
+   ============================================================ */
 
-    const searchInput = document.getElementById("tableSearch");
-    const tableBody = document.getElementById("applicationTableBody");
-    const noResultsRow = document.getElementById("noResultsRow");
-    const rows = tableBody.querySelectorAll("tr:not(#noResultsRow)");
+const headName = 'Department Head';
+let activeAppId = null;
 
-    const viewModal = document.getElementById("viewModal");
-    const posModal = document.getElementById("positionChangeModal");
-    const posForm = document.getElementById("positionChangeForm");
+let appData = [
+    {
+        id: '001',
+        name: 'Dela Cruz, Juan',
+        dept: 'CCS',
+        position: 'Instructor',
+        submitted: '02/12/2026',
+        progress: 'Stage 2 of 4',
+        status: 'pending-hr',
+        statusLabel: 'Pending - HR Evaluator',
+        reviewedBy: '---',
+        remarks: 'Awaiting HR evaluation.',
+        fileName: 'Application_001.pdf'
+    },
+    {
+        id: '002',
+        name: 'Santos, Maria',
+        dept: 'CBA',
+        position: 'Professor',
+        submitted: '02/15/2026',
+        progress: 'Stage 1 of 4',
+        status: 'pending-head',
+        statusLabel: 'Pending - Dept. Head',
+        reviewedBy: '---',
+        remarks: 'Awaiting department head review.',
+        fileName: 'Application_002.pdf'
+    },
+    {
+        id: '003',
+        name: 'Reyes, Ricardo',
+        dept: 'COE',
+        position: 'Registrar',
+        submitted: '02/10/2026',
+        progress: 'Completed',
+        status: 'approved',
+        statusLabel: 'Approved',
+        reviewedBy: 'Department Head',
+        remarks: 'Approved on ' + new Date().toLocaleDateString() + '.',
+        fileName: 'Application_003.pdf'
+    },
+    {
+        id: '004',
+        name: 'Gomez, Patricia',
+        dept: 'CAS',
+        position: 'Assistant Professor',
+        submitted: '03/01/2026',
+        progress: 'Stage 3 of 4',
+        status: 'pending-hr',
+        statusLabel: 'Pending - HR Evaluator',
+        reviewedBy: '---',
+        remarks: 'Documents under review by HR.',
+        fileName: 'Application_004.pdf'
+    },
+    {
+        id: '005',
+        name: 'Torres, Miguel',
+        dept: 'CON',
+        position: 'Clinical Instructor',
+        submitted: '03/05/2026',
+        progress: 'Completed',
+        status: 'rejected',
+        statusLabel: 'Rejected',
+        reviewedBy: 'Department Head',
+        remarks: 'Incomplete submission requirements.',
+        fileName: 'Application_005.pdf'
+    }
+];
 
-    const newEmpTabBtn = document.getElementById("newEmpTabBtn");
-    const posChangeTabBtn = document.getElementById("posChangeTabBtn");
+let positionChangeData = [];
 
-    const statusBanner = document.getElementById("statusBanner");
-    const statusTimelineBox = document.getElementById("statusTimelineBox");
-    const submissionTimestamp = document.getElementById("submissionTimestamp");
+const employeeDirectory = {
+    'dela cruz, juan':   { id: 'EMP-001', position: 'Instructor',         dept: 'CCS' },
+    'santos, maria':     { id: 'EMP-002', position: 'Professor',           dept: 'CBA' },
+    'reyes, ricardo':    { id: 'EMP-003', position: 'Registrar',           dept: 'COE' },
+    'gomez, patricia':   { id: 'EMP-004', position: 'Assistant Professor', dept: 'CAS' },
+    'torres, miguel':    { id: 'EMP-005', position: 'Clinical Instructor', dept: 'CON' },
+    'johnson, alice':    { id: 'EMP-006', position: 'Senior Instructor',   dept: 'CAS' }
+};
 
-    // --- Search Functionality ---
-    if (searchInput) {
-        searchInput.addEventListener("keyup", () => {
-            const filter = searchInput.value.toLowerCase();
-            let visibleCount = 0;
+function isFinalStatus(status) {
+    return status === 'approved' || status === 'rejected';
+}
 
-            rows.forEach(row => {
-                const text = row.innerText.toLowerCase();
-                if (text.includes(filter)) {
-                    row.style.display = "";
-                    visibleCount++;
-                } else {
-                    row.style.display = "none";
-                }
+function resetPositionForm() {
+    document.getElementById('pcEmpName').value       = '';
+    document.getElementById('pcEmpId').value         = '';
+    document.getElementById('pcCurrentPos').value    = '';
+    document.getElementById('pcDept').value          = '';
+    document.getElementById('pcRequestedPos').value  = '';
+    document.getElementById('pcEffectiveDate').value = '';
+    document.getElementById('pcReason').value        = '';
+
+    ['pcEmpName', 'pcRequestedPos', 'pcEffectiveDate', 'pcReason'].forEach(function (id) {
+        document.getElementById(id).style.borderColor = '';
+    });
+}
+
+function autoFillEmployee(name) {
+    const key    = name.trim().toLowerCase();
+    const emp    = employeeDirectory[key];
+    const idEl   = document.getElementById('pcEmpId');
+    const posEl  = document.getElementById('pcCurrentPos');
+    const deptEl = document.getElementById('pcDept');
+
+    if (emp) {
+        idEl.value   = emp.id;
+        posEl.value  = emp.position;
+        deptEl.value = emp.dept;
+    } else {
+        idEl.value   = '';
+        posEl.value  = '';
+        deptEl.value = '';
+    }
+}
+
+function generatePCRId() {
+    return 'PCR-' + String(positionChangeData.length + 1).padStart(3, '0');
+}
+
+function showToast(type, title, message) {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    const icons = {
+        approved: 'fas fa-check-circle',
+        rejected: 'fas fa-times-circle',
+        info:     'fas fa-info-circle'
+    };
+
+    const toast = document.createElement('div');
+    toast.className = 'toast ' + type;
+    toast.innerHTML =
+        '<i class="' + icons[type] + ' toast-icon"></i>' +
+        '<div class="toast-body">' +
+            '<div class="toast-title">' + title + '</div>' +
+            '<div class="toast-msg">' + message + '</div>' +
+        '</div>' +
+        '<button type="button" class="toast-close"><i class="fas fa-times"></i></button>' +
+        '<div class="toast-progress"></div>';
+
+    toast.querySelector('.toast-close').addEventListener('click', function () {
+        removeToast(toast);
+    });
+
+    container.appendChild(toast);
+    setTimeout(function () { removeToast(toast); }, 4000);
+}
+
+function removeToast(el) {
+    if (!el || !el.parentElement) return;
+    el.style.animation = 'toastOut 0.35s ease forwards';
+    setTimeout(function () { el.remove(); }, 340);
+}
+
+function renderTable(mode) {
+    const body     = document.getElementById('applicationTableBody');
+    const template = document.getElementById('appRowTemplate');
+    body.innerHTML = '';
+
+    const filtered = mode === 'Active'
+        ? appData.filter(function (a) { return !isFinalStatus(a.status); })
+        : appData.filter(function (a) { return  isFinalStatus(a.status); });
+
+    if (filtered.length === 0) {
+        body.innerHTML =
+            '<tr><td colspan="8" class="no-records">No records found.</td></tr>';
+        return;
+    }
+
+    filtered.forEach(function (app) {
+        const clone      = template.content.cloneNode(true);
+        const isFinal    = isFinalStatus(app.status);
+
+        clone.querySelector('.col-id').innerText        = app.id;
+        clone.querySelector('.col-name').innerText      = app.name;
+        clone.querySelector('.col-dept').innerText      = app.dept;
+        clone.querySelector('.col-position').innerText  = app.position;
+        clone.querySelector('.col-submitted').innerText = app.submitted;
+        clone.querySelector('.col-progress').innerText  = app.progress;
+        clone.querySelector('.col-status').innerHTML    =
+            '<span class="status-pill ' + app.status + '">' + app.statusLabel + '</span>';
+
+        const actionsCell = clone.querySelector('.col-actions');
+
+        if (isFinal) {
+            actionsCell.innerHTML = '<span class="action-link view-link-btn">View Details</span>';
+            actionsCell.querySelector('.view-link-btn').addEventListener('click', function () {
+                openModal(app.id);
             });
-
-            if (noResultsRow) {
-                noResultsRow.style.display = visibleCount === 0 ? "" : "none";
-            }
-        });
-    }
-
-    // --- Sidebar Logic ---
-    if (closeBtn) {
-        closeBtn.addEventListener("click", () => {
-            sidebar.classList.add("collapsed");
-            if (mainContent) mainContent.style.marginLeft = "110px";
-        });
-    }
-
-    if (logoToggle) {
-        logoToggle.addEventListener("click", () => {
-            if (sidebar.classList.contains("collapsed")) {
-                sidebar.classList.remove("collapsed");
-                if (mainContent) mainContent.style.marginLeft = "320px";
-            }
-        });
-    }
-
-    // --- Modal Management ---
-    const openModal = (modal) => {
-        if (modal) modal.style.display = "flex";
-    };
-
-    const closeAllModals = () => {
-        [viewModal, posModal].forEach(m => { if (m) m.style.display = "none"; });
-    };
-
-    // View Modal Trigger
-    document.querySelectorAll(".view-link").forEach(link => {
-        link.addEventListener("click", (e) => {
-            e.preventDefault();
-            showSlide(1);
-            openModal(viewModal);
-        });
-    });
-
-    // Close Buttons
-    document.querySelectorAll(".modal-close, #cancelRequest").forEach(btn => {
-        btn.addEventListener("click", closeAllModals);
-    });
-
-    // --- Tab Switching ---
-    const setActiveTab = (clicked, other) => {
-        clicked.classList.add("active");
-        clicked.classList.remove("secondary");
-        other.classList.add("secondary");
-        other.classList.remove("active");
-    };
-
-    if (newEmpTabBtn && posChangeTabBtn) {
-        newEmpTabBtn.addEventListener("click", () => setActiveTab(newEmpTabBtn, posChangeTabBtn));
-        posChangeTabBtn.addEventListener("click", () => {
-            setActiveTab(posChangeTabBtn, newEmpTabBtn);
-            openModal(posModal);
-        });
-    }
-
-    // --- Slide Control (View Modal) ---
-    function showSlide(n) {
-        const s1 = document.getElementById("slide1");
-        const s2 = document.getElementById("slide2");
-        if (n === 1) {
-            s1?.classList.add("active");
-            s2?.classList.remove("active");
         } else {
-            s1?.classList.remove("active");
-            s2?.classList.add("active");
+            actionsCell.innerHTML =
+                '<div class="actions-cell">' +
+                    '<span class="action-link view-link-btn">View Details</span>' +
+                    '<div class="dropdown">' +
+                        '<button type="button" class="update-link">Update <i class="fas fa-caret-down"></i></button>' +
+                        '<div class="dropdown-content">' +
+                            '<a href="#" class="approve-option" data-id="' + app.id + '">Approve</a>' +
+                            '<a href="#" class="reject-option"  data-id="' + app.id + '">Reject</a>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>';
+
+            actionsCell.querySelector('.view-link-btn').addEventListener('click', function () {
+                openModal(app.id);
+            });
+            actionsCell.querySelector('.approve-option').addEventListener('click', function (e) {
+                e.preventDefault();
+                processApp(app.id, 'Approved');
+            });
+            actionsCell.querySelector('.reject-option').addEventListener('click', function (e) {
+                e.preventDefault();
+                processApp(app.id, 'Rejected');
+            });
         }
+
+        body.appendChild(clone);
+    });
+}
+
+function openModal(id) {
+    activeAppId = id;
+    const app = appData.find(function (a) { return a.id === id; });
+    if (!app) return;
+
+    document.getElementById('modalFileName').innerText        = app.fileName;
+    document.getElementById('modalSubmitDate').innerText      = app.submitted;
+    document.getElementById('modalDepartment').innerText      = app.dept;
+    document.getElementById('modalPosition').innerText        = app.position;
+    document.getElementById('modalProgress').innerText        = app.progress;
+    document.getElementById('modalRemarks').innerText         = app.remarks;
+    document.getElementById('modalReviewerText').innerHTML    = '<small>Reviewed by: ' + app.reviewedBy + '</small>';
+    document.getElementById('modalStatusContainer').innerHTML =
+        '<span class="status-pill ' + app.status + '">' + app.statusLabel + '</span>';
+    document.getElementById('pdfPlaceholder').innerHTML       =
+        '<i class="fas fa-file-pdf"></i><p>Preview for ' + app.fileName + '</p>';
+
+    document.getElementById('modalActions').style.display =
+        isFinalStatus(app.status) ? 'none' : 'flex';
+
+    document.getElementById('viewModal').style.display = 'flex';
+}
+
+function closeViewModal() {
+    document.getElementById('viewModal').style.display = 'none';
+}
+
+function processApp(id, decision) {
+    const idx = appData.findIndex(function (a) { return a.id === id; });
+    if (idx === -1) return;
+
+    const app     = appData[idx];
+    const dateStr = new Date().toLocaleDateString();
+
+    if (decision === 'Approved') {
+        app.status      = 'approved';
+        app.statusLabel = 'Approved';
+        app.progress    = 'Completed';
+        app.reviewedBy  = headName;
+        app.remarks     = 'Approved on ' + dateStr + '.';
+        showToast('approved', 'Application Approved',
+            app.name + "'s application has been successfully approved.");
+    } else {
+        app.status      = 'rejected';
+        app.statusLabel = 'Rejected';
+        app.progress    = 'Completed';
+        app.reviewedBy  = headName;
+        app.remarks     = 'Rejected on ' + dateStr + '.';
+        showToast('rejected', 'Application Rejected',
+            app.name + "'s application has been rejected.");
     }
 
-    document.getElementById("nextSlide")?.addEventListener("click", () => showSlide(2));
-    document.getElementById("prevSlide")?.addEventListener("click", () => showSlide(1));
+    document.getElementById('modalStatusContainer').innerHTML =
+        '<span class="status-pill ' + app.status + '">' + app.statusLabel + '</span>';
+    document.getElementById('modalRemarks').innerText      = app.remarks;
+    document.getElementById('modalReviewerText').innerHTML = '<small>Reviewed by: ' + app.reviewedBy + '</small>';
+    document.getElementById('modalActions').style.display  = 'none';
 
-    // --- Form Submission (Position Change) ---
-    if (posForm) {
-        posForm.addEventListener("submit", (e) => {
-            e.preventDefault();
+    const currentMode = document.getElementById('tab-new').classList.contains('active')
+        ? 'Active' : 'History';
+    renderTable(currentMode);
+}
 
-            // Generate timestamp
-            const now = new Date();
-            const dateStr = now.toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' });
-            const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+document.addEventListener('DOMContentLoaded', function () {
+    const sidebar   = document.getElementById('sidebar');
+    const logoToggle  = document.getElementById('logoToggle');
+    const closeBtn    = document.getElementById('closeBtn');
+    const tabNew      = document.getElementById('tab-new');
+    const tabPosition = document.getElementById('tab-position');
+    const posModal    = document.getElementById('positionChangeModal');
+    const viewModal   = document.getElementById('viewModal');
 
-            // Show Status Timeline box in the view modal with timestamp
-            if (submissionTimestamp && statusTimelineBox) {
-                submissionTimestamp.innerText = `${dateStr} - ${timeStr}`;
-                statusTimelineBox.style.display = "block";
+    document.querySelectorAll('.menu-item').forEach(function (item) {
+        const span = item.querySelector('span');
+        if (span) item.setAttribute('data-text', span.textContent.trim());
+    });
+
+    if (closeBtn)   closeBtn.onclick   = function () { sidebar.classList.add('collapsed'); };
+    if (logoToggle) logoToggle.onclick = function () { sidebar.classList.toggle('collapsed'); };
+
+    tabNew.addEventListener('click', function () {
+        tabNew.classList.add('active');
+        tabPosition.classList.remove('active');
+        renderTable('Active');
+    });
+
+    tabPosition.addEventListener('click', function () {
+        tabPosition.classList.add('active');
+        tabNew.classList.remove('active');
+        posModal.style.display = 'flex';
+    });
+
+    document.getElementById('pcEmpName').addEventListener('blur', function () {
+        autoFillEmployee(this.value);
+    });
+
+    document.getElementById('saveRequest').addEventListener('click', function () {
+        var empName      = document.getElementById('pcEmpName').value.trim();
+        var empId        = document.getElementById('pcEmpId').value.trim();
+        var requestedPos = document.getElementById('pcRequestedPos').value;
+        var effectDate   = document.getElementById('pcEffectiveDate').value;
+        var reason       = document.getElementById('pcReason').value.trim();
+
+        var valid = true;
+        [
+            { id: 'pcEmpName',       val: empName      },
+            { id: 'pcRequestedPos',  val: requestedPos },
+            { id: 'pcEffectiveDate', val: effectDate   },
+            { id: 'pcReason',        val: reason       }
+        ].forEach(function (field) {
+            var el = document.getElementById(field.id);
+            if (!field.val) {
+                el.style.borderColor = '#dc3545';
+                valid = false;
+            } else {
+                el.style.borderColor = '';
             }
-
-            // Update the approval banner with selected position
-            const selectedPos = posForm.querySelector('select').value;
-            if (statusBanner && selectedPos) {
-                statusBanner.innerHTML = `<i class="fas fa-exclamation-circle"></i> Pending - For ${selectedPos} Approval`;
-            }
-
-            alert("Success: Position change request logged.");
-            closeAllModals();
         });
-    }
 
-    // Global Close (Click Outside or Esc Key)
-    window.addEventListener("click", (e) => {
-        if (e.target === viewModal || e.target === posModal) closeAllModals();
+        if (!valid) {
+            showToast('info', 'Incomplete Form', 'Please fill in all required fields.');
+            return;
+        }
+
+        var currentPos = document.getElementById('pcCurrentPos').value.trim() || 'N/A';
+        var dept       = document.getElementById('pcDept').value.trim()       || 'N/A';
+
+        var newEntry = {
+            id:          generatePCRId(),
+            name:        empName,
+            empId:       empId || 'N/A',
+            dept:        dept,
+            position:    currentPos,
+            requestedPos: requestedPos,
+            effectiveDate: effectDate,
+            reason:      reason,
+            submitted:   new Date().toLocaleDateString(),
+            progress:    'Stage 1 of 3',
+            status:      'pending-hr',
+            statusLabel: 'Pending - HR Evaluator',
+            reviewedBy:  '---',
+            remarks:     'Position change request logged by ' + headName + '.',
+            fileName:    'PCR_' + (positionChangeData.length + 1) + '.pdf'
+        };
+
+        positionChangeData.push(newEntry);
+        appData.push(newEntry);
+
+        posModal.style.display = 'none';
+        resetPositionForm();
+        tabNew.classList.add('active');
+        tabPosition.classList.remove('active');
+        renderTable('Active');
+
+        showToast('info', 'Request Saved',
+            'Position change request for ' + empName + ' has been logged successfully.');
     });
 
-    document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") closeAllModals();
+    document.getElementById('modalApproveBtn').addEventListener('click', function () {
+        processApp(activeAppId, 'Approved');
     });
+    document.getElementById('modalRejectBtn').addEventListener('click', function () {
+        processApp(activeAppId, 'Rejected');
+    });
+
+    document.getElementById('modalCloseBtn').addEventListener('click', closeViewModal);
+
+    document.getElementById('cancelRequest').addEventListener('click', function () {
+        posModal.style.display = 'none';
+        resetPositionForm();
+        tabNew.classList.add('active');
+        tabPosition.classList.remove('active');
+        renderTable('Active');
+    });
+
+    window.addEventListener('click', function (e) {
+        if (e.target === viewModal) {
+            closeViewModal();
+        }
+        if (e.target === posModal) {
+            posModal.style.display = 'none';
+            resetPositionForm();
+            tabNew.classList.add('active');
+            tabPosition.classList.remove('active');
+            renderTable('Active');
+        }
+    });
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            closeViewModal();
+            posModal.style.display = 'none';
+            resetPositionForm();
+            tabNew.classList.add('active');
+            tabPosition.classList.remove('active');
+            renderTable('Active');
+        }
+    });
+
+    document.getElementById('tableSearch').addEventListener('keyup', function (e) {
+        const val = e.target.value.toLowerCase();
+        document.querySelectorAll('#applicationTableBody tr').forEach(function (row) {
+            row.style.display = row.innerText.toLowerCase().includes(val) ? '' : 'none';
+        });
+    });
+
+    renderTable('Active');
 });
