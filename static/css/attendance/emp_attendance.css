@@ -237,7 +237,7 @@ body {
 /* --- Master Wrapper for the Main Content --- */
 .master-content-wrapper {
     background: #ffffff;
-    border-radius: 22px;
+    border-radius: 25px;
     padding: 35px;
     box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
     border: 1px solid rgba(255, 255, 255, 0.8);
@@ -417,7 +417,7 @@ hr {
 
     background: var(--surface);
 
-    border-radius: 25px;
+    border-radius: var(--radius-lg);
 
     padding: 28px 32px;
 
