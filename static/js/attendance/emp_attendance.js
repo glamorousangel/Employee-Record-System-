@@ -1,10 +1,4 @@
-/**
- * emp_attendance.js
- * ============================================================
- */
-
 /* ── 1. ELEMENT SELECTORS ────────────────────────────────── */
-
 const sidebar    = document.getElementById("sidebar");
 const logoToggle = document.getElementById("logoToggle");
 const closeBtn   = document.getElementById("closeBtn");
@@ -35,30 +29,20 @@ const clockOutConfirmBtn   = document.getElementById("clockOutConfirmBtn");
 const clockOutDismissBtn   = document.getElementById("clockOutDismiss");
 const clockOutDurationText = document.getElementById("clockOutDurationText");
 
-
 /* ── 2. SIDEBAR NAVIGATION ───────────────────────────────── */
-
-closeBtn.addEventListener("click", () => {
-    sidebar.classList.add("collapsed");
-});
-
-logoToggle.addEventListener("click", () => {
-    sidebar.classList.toggle("collapsed");
-});
+closeBtn.addEventListener("click", () => sidebar.classList.add("collapsed"));
+logoToggle.addEventListener("click", () => sidebar.classList.toggle("collapsed"));
 
 menuItems.forEach(item => {
     const spanEl = item.querySelector("span");
     if (spanEl) item.setAttribute("data-text", spanEl.innerText);
-
     item.addEventListener("click", () => {
         document.querySelector(".menu-item.active")?.classList.remove("active");
         item.classList.add("active");
     });
 });
 
-
 /* ── 3. REAL-TIME ATTENDANCE CLOCK ───────────────────────── */
-
 let timerInterval = null;
 let totalSeconds  = 0;
 let isClockedIn   = false;
@@ -119,10 +103,8 @@ clockBtn.addEventListener("click", () => {
         isClockedIn = true;
         clockBtn.innerText = "Clock out";
         clockBtn.classList.add("is-clocked-in");
-
         const now = new Date();
         timeInDisplay.innerText = `Time In: ${now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
-
         startTimer();
     } else {
         showClockOutOverlay();
@@ -134,20 +116,13 @@ clockOutConfirmBtn.addEventListener("click", () => completeClockOut());
 clockOutDismissBtn.addEventListener("click", hideClockOutOverlay);
 
 clockOutOverlay.addEventListener("click", (e) => {
-    if (e.target === clockOutOverlay) {
-        hideClockOutOverlay();
-    }
+    if (e.target === clockOutOverlay) hideClockOutOverlay();
 });
-
 document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && clockOutOverlay.classList.contains("clock-out-overlay--visible")) {
-        hideClockOutOverlay();
-    }
+    if (e.key === "Escape" && clockOutOverlay.classList.contains("clock-out-overlay--visible")) hideClockOutOverlay();
 });
-
 
 /* ── 4. HEADER DATE/TIME UPDATER ─────────────────────────── */
-
 function updateHeader() {
     const dateElement = document.querySelector(".date-now");
     if (dateElement) {
@@ -157,13 +132,10 @@ function updateHeader() {
         dateElement.innerText = `${dateStr} | ${timeStr}`;
     }
 }
-
 setInterval(updateHeader, 60000);
 updateHeader();
 
-
 /* ── 5. HISTORY MODAL – DATA ─────────────────────────────── */
-
 const weeklyData = {
     0: {
         label: "February 4 – 10, 2026",
@@ -240,14 +212,11 @@ let currentView = "weekly";
 let weekOffset  = 0;
 let monthOffset = 0;
 
-
 /* ── 6. HISTORY MODAL – RENDER WEEKLY ───────────────────── */
-
 function renderWeekly() {
     const data = weeklyData[weekOffset] ?? weeklyData[0];
     historyDateRange.textContent = data.label;
     totalHoursCount.textContent  = data.total;
-
     const rows = data.rows.map(r => `
         <tr>
             <td>${r.date}</td>
@@ -255,62 +224,38 @@ function renderWeekly() {
             <td>${r.timeIn}</td>
             <td>${r.timeOut}</td>
             <td>${r.hours}</td>
-            <td><span class="status-badge ${r.status}">${capitalize(r.status)}</span></td>
+            <td><span class="status-badge ${r.status}">${str => str.charAt(0).toUpperCase() + str.slice(1)(r.status)}</span></td>
         </tr>
     `).join("");
-
-    const totalRow = `
-        <tr class="total-row">
-            <td colspan="4">Total Hours This Week</td>
-            <td colspan="2">${data.total}</td>
-        </tr>
-    `;
-
+    const totalRow = `<tr class="total-row"><td colspan="4">Total Hours This Week</td><td colspan="2">${data.total}</td></tr>`;
     weeklyTableBody.innerHTML = rows + totalRow;
 }
 
-
 /* ── 7. HISTORY MODAL – RENDER MONTHLY ──────────────────── */
-
 function renderMonthly() {
     const data = monthlyData[monthOffset] ?? monthlyData[0];
     historyDateRange.textContent = data.label;
     totalHoursCount.textContent  = data.total;
-
     const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     let html = dayNames.map(d => `<div class="month-day-header">${d}</div>`).join("");
-
     for (let i = 0; i < data.firstDayOfWeek; i++) {
         html += `<div class="month-day-cell empty"></div>`;
     }
-
     for (let d = 1; d <= data.daysInMonth; d++) {
         const dayOfWeek  = (data.firstDayOfWeek + d - 1) % 7;
         const isWeekend  = dayOfWeek === 0 || dayOfWeek === 6;
         const att        = data.attendance[d];
-
         const statusClass = att ? att.status : (isWeekend ? "weekend" : "");
-        const statusLabel = att ? capitalize(att.status) : (isWeekend ? "Off" : "");
+        const statusLabel = att ? (str => str.charAt(0).toUpperCase() + str.slice(1))(att.status) : (isWeekend ? "Off" : "");
         const hoursLabel  = att ? att.hours : "";
-
-        html += `
-            <div class="month-day-cell">
-                <span class="day-num">${d}</span>
-                ${statusClass ? `<span class="day-status ${statusClass}">${statusLabel}</span>` : ""}
-                ${hoursLabel  ? `<span class="day-hours">${hoursLabel}</span>` : ""}
-            </div>
-        `;
+        html += `<div class="month-day-cell"><span class="day-num">${d}</span>${statusClass ? `<span class="day-status ${statusClass}">${statusLabel}</span>` : ""}${hoursLabel  ? `<span class="day-hours">${hoursLabel}</span>` : ""}</div>`;
     }
-
     monthlyGrid.innerHTML = html;
 }
 
-
 /* ── 8. HISTORY MODAL – VIEW SWITCHER ───────────────────── */
-
 function switchView(view) {
     currentView = view;
-
     if (view === "weekly") {
         weeklyViewBtn.classList.add("active");
         monthlyViewBtn.classList.remove("active");
@@ -325,13 +270,10 @@ function switchView(view) {
         renderMonthly();
     }
 }
-
 weeklyViewBtn.addEventListener("click",  () => switchView("weekly"));
 monthlyViewBtn.addEventListener("click", () => switchView("monthly"));
 
-
 /* ── 9. HISTORY MODAL – NAVIGATION ──────────────────────── */
-
 prevPeriodBtn.addEventListener("click", () => {
     if (currentView === "weekly") {
         weekOffset = Math.min(weekOffset + 1, Object.keys(weeklyData).length - 1);
@@ -341,7 +283,6 @@ prevPeriodBtn.addEventListener("click", () => {
         renderMonthly();
     }
 });
-
 nextPeriodBtn.addEventListener("click", () => {
     if (currentView === "weekly") {
         weekOffset = Math.max(weekOffset - 1, 0);
@@ -352,28 +293,12 @@ nextPeriodBtn.addEventListener("click", () => {
     }
 });
 
-
 /* ── 10. HISTORY MODAL – OPEN / CLOSE ───────────────────── */
-
-openHistoryBtn.addEventListener("click", () => {
-    historyModal.classList.add("open");
-});
-
-closeHistoryBtn.addEventListener("click", () => {
-    historyModal.classList.remove("open");
-});
-
+openHistoryBtn.addEventListener("click", () => historyModal.classList.add("open"));
+closeHistoryBtn.addEventListener("click", () => historyModal.classList.remove("open"));
 historyModal.addEventListener("click", (e) => {
-    if (e.target === historyModal) {
-        historyModal.classList.remove("open");
-    }
+    if (e.target === historyModal) historyModal.classList.remove("open");
 });
 
-
-/* ── 11. HELPERS & INIT ──────────────────────────────────── */
-
-function capitalize(str) {
-    return str.charAt(0).toUpperCase() + str.slice(1);
-}
-
+/* ── 11. INIT ──────────────────────────────────── */
 switchView("weekly");
