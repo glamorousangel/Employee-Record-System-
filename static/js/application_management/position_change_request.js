@@ -98,13 +98,15 @@ function showConfirmDialog(title, message, onConfirm) {
         modal.id = 'confirmModal';
         modal.className = 'modal-overlay';
         modal.innerHTML = `
-            <div class="confirm-modal">
-                <div class="confirm-icon warning"><i class="fas fa-exclamation"></i></div>
-                <h3 id="confirmTitle"></h3>
+            <div class="modal-content">
+                <div class="warning-icon">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                </div>
+                <h2 class="modal-warning-title" id="confirmTitle"></h2>
                 <p id="confirmMessage"></p>
-                <div class="confirm-actions">
-                    <button class="confirm-cancel" id="confirmCancel">YES, CANCEL</button>
-                    <button class="confirm-confirm" id="confirmStay">NO, STAY</button>
+                <div class="modal-footer">
+                    <button class="btn-cancel btn-flex" id="confirmCancel">YES, CANCEL</button>
+                    <button class="btn-save btn-flex" id="confirmStay">NO, STAY</button>
                 </div>
             </div>
         `;
