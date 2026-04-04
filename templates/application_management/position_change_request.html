@@ -17,7 +17,7 @@
     
     <!-- TOP LOGO SECTION -->
     <div class="top-header">
-        <img src="../../static/img/general/uph.png" alt="UPHSD Logo" class="top-logo">
+        <img src="../../static/img/general/perpetual-logo.png" alt="UPHSD Logo" class="top-logo">
     </div>
 
     <!-- MAIN FORM AREA -->
@@ -26,60 +26,72 @@
         <!-- TITLE -->
         <h1 class="form-title">Log New Position Change Request</h1>
 
-        <!-- FORM CONTENT - GRID LAYOUT -->
+        <!-- FORM CONTENT - TWO COLUMNS -->
         <div class="form-content">
             
-            <div class="form-group">
-                <label for="empName">Employee Name</label>
-                <input type="text" id="empName" placeholder="e.g. Dela Cruz, Juan">
+            <!-- LEFT COLUMN: EMPLOYEE INFORMATION -->
+            <div class="form-column">
+                <h2 class="column-title">Employee Information</h2>
+                
+                <div class="form-group">
+                    <label for="empName">Employee Name</label>
+                    <input type="text" id="empName" placeholder="e.g. Dela Cruz, Juan">
+                </div>
+
+                <div class="form-group">
+                    <label for="empId">Employee ID</label>
+                    <input type="text" id="empId" disabled placeholder="Auto-filled">
+                </div>
+
+                <div class="form-group">
+                    <label for="currentPos">Current Position</label>
+                    <input type="text" id="currentPos" disabled placeholder="Auto-filled">
+                </div>
             </div>
 
-            <div class="form-group">
-                <label for="empId">Employee ID</label>
-                <input type="text" id="empId" disabled placeholder="Auto-filled">
-            </div>
+            <!-- RIGHT COLUMN: POSITION CHANGE DETAILS -->
+            <div class="form-column">
+                <h2 class="column-title">Position Change Details</h2>
+                
+                <div class="form-group">
+                    <label for="currentDept">Department</label>
+                    <input type="text" id="currentDept" disabled placeholder="Auto-filled">
+                </div>
 
-            <div class="form-group">
-                <label for="currentPos">Current Position</label>
-                <input type="text" id="currentPos" disabled placeholder="Auto-filled">
-            </div>
+                <div class="form-group">
+                    <label for="requestedPos">Requested Position</label>
+                    <select id="requestedPos">
+                        <option disabled selected value="">Select position...</option>
+                        <option>Dean</option>
+                        <option>Department Head</option>
+                        <option>Senior Instructor</option>
+                        <option>Instructor</option>
+                        <option>Professor</option>
+                        <option>Assistant Professor</option>
+                        <option>Registrar</option>
+                        <option>Clinical Instructor</option>
+                    </select>
+                </div>
 
-            <div class="form-group">
-                <label for="currentDept">Department</label>
-                <input type="text" id="currentDept" disabled placeholder="Auto-filled">
-            </div>
-
-            <div class="form-group full-width">
-                <label for="requestedPos">Requested Position</label>
-                <select id="requestedPos">
-                    <option disabled selected value="">Select position...</option>
-                    <option>Dean</option>
-                    <option>Department Head</option>
-                    <option>Senior Instructor</option>
-                    <option>Instructor</option>
-                    <option>Professor</option>
-                    <option>Assistant Professor</option>
-                    <option>Registrar</option>
-                    <option>Clinical Instructor</option>
-                </select>
-            </div>
-
-            <div class="form-group full-width">
-                <label for="effectiveDate">Effective Date</label>
-                <input type="date" id="effectiveDate">
-            </div>
-
-            <div class="form-group full-width">
-                <label for="reason">Reason</label>
-                <textarea id="reason" rows="5" placeholder="Input reason for position change..."></textarea>
+                <div class="form-group">
+                    <label for="effectiveDate">Effective Date</label>
+                    <input type="date" id="effectiveDate">
+                </div>
             </div>
 
         </div>
 
+        <!-- REASON SECTION -->
+        <div class="reason-section">
+            <h2 class="section-title">Additional Information</h2>
+            <label for="reason">Reason for Position Change</label>
+            <textarea id="reason" rows="5" placeholder="Please provide a detailed reason for the position change..."></textarea>
+        </div>
+
         <!-- ACTION BUTTONS -->
         <div class="form-actions">
-            <button class="btn-cancel" id="cancelBtn">Cancel</button>
-            <button class="btn-submit" id="submitBtn">Save</button>
+            <button class="btn-cancel" id="cancelBtn">CANCEL</button>
+            <button class="btn-submit" id="submitBtn">SAVE</button>
         </div>
 
     </div>
