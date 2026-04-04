@@ -39,14 +39,21 @@ if (deleteUserBtn) {
             }
         }).then((result) => {
             if (result.isConfirmed) {
-                Swal.fire({
-                    title: 'Deleted!',
-                    text: 'The user has been successfully removed.',
-                    icon: 'success',
-                    confirmButtonColor: '#4a1d1d'
-                }).then(() => {
-                    window.location.href = 'hr_employeelist.html';
-                });
+                // Trigger the hidden form we added to the HTML
+                const deleteForm = document.getElementById('deleteForm');
+                if (deleteForm) {
+                    deleteForm.submit();
+                } else {
+                    // Fallback if form isn't there (though it should be!)
+                    Swal.fire({
+                        title: 'Deleted!',
+                        text: 'The user has been successfully removed.',
+                        icon: 'success',
+                        confirmButtonColor: '#4a1d1d'
+                    }).then(() => {
+                        window.location.href = "/hr/employees/";
+                    });
+                }
             }
         });
     });
@@ -54,29 +61,10 @@ if (deleteUserBtn) {
 
 // --- Update Profile Logic ---
 function updateHRProfile() {
-    const Toast = Swal.mixin({
-        toast: true,
-        position: 'top',
-        showConfirmButton: false,
-        timer: 1800,
-        timerProgressBar: true,
-        width: '450px',
-        background: '#fff',
-        color: '#4a1d1d',
-        iconColor: '#4a1d1d',
-        didOpen: (toast) => {
-            toast.addEventListener('mouseenter', Swal.stopTimer)
-            toast.addEventListener('mouseleave', Swal.resumeTimer)
-        }
-    });
-
-    Toast.fire({
-        icon: 'success',
-        title: 'Success!',
-        text: 'Employee profile has been updated.'
-    }).then(() => {
-        window.location.href = 'hr_employee_view.html';
-    });
+    // Note: The actual "Saving" is handled by the <button type="submit"> 
+    // This JS function is likely called via onclick in your HTML.
+    // To let Django handle the save, simply submit the form:
+    document.getElementById('editEmployeeForm').submit();
 }
 
 // --- Cancel Edit Logic ---
@@ -98,7 +86,8 @@ function cancelHREdit() {
         }
     }).then((result) => {
         if (result.isConfirmed) {
-            window.location.href = 'hr_employee_view.html';
+            // Redirect back to the Employee Records list
+            window.location.href = "/hr/employees/";
         }
     });
 }
@@ -114,7 +103,7 @@ function closeEventModal() {
     if (modal) modal.style.display = 'none';
 }
 
-// --- File Upload Logic (View/Download Actual File) ---
+// --- File Upload Logic ---
 function triggerFileUpload() {
     const fileInput = document.getElementById('fileInput');
     if (fileInput) fileInput.click();
@@ -123,7 +112,7 @@ function triggerFileUpload() {
 function handleFileSelect(input) {
     if (input.files && input.files[0]) {
         const file = input.files[0];
-        const fileURL = URL.createObjectURL(file); // Direct link to the file data
+        const fileURL = URL.createObjectURL(file); 
         const display = document.getElementById('fileDisplayArea');
 
         if (display) {

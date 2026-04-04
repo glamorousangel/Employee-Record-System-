@@ -45,7 +45,7 @@ if (deleteUserBtn) {
                     icon: 'success',
                     confirmButtonColor: '#4a1d1d'
                 }).then(() => {
-                    window.location.href = 'hr_employeelist.html';
+                    window.location.href = "/hr/employees/";
                 });
             }
         });

@@ -36,4 +36,7 @@ path('hr/employees/', views.employee_list, name='employee_list'),
 path('hr/employees/add/', views.add_employee, name='add_employee'),
 # Add this line to your urlpatterns
 path('hr/employees/profile/<int:user_id>/', views.employee_profile_view, name='employee_profile'),
+# Make sure the name matches 'edit_employee'
+path('hr/employees/edit/<int:user_id>/', views.edit_employee, name='edit_employee'),
+path('hr/employees/delete/<int:user_id>/', views.delete_employee, name='delete_employee'),
 ]

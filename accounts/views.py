@@ -10,6 +10,7 @@ from django.utils import timezone
 import json 
 from django.db import models, transaction # Correctly added here
 from django.db.models import Q, Count
+from django.db import transaction
 
 from .models import User, Department, EmployeeProfile
 # ADDED AddEmployeeForm TO THIS LIST BELOW:
@@ -150,7 +151,7 @@ def admin_dashboard(request):
 
 @login_required
 def employee_dashboard(request):
-    return render(request, 'dashboards/emp_dash.html')
+    return render(request, 'employee/emp_dash.html')
 
 @login_required
 def employee_profile(request):
@@ -385,46 +386,9 @@ def deactivate_department(request, dept_id):
     status = "activated" if dept.is_active else "deactivated"
     return JsonResponse({'status': 'success', 'message': f'Department {status} successfully.'})
 
-@login_required
-@user_passes_test(is_admin) # Or is_hr if you have that helper
-def employee_list(request):
-    # We use select_related to grab the Profile and Department in one go (faster!)
-    employees = User.objects.all().select_related('profile', 'department').order_by('last_name')
-    
-    # Simple search logic
-    search_query = request.GET.get('search', '')
-    if search_query:
-        employees = employees.filter(
-            Q(first_name__icontains=search_query) | 
-            Q(last_name__icontains=search_query) |
-            Q(profile__employee_id__icontains=search_query)
-        )
-
-    return render(request, 'hr/employee_management/hr_employeelist.html', {
-        'employees': employees,
-    })
 # ===========================================================
 # TASK 04: EMPLOYEE RECORDS (HR CORE)
 # ===========================================================
-
-@login_required
-@user_passes_test(is_admin)
-def employee_list(request):
-    """ View to list all employees with search and filter """
-    # select_related makes the page load faster by grabbing profile & dept in 1 query
-    employees = User.objects.all().select_related('profile', 'department').order_by('last_name')
-    
-    search_query = request.GET.get('search', '')
-    if search_query:
-        employees = employees.filter(
-            Q(first_name__icontains=search_query) | 
-            Q(last_name__icontains=search_query) |
-            Q(profile__employee_id__icontains=search_query)
-        )
-
-    return render(request, 'hr/employee_management/hr_employeelist.html', {
-        'employees': employees,
-    })
 
 # === TASK 04: EMPLOYEE RECORDS (HR CORE) ===
 
@@ -502,3 +466,70 @@ def employee_profile_view(request, user_id):
     # Fetch the employee or show 404 if not found
     employee = get_object_or_404(User, id=user_id)
     return render(request, 'hr/hr_profile_view.html', {'employee': employee})
+
+@login_required
+@user_passes_test(is_admin)
+def edit_employee(request, user_id):
+    employee = get_object_or_404(User, id=user_id)
+    profile = getattr(employee, 'profile', None)
+
+    if request.method == 'POST':
+        # We still initialize the form to keep our validation for email/names
+        form = AddEmployeeForm(request.POST, request.FILES)
+        
+        # 🚩 MANUALLY GRAB THE DATA (This bypasses the choice/unique errors)
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+        email = request.POST.get('email')
+        emp_id = request.POST.get('employee_id')
+        emp_type = request.POST.get('employment_type')
+        address = request.POST.get('address')
+        contact = request.POST.get('contact_number')
+
+        try:
+            with transaction.atomic():
+                # 1. Update User
+                employee.first_name = first_name
+                employee.last_name = last_name
+                employee.email = email
+                employee.save()
+
+                # 2. Update/Create Profile
+                if not profile:
+                    from accounts.models import EmployeeProfile
+                    profile = EmployeeProfile.objects.create(user=employee)
+                
+                profile.employee_id = emp_id
+                profile.employment_type = emp_type # This bypasses the Choice check
+                profile.address = address
+                profile.contact_number = contact
+                profile.save()
+
+            messages.success(request, f"Successfully updated {employee.get_full_name()}!")
+            return redirect('employee_profile', user_id=employee.id)
+            
+        except Exception as e:
+            messages.error(request, f"Database Error: {str(e)}")
+            
+    else:
+        # GET request: Load current data into the form
+        initial_data = {
+            'first_name': employee.first_name,
+            'last_name': employee.last_name,
+            'email': employee.email,
+            'employee_id': profile.employee_id if profile else "",
+            'employment_type': profile.employment_type if profile else "Regular",
+        }
+        form = AddEmployeeForm(initial=initial_data)
+
+    return render(request, 'hr/hr_employee_edit.html', {'form': form, 'employee': employee})
+
+@login_required
+@user_passes_test(is_admin)
+def delete_employee(request, user_id):
+    employee = get_object_or_404(User, id=user_id)
+    if request.method == 'POST':
+        employee.delete()
+        messages.success(request, "Employee record deleted successfully.")
+        return redirect('employee_list')
+    return redirect('employee_profile', user_id=user_id)

@@ -64,8 +64,7 @@
                 </div>
 
                 <div class="profile-right">
-                    <a href="#"><button class="edit-btn">Edit Profile</button></a>
-
+                    <a href="{% url 'edit_employee' employee.id %}"><button class="edit-btn">Edit Profile</button></a>
                     <div class="contact-info">
                         <h4>Contact Information</h4>
                         <p><i class="fas fa-envelope"></i> {{ employee.email }}</p>
