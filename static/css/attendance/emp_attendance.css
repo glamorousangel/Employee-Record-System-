@@ -402,6 +402,7 @@ hr {
     align-items: stretch;   /* ← add */
     transition: margin-left 0.35s ease;
     flex: 1;
+    border-radius: 25px;
 }
 
 
