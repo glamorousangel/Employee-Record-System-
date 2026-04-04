@@ -161,7 +161,6 @@ body {
 .menu-item:hover  { background: rgba(255,255,255,0.15); }
 .menu-item.active { background: rgba(255,255,255,0.25); }
 
-/* Tooltip when collapsed */
 .sidebar.collapsed .menu-item:hover::after {
     content: attr(data-text);
     position: absolute;
@@ -187,7 +186,7 @@ hr {
     margin-left: 340px;
     height: 100vh;
     padding: 30px;
-    overflow: hidden; /* Changed from overflow-y: auto to prevent whole page scroll */
+    overflow: hidden; 
     transition: margin-left 0.35s ease;
 }
 
@@ -203,33 +202,25 @@ hr {
 
 .unified-dashboard {
     height: 100%;
-    padding: 32px;
+    padding: 36px 42px; /* Increased padding for an airy feel */
     overflow-y: auto; /* Contains the scroll inside this div only */
     display: flex;
     flex-direction: column;
-    gap: 22px;
-}
-
-.panel {
-    background: #ffffff;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    padding: 24px 30px;
-    position: relative;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    gap: 36px; /* Space between rows */
 }
 
 /* Welcome header */
-.header-banner.panel {
+.header-banner {
     background: linear-gradient(135deg, var(--brand) 0%, #6b2a2a 45%, #8b3d3d 100%);
     color: #fff;
     padding: 0;
-    border: none;
+    border-radius: var(--radius-lg);
     overflow: hidden;
     position: relative;
+    flex-shrink: 0;
 }
 
-.header-banner.panel::after {
+.header-banner::after {
     content: "";
     position: absolute;
     inset: 0;
@@ -288,24 +279,12 @@ hr {
 .dashboard-grid {
     display: grid;
     grid-template-columns: minmax(0, 1.45fr) minmax(260px, 1fr);
-    gap: 22px;
-    align-items: stretch;
+    gap: 40px; /* Strong separation inside the white space */
+    align-items: center;
 }
 
-/* Attendance card */
 .attendance-section {
     position: relative;
-    overflow: hidden;
-}
-
-.attendance-card-accent {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, var(--accent-green), var(--accent-green-bright));
-    border-radius: var(--radius-md) var(--radius-md) 0 0;
 }
 
 .attendance-section .card-header {
@@ -511,6 +490,7 @@ a.btn-secondary:visited {
 
 /* Weekly summary */
 .summary-section {
+    position: relative;
     padding-bottom: 24px;
 }
 
@@ -663,11 +643,9 @@ a.btn-secondary:visited {
     .dashboard-grid {
         grid-template-columns: 1fr;
     }
-
     .stats-row {
         grid-template-columns: 1fr;
     }
-
     .header-banner-inner {
         flex-direction: column;
         align-items: flex-start;
@@ -675,7 +653,7 @@ a.btn-secondary:visited {
 }
 
 /* ============================================================
-   CLOCK OUT DIALOG (replaces browser confirm / alert)
+   CLOCK OUT DIALOG
    ============================================================ */
 .clock-out-overlay {
     position: fixed;
