@@ -10,51 +10,28 @@
 </head>
 <body>
 
-<div class="background"></div>
 <div id="toast-container"></div>
 
-<!-- ================= SIDEBAR ================= -->
-<div class="sidebar" id="sidebar">
-    <div class="top-section">
-        <div class="logo-wrapper" id="logoToggle">
-            <img src="../../static/img/general/uph.png" class="logo" alt="UPHSD Logo">
-            <div class="open-icon"><i class="fas fa-chevron-right"></i></div>
-        </div>
-        <button class="close-btn" id="closeBtn"><i class="fas fa-chevron-left"></i></button>
+<!-- ================= PAGE WRAPPER ================= -->
+<div class="page-wrapper">
+    
+    <!-- TOP LOGO SECTION -->
+    <div class="top-header">
+        <img src="../../static/img/general/uph.png" alt="UPHSD Logo" class="top-logo">
     </div>
-    <ul class="menu">
-        <li><a href="../dashboards/hr_dash.html" class="menu-item"><i class="fas fa-border-all"></i><span>Dashboard</span></a></li>
-        <li><a href="../accounts/hr_profile_view.html" class="menu-item"><i class="fas fa-user"></i><span>Profile</span></a></li>
-        <hr>
-        <li><a href="hr_appmanagement.html" class="menu-item active"><i class="fas fa-file"></i><span>Application Management</span></a></li>
-        <li><a href="#" class="menu-item"><i class="fas fa-database"></i><span>Employee Records</span></a></li>
-        <li><a href="#" class="menu-item"><i class="fas fa-calendar"></i><span>Attendance Monitoring</span></a></li>
-        <li><a href="#" class="menu-item"><i class="fas fa-briefcase"></i><span>Leave Management</span></a></li>
-        <li><a href="#" class="menu-item"><i class="fas fa-star"></i><span>Performance Evaluation</span></a></li>
-        <li><a href="#" class="menu-item"><i class="fas fa-chalkboard-teacher"></i><span>Trainings</span></a></li>
-        <li><a href="#" class="menu-item"><i class="fas fa-chart-line"></i><span>Reports / Analytics</span></a></li>
-    </ul>
-    <div class="bottom-section">
-        <a href="../login/login.html" class="menu-item logout"><i class="fas fa-sign-out-alt"></i><span>Log Out</span></a>
-    </div>
-</div>
 
-<!-- ================= MAIN CONTENT ================= -->
-<div class="dashboard-viewport">
-    <main class="main-content">
-        <div class="form-container">
+    <!-- MAIN FORM AREA -->
+    <div class="form-container">
+        
+        <!-- TITLE -->
+        <h1 class="form-title">POSITION CHANGE REQUEST</h1>
+
+        <!-- FORM CONTENT - TWO COLUMNS -->
+        <div class="form-content">
             
-            <!-- HEADER WITH LOGO -->
-            <div class="form-header">
-                <img src="../../static/img/general/uph.png" alt="UPHSD Logo" class="form-logo">
-                <h1>POSITION CHANGE REQUEST</h1>
-            </div>
-
-            <!-- FORM CONTENT -->
-            <div class="form-content">
-                <!-- LEFT COLUMN: EMPLOYEE INFORMATION -->
-                <div class="form-column employee-info">
-                    <h2>EMPLOYEE INFORMATION</h2>
+            <!-- LEFT COLUMN: EMPLOYEE INFORMATION -->
+            <div class="form-column">
+                <h2 class="column-title">EMPLOYEE INFORMATION</h2>
                     
                     <div class="form-group">
                         <label for="empName">Employee Name</label>
@@ -76,59 +53,57 @@
                         <input type="tel" id="empPhone" disabled placeholder="Auto-filled">
                     </div>
 
+            </div>
+
+            <!-- RIGHT COLUMN: POSITION CHANGE DETAILS -->
+            <div class="form-column">
+                <h2 class="column-title">POSITION CHANGE DETAILS</h2>
+                
+                <div class="form-group">
+                    <label for="currentDept">Current Department</label>
+                    <input type="text" id="currentDept" disabled placeholder="Auto-filled">
                 </div>
 
-                <!-- RIGHT COLUMN: POSITION CHANGE DETAILS -->
-                <div class="form-column position-details">
-                    <h2>POSITION CHANGE DETAILS</h2>
-                    
-                    <div class="form-group">
-                        <label for="currentDept">Current Department</label>
-                        <input type="text" id="currentDept" disabled placeholder="Auto-filled">
-                    </div>
+                <div class="form-group">
+                    <label for="currentPos">Current Position</label>
+                    <input type="text" id="currentPos" disabled placeholder="Auto-filled">
+                </div>
 
-                    <div class="form-group">
-                        <label for="currentPos">Current Position</label>
-                        <input type="text" id="currentPos" disabled placeholder="Auto-filled">
-                    </div>
+                <div class="form-group">
+                    <label for="requestedPos">Requested Position</label>
+                    <select id="requestedPos">
+                        <option disabled selected value="">Select position...</option>
+                        <option>Dean</option>
+                        <option>Department Head</option>
+                        <option>Senior Instructor</option>
+                        <option>Instructor</option>
+                        <option>Professor</option>
+                        <option>Assistant Professor</option>
+                        <option>Registrar</option>
+                        <option>Clinical Instructor</option>
+                    </select>
+                </div>
 
-                    <div class="form-group">
-                        <label for="requestedPos">Requested Position</label>
-                        <select id="requestedPos">
-                            <option disabled selected value="">Select position...</option>
-                            <option>Dean</option>
-                            <option>Department Head</option>
-                            <option>Senior Instructor</option>
-                            <option>Instructor</option>
-                            <option>Professor</option>
-                            <option>Assistant Professor</option>
-                            <option>Registrar</option>
-                            <option>Clinical Instructor</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="effectiveDate">Effective Date</label>
-                        <input type="date" id="effectiveDate">
-                    </div>
-
+                <div class="form-group">
+                    <label for="effectiveDate">Effective Date</label>
+                    <input type="date" id="effectiveDate">
                 </div>
             </div>
-
-            <!-- REASON SECTION -->
-            <div class="reason-section">
-                <label for="reason">Reason for Position Change</label>
-                <textarea id="reason" rows="5" placeholder="Please provide a detailed reason for the position change request..."></textarea>
-            </div>
-
-            <!-- ACTION BUTTONS -->
-            <div class="form-actions">
-                <button class="btn-cancel" id="cancelBtn">CANCEL</button>
-                <button class="btn-submit" id="submitBtn">SUBMIT REQUEST</button>
-            </div>
-
         </div>
-    </main>
+
+        <!-- REASON SECTION -->
+        <div class="reason-section">
+            <label for="reason">Reason for Position Change</label>
+            <textarea id="reason" rows="5" placeholder="Please provide a detailed reason for the position change request..."></textarea>
+        </div>
+
+        <!-- ACTION BUTTONS -->
+        <div class="form-actions">
+            <button class="btn-cancel" id="cancelBtn">CANCEL</button>
+            <button class="btn-submit" id="submitBtn">SUBMIT REQUEST</button>
+        </div>
+
+    </div>
 </div>
 
 <script src="../../static/js/application_management/position_change_request.js"></script>
