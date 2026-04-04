@@ -48,11 +48,18 @@ body, html {
     object-fit: cover;
 }
 
+.header-logo {
+    width: 140px;
+    height: 140px;
+    object-fit: contain;
+    margin-top: -20px;
+}
+
 /* ── Form Container ── */
 .form-container {
     background: transparent;
     border-radius: 0;
-    padding: 60px 40px 40px 40px;
+    padding: 100px 40px 40px 40px;
     width: 100%;
     max-width: 1100px;
     margin: 0 auto;
