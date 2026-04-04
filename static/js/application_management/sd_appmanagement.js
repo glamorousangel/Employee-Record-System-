@@ -1,11 +1,13 @@
 /* ============================================================
-   sd_appmanagement.js — same behavior as hr_appmanagement.js;
-   reviewer name uses School Director for SD workflow.
+   sd_appmanagement.js
+   Path: static/js/application_management/sd_appmanagement.js
    ============================================================ */
 
 const sdName = 'School Director';
+const SD_STAGE = 'pending-sd';
 let activeAppId = null;
 
+// ── Sample Data ───────────────────────────────────────────────────────
 let appData = [
     {
         id: '001',
@@ -53,10 +55,10 @@ let appData = [
         position: 'Assistant Professor',
         submitted: '03/01/2026',
         progress: 'Stage 3 of 4',
-        status: 'pending-hr',
-        statusLabel: 'Pending - HR Evaluator',
+        status: 'pending-sd',
+        statusLabel: 'Pending - School Director',
         reviewedBy: '---',
-        remarks: 'Documents under review by HR.',
+        remarks: 'Awaiting School Director review.',
         fileName: 'Application_004.pdf'
     },
     {
@@ -74,8 +76,10 @@ let appData = [
     }
 ];
 
+// ── Position Change Request Data ──────────────────────────────────────
 let positionChangeData = [];
 
+// Mock employee lookup
 const employeeDirectory = {
     'dela cruz, juan':   { id: 'EMP-001', position: 'Instructor',         dept: 'CCS' },
     'santos, maria':     { id: 'EMP-002', position: 'Professor',           dept: 'CBA' },
@@ -85,46 +89,16 @@ const employeeDirectory = {
     'johnson, alice':    { id: 'EMP-006', position: 'Senior Instructor',   dept: 'CAS' }
 };
 
+// ── Helpers ───────────────────────────────────────────────────────────
 function isFinalStatus(status) {
     return status === 'approved' || status === 'rejected';
 }
 
-function resetPositionForm() {
-    document.getElementById('pcEmpName').value       = '';
-    document.getElementById('pcEmpId').value         = '';
-    document.getElementById('pcCurrentPos').value    = '';
-    document.getElementById('pcDept').value          = '';
-    document.getElementById('pcRequestedPos').value  = '';
-    document.getElementById('pcEffectiveDate').value = '';
-    document.getElementById('pcReason').value        = '';
-
-    ['pcEmpName', 'pcRequestedPos', 'pcEffectiveDate', 'pcReason'].forEach(function (id) {
-        document.getElementById(id).style.borderColor = '';
-    });
+function canActOnApp(status) {
+    return status === SD_STAGE;
 }
 
-function autoFillEmployee(name) {
-    const key    = name.trim().toLowerCase();
-    const emp    = employeeDirectory[key];
-    const idEl   = document.getElementById('pcEmpId');
-    const posEl  = document.getElementById('pcCurrentPos');
-    const deptEl = document.getElementById('pcDept');
-
-    if (emp) {
-        idEl.value   = emp.id;
-        posEl.value  = emp.position;
-        deptEl.value = emp.dept;
-    } else {
-        idEl.value   = '';
-        posEl.value  = '';
-        deptEl.value = '';
-    }
-}
-
-function generatePCRId() {
-    return 'PCR-' + String(positionChangeData.length + 1).padStart(3, '0');
-}
-
+// ── Toast System ──────────────────────────────────────────────────────
 function showToast(type, title, message) {
     const container = document.getElementById('toast-container');
     if (!container) return;
@@ -160,6 +134,7 @@ function removeToast(el) {
     setTimeout(function () { el.remove(); }, 340);
 }
 
+// ── Render Table ──────────────────────────────────────────────────────
 function renderTable(mode) {
     const body     = document.getElementById('applicationTableBody');
     const template = document.getElementById('appRowTemplate');
@@ -176,8 +151,9 @@ function renderTable(mode) {
     }
 
     filtered.forEach(function (app) {
-        const clone      = template.content.cloneNode(true);
-        const isFinal    = isFinalStatus(app.status);
+        const clone   = template.content.cloneNode(true);
+        const isFinal = isFinalStatus(app.status);
+        const canAct  = canActOnApp(app.status);
 
         clone.querySelector('.col-id').innerText        = app.id;
         clone.querySelector('.col-name').innerText      = app.name;
@@ -191,11 +167,13 @@ function renderTable(mode) {
         const actionsCell = clone.querySelector('.col-actions');
 
         if (isFinal) {
+            // Completed — view only
             actionsCell.innerHTML = '<span class="action-link view-link-btn">View Details</span>';
             actionsCell.querySelector('.view-link-btn').addEventListener('click', function () {
                 openModal(app.id);
             });
-        } else {
+        } else if (canAct) {
+            // SD's stage — show View + Update dropdown
             actionsCell.innerHTML =
                 '<div class="actions-cell">' +
                     '<span class="action-link view-link-btn">View Details</span>' +
@@ -219,12 +197,22 @@ function renderTable(mode) {
                 e.preventDefault();
                 processApp(app.id, 'Rejected');
             });
+        } else {
+            // Not SD's stage — view only, no Update dropdown
+            actionsCell.innerHTML =
+                '<div class="actions-cell">' +
+                    '<span class="action-link view-link-btn">View Details</span>' +
+                '</div>';
+            actionsCell.querySelector('.view-link-btn').addEventListener('click', function () {
+                openModal(app.id);
+            });
         }
 
         body.appendChild(clone);
     });
 }
 
+// ── Open Modal ────────────────────────────────────────────────────────
 function openModal(id) {
     activeAppId = id;
     const app = appData.find(function (a) { return a.id === id; });
@@ -242,8 +230,9 @@ function openModal(id) {
     document.getElementById('pdfPlaceholder').innerHTML       =
         '<i class="fas fa-file-pdf"></i><p>Preview for ' + app.fileName + '</p>';
 
+    // Only show Approve/Reject if it's SD's stage
     document.getElementById('modalActions').style.display =
-        isFinalStatus(app.status) ? 'none' : 'flex';
+        (!isFinalStatus(app.status) && canActOnApp(app.status)) ? 'flex' : 'none';
 
     document.getElementById('viewModal').style.display = 'flex';
 }
@@ -252,12 +241,20 @@ function closeViewModal() {
     document.getElementById('viewModal').style.display = 'none';
 }
 
+// ── Process Application ───────────────────────────────────────────────
 function processApp(id, decision) {
     const idx = appData.findIndex(function (a) { return a.id === id; });
     if (idx === -1) return;
 
     const app     = appData[idx];
     const dateStr = new Date().toLocaleDateString();
+
+    // Guard: only allow action if it's SD's stage
+    if (!canActOnApp(app.status)) {
+        showToast('info', 'Action Not Allowed',
+            'This application is not at the School Director stage.');
+        return;
+    }
 
     if (decision === 'Approved') {
         app.status      = 'approved';
@@ -277,6 +274,7 @@ function processApp(id, decision) {
             app.name + "'s application has been rejected.");
     }
 
+    // Update modal live
     document.getElementById('modalStatusContainer').innerHTML =
         '<span class="status-pill ' + app.status + '">' + app.statusLabel + '</span>';
     document.getElementById('modalRemarks').innerText      = app.remarks;
@@ -286,20 +284,24 @@ function processApp(id, decision) {
     renderTable('Active');
 }
 
+// ── DOM Ready ─────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function () {
     const sidebar     = document.getElementById('sidebar');
     const logoToggle  = document.getElementById('logoToggle');
     const closeBtn    = document.getElementById('closeBtn');
     const viewModal   = document.getElementById('viewModal');
 
+    // Sidebar tooltips
     document.querySelectorAll('.menu-item').forEach(function (item) {
         const span = item.querySelector('span');
         if (span) item.setAttribute('data-text', span.textContent.trim());
     });
 
+    // Sidebar toggle
     if (closeBtn)   closeBtn.onclick   = function () { sidebar.classList.add('collapsed'); };
     if (logoToggle) logoToggle.onclick = function () { sidebar.classList.toggle('collapsed'); };
 
+    // Modal approve / reject buttons
     document.getElementById('modalApproveBtn').addEventListener('click', function () {
         processApp(activeAppId, 'Approved');
     });
@@ -307,20 +309,20 @@ document.addEventListener('DOMContentLoaded', function () {
         processApp(activeAppId, 'Rejected');
     });
 
+    // Modal close
     document.getElementById('modalCloseBtn').addEventListener('click', closeViewModal);
 
+    // Click outside modal to close
     window.addEventListener('click', function (e) {
-        if (e.target === viewModal) {
-            closeViewModal();
-        }
+        if (e.target === viewModal) closeViewModal();
     });
 
+    // ESC key
     document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') {
-            closeViewModal();
-        }
+        if (e.key === 'Escape') closeViewModal();
     });
 
+    // Live search
     document.getElementById('tableSearch').addEventListener('keyup', function (e) {
         const val = e.target.value.toLowerCase();
         document.querySelectorAll('#applicationTableBody tr').forEach(function (row) {
@@ -328,5 +330,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
+    // Initial render
     renderTable('Active');
 });

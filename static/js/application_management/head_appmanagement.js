@@ -1,11 +1,13 @@
 /* ============================================================
-   head_appmanagement.js — same behavior as hr_appmanagement.js;
-   reviewer name uses Department Head for this role.
+   head_appmanagement.js
+   Path: static/js/application_management/head_appmanagement.js
    ============================================================ */
 
 const headName = 'Department Head';
+const HEAD_STAGE = 'pending-head';
 let activeAppId = null;
 
+// ── Sample Data ───────────────────────────────────────────────────────
 let appData = [
     {
         id: '001',
@@ -74,8 +76,10 @@ let appData = [
     }
 ];
 
+// ── Position Change Request Data ──────────────────────────────────────
 let positionChangeData = [];
 
+// Mock employee lookup
 const employeeDirectory = {
     'dela cruz, juan':   { id: 'EMP-001', position: 'Instructor',         dept: 'CCS' },
     'santos, maria':     { id: 'EMP-002', position: 'Professor',           dept: 'CBA' },
@@ -85,8 +89,13 @@ const employeeDirectory = {
     'johnson, alice':    { id: 'EMP-006', position: 'Senior Instructor',   dept: 'CAS' }
 };
 
+// ── Helpers ───────────────────────────────────────────────────────────
 function isFinalStatus(status) {
     return status === 'approved' || status === 'rejected';
+}
+
+function canActOnApp(status) {
+    return status === HEAD_STAGE;
 }
 
 function resetPositionForm() {
@@ -125,10 +134,9 @@ function generatePCRId() {
     return 'PCR-' + String(positionChangeData.length + 1).padStart(3, '0');
 }
 
+// ── Toast System ──────────────────────────────────────────────────────
 function showToast(type, title, message) {
     const container = document.getElementById('toast-container');
-    if (!container) return;
-
     const icons = {
         approved: 'fas fa-check-circle',
         rejected: 'fas fa-times-circle',
@@ -160,6 +168,7 @@ function removeToast(el) {
     setTimeout(function () { el.remove(); }, 340);
 }
 
+// ── Render Table ──────────────────────────────────────────────────────
 function renderTable(mode) {
     const body     = document.getElementById('applicationTableBody');
     const template = document.getElementById('appRowTemplate');
@@ -176,8 +185,9 @@ function renderTable(mode) {
     }
 
     filtered.forEach(function (app) {
-        const clone      = template.content.cloneNode(true);
-        const isFinal    = isFinalStatus(app.status);
+        const clone   = template.content.cloneNode(true);
+        const isFinal = isFinalStatus(app.status);
+        const canAct  = canActOnApp(app.status);
 
         clone.querySelector('.col-id').innerText        = app.id;
         clone.querySelector('.col-name').innerText      = app.name;
@@ -191,11 +201,13 @@ function renderTable(mode) {
         const actionsCell = clone.querySelector('.col-actions');
 
         if (isFinal) {
+            // Completed — view only
             actionsCell.innerHTML = '<span class="action-link view-link-btn">View Details</span>';
             actionsCell.querySelector('.view-link-btn').addEventListener('click', function () {
                 openModal(app.id);
             });
-        } else {
+        } else if (canAct) {
+            // Head's stage — show View + Update dropdown
             actionsCell.innerHTML =
                 '<div class="actions-cell">' +
                     '<span class="action-link view-link-btn">View Details</span>' +
@@ -219,12 +231,22 @@ function renderTable(mode) {
                 e.preventDefault();
                 processApp(app.id, 'Rejected');
             });
+        } else {
+            // Not Head's stage — view only, no Update dropdown
+            actionsCell.innerHTML =
+                '<div class="actions-cell">' +
+                    '<span class="action-link view-link-btn">View Details</span>' +
+                '</div>';
+            actionsCell.querySelector('.view-link-btn').addEventListener('click', function () {
+                openModal(app.id);
+            });
         }
 
         body.appendChild(clone);
     });
 }
 
+// ── Open Modal ────────────────────────────────────────────────────────
 function openModal(id) {
     activeAppId = id;
     const app = appData.find(function (a) { return a.id === id; });
@@ -242,8 +264,9 @@ function openModal(id) {
     document.getElementById('pdfPlaceholder').innerHTML       =
         '<i class="fas fa-file-pdf"></i><p>Preview for ' + app.fileName + '</p>';
 
+    // Only show Approve/Reject if it's Head's stage
     document.getElementById('modalActions').style.display =
-        isFinalStatus(app.status) ? 'none' : 'flex';
+        (!isFinalStatus(app.status) && canActOnApp(app.status)) ? 'flex' : 'none';
 
     document.getElementById('viewModal').style.display = 'flex';
 }
@@ -252,12 +275,20 @@ function closeViewModal() {
     document.getElementById('viewModal').style.display = 'none';
 }
 
+// ── Process Application ───────────────────────────────────────────────
 function processApp(id, decision) {
     const idx = appData.findIndex(function (a) { return a.id === id; });
     if (idx === -1) return;
 
     const app     = appData[idx];
     const dateStr = new Date().toLocaleDateString();
+
+    // Guard: only allow action if it's Head's stage
+    if (!canActOnApp(app.status)) {
+        showToast('info', 'Action Not Allowed',
+            'This application is not at the Department Head stage.');
+        return;
+    }
 
     if (decision === 'Approved') {
         app.status      = 'approved';
@@ -277,6 +308,7 @@ function processApp(id, decision) {
             app.name + "'s application has been rejected.");
     }
 
+    // Update modal live
     document.getElementById('modalStatusContainer').innerHTML =
         '<span class="status-pill ' + app.status + '">' + app.statusLabel + '</span>';
     document.getElementById('modalRemarks').innerText      = app.remarks;
@@ -288,8 +320,9 @@ function processApp(id, decision) {
     renderTable(currentMode);
 }
 
+// ── DOM Ready ─────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function () {
-    const sidebar   = document.getElementById('sidebar');
+    const sidebar     = document.getElementById('sidebar');
     const logoToggle  = document.getElementById('logoToggle');
     const closeBtn    = document.getElementById('closeBtn');
     const tabNew      = document.getElementById('tab-new');
@@ -297,30 +330,36 @@ document.addEventListener('DOMContentLoaded', function () {
     const posModal    = document.getElementById('positionChangeModal');
     const viewModal   = document.getElementById('viewModal');
 
+    // Sidebar tooltips
     document.querySelectorAll('.menu-item').forEach(function (item) {
         const span = item.querySelector('span');
         if (span) item.setAttribute('data-text', span.textContent.trim());
     });
 
+    // Sidebar toggle
     if (closeBtn)   closeBtn.onclick   = function () { sidebar.classList.add('collapsed'); };
     if (logoToggle) logoToggle.onclick = function () { sidebar.classList.toggle('collapsed'); };
 
+    // Tab — Records
     tabNew.addEventListener('click', function () {
         tabNew.classList.add('active');
         tabPosition.classList.remove('active');
         renderTable('Active');
     });
 
+    // Tab — Position Change Requests
     tabPosition.addEventListener('click', function () {
         tabPosition.classList.add('active');
         tabNew.classList.remove('active');
         posModal.style.display = 'flex';
     });
 
+    // Auto-fill employee details
     document.getElementById('pcEmpName').addEventListener('blur', function () {
         autoFillEmployee(this.value);
     });
 
+    // Save position change request
     document.getElementById('saveRequest').addEventListener('click', function () {
         var empName      = document.getElementById('pcEmpName').value.trim();
         var empId        = document.getElementById('pcEmpId').value.trim();
@@ -353,21 +392,21 @@ document.addEventListener('DOMContentLoaded', function () {
         var dept       = document.getElementById('pcDept').value.trim()       || 'N/A';
 
         var newEntry = {
-            id:          generatePCRId(),
-            name:        empName,
-            empId:       empId || 'N/A',
-            dept:        dept,
-            position:    currentPos,
+            id:           generatePCRId(),
+            name:         empName,
+            empId:        empId || 'N/A',
+            dept:         dept,
+            position:     currentPos,
             requestedPos: requestedPos,
             effectiveDate: effectDate,
-            reason:      reason,
-            submitted:   new Date().toLocaleDateString(),
-            progress:    'Stage 1 of 3',
-            status:      'pending-hr',
-            statusLabel: 'Pending - HR Evaluator',
-            reviewedBy:  '---',
-            remarks:     'Position change request logged by ' + headName + '.',
-            fileName:    'PCR_' + (positionChangeData.length + 1) + '.pdf'
+            reason:       reason,
+            submitted:    new Date().toLocaleDateString(),
+            progress:     'Stage 1 of 3',
+            status:       'pending-head',
+            statusLabel:  'Pending - Dept. Head',
+            reviewedBy:   '---',
+            remarks:      'Position change request logged by ' + headName + '.',
+            fileName:     'PCR_' + (positionChangeData.length + 1) + '.pdf'
         };
 
         positionChangeData.push(newEntry);
@@ -383,6 +422,7 @@ document.addEventListener('DOMContentLoaded', function () {
             'Position change request for ' + empName + ' has been logged successfully.');
     });
 
+    // Modal approve / reject buttons
     document.getElementById('modalApproveBtn').addEventListener('click', function () {
         processApp(activeAppId, 'Approved');
     });
@@ -390,8 +430,10 @@ document.addEventListener('DOMContentLoaded', function () {
         processApp(activeAppId, 'Rejected');
     });
 
+    // Modal close
     document.getElementById('modalCloseBtn').addEventListener('click', closeViewModal);
 
+    // Cancel position-change modal
     document.getElementById('cancelRequest').addEventListener('click', function () {
         posModal.style.display = 'none';
         resetPositionForm();
@@ -400,10 +442,9 @@ document.addEventListener('DOMContentLoaded', function () {
         renderTable('Active');
     });
 
+    // Click outside modal to close
     window.addEventListener('click', function (e) {
-        if (e.target === viewModal) {
-            closeViewModal();
-        }
+        if (e.target === viewModal) closeViewModal();
         if (e.target === posModal) {
             posModal.style.display = 'none';
             resetPositionForm();
@@ -413,6 +454,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    // ESC key
     document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') {
             closeViewModal();
@@ -424,6 +466,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    // Live search
     document.getElementById('tableSearch').addEventListener('keyup', function (e) {
         const val = e.target.value.toLowerCase();
         document.querySelectorAll('#applicationTableBody tr').forEach(function (row) {
@@ -431,5 +474,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
+    // Initial render
     renderTable('Active');
 });

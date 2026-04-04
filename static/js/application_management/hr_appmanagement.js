@@ -4,6 +4,7 @@
    ============================================================ */
 
 const hrName = 'HR Manager';
+const HR_STAGE = 'pending-hr';
 let activeAppId = null;
 
 // ── Sample Data ───────────────────────────────────────────────────────
@@ -78,7 +79,7 @@ let appData = [
 // ── Position Change Request Data ──────────────────────────────────────
 let positionChangeData = [];
 
-// Mock employee lookup — simulates auto-fill from a database
+// Mock employee lookup
 const employeeDirectory = {
     'dela cruz, juan':   { id: 'EMP-001', position: 'Instructor',         dept: 'CCS' },
     'santos, maria':     { id: 'EMP-002', position: 'Professor',           dept: 'CBA' },
@@ -93,6 +94,10 @@ function isFinalStatus(status) {
     return status === 'approved' || status === 'rejected';
 }
 
+function canActOnApp(status) {
+    return status === HR_STAGE;
+}
+
 function resetPositionForm() {
     document.getElementById('pcEmpName').value       = '';
     document.getElementById('pcEmpId').value         = '';
@@ -102,7 +107,6 @@ function resetPositionForm() {
     document.getElementById('pcEffectiveDate').value = '';
     document.getElementById('pcReason').value        = '';
 
-    // Clear validation highlights
     ['pcEmpName', 'pcRequestedPos', 'pcEffectiveDate', 'pcReason'].forEach(function (id) {
         document.getElementById(id).style.borderColor = '';
     });
@@ -147,10 +151,10 @@ function showToast(type, title, message) {
             '<div class="toast-title">' + title + '</div>' +
             '<div class="toast-msg">' + message + '</div>' +
         '</div>' +
-        '<button class="toast-close" id="toastCloseBtn"><i class="fas fa-times"></i></button>' +
+        '<button class="toast-close"><i class="fas fa-times"></i></button>' +
         '<div class="toast-progress"></div>';
 
-    toast.querySelector('#toastCloseBtn').addEventListener('click', function () {
+    toast.querySelector('.toast-close').addEventListener('click', function () {
         removeToast(toast);
     });
 
@@ -181,8 +185,9 @@ function renderTable(mode) {
     }
 
     filtered.forEach(function (app) {
-        const clone      = template.content.cloneNode(true);
-        const isFinal    = isFinalStatus(app.status);
+        const clone   = template.content.cloneNode(true);
+        const isFinal = isFinalStatus(app.status);
+        const canAct  = canActOnApp(app.status);
 
         clone.querySelector('.col-id').innerText        = app.id;
         clone.querySelector('.col-name').innerText      = app.name;
@@ -196,11 +201,13 @@ function renderTable(mode) {
         const actionsCell = clone.querySelector('.col-actions');
 
         if (isFinal) {
+            // Completed — view only
             actionsCell.innerHTML = '<span class="action-link view-link-btn">View Details</span>';
             actionsCell.querySelector('.view-link-btn').addEventListener('click', function () {
                 openModal(app.id);
             });
-        } else {
+        } else if (canAct) {
+            // HR's stage — show View + Update dropdown
             actionsCell.innerHTML =
                 '<div class="actions-cell">' +
                     '<span class="action-link view-link-btn">View Details</span>' +
@@ -223,6 +230,15 @@ function renderTable(mode) {
             actionsCell.querySelector('.reject-option').addEventListener('click', function (e) {
                 e.preventDefault();
                 processApp(app.id, 'Rejected');
+            });
+        } else {
+            // Not HR's stage — view only, no Update dropdown
+            actionsCell.innerHTML =
+                '<div class="actions-cell">' +
+                    '<span class="action-link view-link-btn">View Details</span>' +
+                '</div>';
+            actionsCell.querySelector('.view-link-btn').addEventListener('click', function () {
+                openModal(app.id);
             });
         }
 
@@ -248,8 +264,9 @@ function openModal(id) {
     document.getElementById('pdfPlaceholder').innerHTML       =
         '<i class="fas fa-file-pdf"></i><p>Preview for ' + app.fileName + '</p>';
 
+    // Only show Approve/Reject if it's HR's stage
     document.getElementById('modalActions').style.display =
-        isFinalStatus(app.status) ? 'none' : 'flex';
+        (!isFinalStatus(app.status) && canActOnApp(app.status)) ? 'flex' : 'none';
 
     document.getElementById('viewModal').style.display = 'flex';
 }
@@ -265,6 +282,13 @@ function processApp(id, decision) {
 
     const app     = appData[idx];
     const dateStr = new Date().toLocaleDateString();
+
+    // Guard: only allow action if it's HR's stage
+    if (!canActOnApp(app.status)) {
+        showToast('info', 'Action Not Allowed',
+            'This application is not at the HR evaluation stage.');
+        return;
+    }
 
     if (decision === 'Approved') {
         app.status      = 'approved';
@@ -291,7 +315,6 @@ function processApp(id, decision) {
     document.getElementById('modalReviewerText').innerHTML = '<small>Reviewed by: ' + app.reviewedBy + '</small>';
     document.getElementById('modalActions').style.display  = 'none';
 
-    // Re-render table in current mode
     const currentMode = document.getElementById('tab-new').classList.contains('active')
         ? 'Active' : 'History';
     renderTable(currentMode);
@@ -299,7 +322,7 @@ function processApp(id, decision) {
 
 // ── DOM Ready ─────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function () {
-    const sidebar   = document.getElementById('sidebar');
+    const sidebar     = document.getElementById('sidebar');
     const logoToggle  = document.getElementById('logoToggle');
     const closeBtn    = document.getElementById('closeBtn');
     const tabNew      = document.getElementById('tab-new');
@@ -317,7 +340,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (closeBtn)   closeBtn.onclick   = function () { sidebar.classList.add('collapsed'); };
     if (logoToggle) logoToggle.onclick = function () { sidebar.classList.toggle('collapsed'); };
 
-    // Tab — New Employee Applications
+    // Tab — Records
     tabNew.addEventListener('click', function () {
         tabNew.classList.add('active');
         tabPosition.classList.remove('active');
@@ -331,7 +354,7 @@ document.addEventListener('DOMContentLoaded', function () {
         posModal.style.display = 'flex';
     });
 
-    // Auto-fill employee details as user types name
+    // Auto-fill employee details
     document.getElementById('pcEmpName').addEventListener('blur', function () {
         autoFillEmployee(this.value);
     });
@@ -344,7 +367,6 @@ document.addEventListener('DOMContentLoaded', function () {
         var effectDate   = document.getElementById('pcEffectiveDate').value;
         var reason       = document.getElementById('pcReason').value.trim();
 
-        // Validation — highlight empty required fields
         var valid = true;
         [
             { id: 'pcEmpName',       val: empName      },
@@ -366,34 +388,30 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        // Build new record
         var currentPos = document.getElementById('pcCurrentPos').value.trim() || 'N/A';
         var dept       = document.getElementById('pcDept').value.trim()       || 'N/A';
 
         var newEntry = {
-            id:          generatePCRId(),
-            name:        empName,
-            empId:       empId || 'N/A',
-            dept:        dept,
-            position:    currentPos,
+            id:           generatePCRId(),
+            name:         empName,
+            empId:        empId || 'N/A',
+            dept:         dept,
+            position:     currentPos,
             requestedPos: requestedPos,
             effectiveDate: effectDate,
-            reason:      reason,
-            submitted:   new Date().toLocaleDateString(),
-            progress:    'Stage 1 of 3',
-            status:      'pending-hr',
-            statusLabel: 'Pending - HR Evaluator',
-            reviewedBy:  '---',
-            remarks:     'Position change request logged by ' + hrName + '.',
-            fileName:    'PCR_' + (positionChangeData.length + 1) + '.pdf'
+            reason:       reason,
+            submitted:    new Date().toLocaleDateString(),
+            progress:     'Stage 1 of 3',
+            status:       'pending-hr',
+            statusLabel:  'Pending - HR Evaluator',
+            reviewedBy:   '---',
+            remarks:      'Position change request logged by ' + hrName + '.',
+            fileName:     'PCR_' + (positionChangeData.length + 1) + '.pdf'
         };
 
         positionChangeData.push(newEntry);
-
-        // Also push into main appData so it shows in the table
         appData.push(newEntry);
 
-        // Close modal, reset form, switch back to New Employee tab
         posModal.style.display = 'none';
         resetPositionForm();
         tabNew.classList.add('active');
@@ -412,7 +430,7 @@ document.addEventListener('DOMContentLoaded', function () {
         processApp(activeAppId, 'Rejected');
     });
 
-    // Modal close button
+    // Modal close
     document.getElementById('modalCloseBtn').addEventListener('click', closeViewModal);
 
     // Cancel position-change modal
@@ -426,9 +444,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Click outside modal to close
     window.addEventListener('click', function (e) {
-        if (e.target === viewModal) {
-            closeViewModal();
-        }
+        if (e.target === viewModal) closeViewModal();
         if (e.target === posModal) {
             posModal.style.display = 'none';
             resetPositionForm();
@@ -438,7 +454,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // ESC key to close modals
+    // ESC key
     document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') {
             closeViewModal();
