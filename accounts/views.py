@@ -151,7 +151,7 @@ def admin_dashboard(request):
 
 @login_required
 def employee_dashboard(request):
-    return render(request, 'dashboards/emp_dash.html')
+    return render(request, 'employee/emp_dash.html')
 
 @login_required
 def employee_profile(request):
