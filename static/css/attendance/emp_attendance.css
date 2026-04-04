@@ -402,7 +402,7 @@ hr {
     align-items: stretch;   /* ← add */
     transition: margin-left 0.35s ease;
     flex: 1;
-    border-radius: 25px;
+    
 }
 
 
@@ -417,7 +417,7 @@ hr {
 
     background: var(--surface);
 
-    border-radius: var(--radius-lg);
+    border-radius: 25px;
 
     padding: 28px 32px;
 
