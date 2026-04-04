@@ -10,11 +10,11 @@
 </head>
 <body>
 
-    <div class="master-wrapper">
-        
-        <div class="background"></div>
+    <div class="background"></div>
 
-        <div class="sidebar" id="sidebar">
+    <div class="single-scrollable-container">
+        
+        <nav class="sidebar" id="sidebar">
             <div class="top-section">
                 <div class="logo-wrapper" id="logoToggle">
                     <img src="../../static/img/general/uph.png" class="logo" alt="Logo">
@@ -28,55 +28,15 @@
             </div>
 
            <ul class="menu">
-                <li>
-                    <a href="emp_dash.html" class="menu-item">
-                        <i class="fas fa-border-all"></i>
-                        <span>Dashboard</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="../employee/emp_profile_view.html" class="menu-item">
-                        <i class="fas fa-user"></i>
-                        <span>Profile</span>
-                    </a>
-                </li>
+                <li><a href="emp_dash.html" class="menu-item"><i class="fas fa-border-all"></i><span>Dashboard</span></a></li>
+                <li><a href="../employee/emp_profile_view.html" class="menu-item"><i class="fas fa-user"></i><span>Profile</span></a></li>
                 <hr>
-                <li>
-                    <a href="ENTER" class="menu-item">
-                        <i class="fas fa-user-edit"></i>
-                        <span>Position Change Request</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="../attendance/emp_attendance.html" class="menu-item active">
-                        <i class="fas fa-calendar-check"></i>
-                        <span>Attendance</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="../leave/hr_leaveselect.html" class="menu-item">
-                        <i class="fas fa-plane-departure"></i>
-                        <span>Leave Request</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="ENTER" class="menu-item">
-                        <i class="fas fa-star"></i>
-                        <span>Performance Evaluation</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="ENTER" class="menu-item">
-                        <i class="fas fa-folder-open"></i>
-                        <span>Documents</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="../training_management/emp_training.html" class="menu-item">
-                        <i class="fas fa-chalkboard-teacher"></i>
-                        <span>Trainings</span>
-                    </a>
-                </li>
+                <li><a href="ENTER" class="menu-item"><i class="fas fa-user-edit"></i><span>Position Change Request</span></a></li>
+                <li><a href="../attendance/emp_attendance.html" class="menu-item active"><i class="fas fa-calendar-check"></i><span>Attendance</span></a></li>
+                <li><a href="../leave/hr_leaveselect.html" class="menu-item"><i class="fas fa-plane-departure"></i><span>Leave Request</span></a></li>
+                <li><a href="ENTER" class="menu-item"><i class="fas fa-star"></i><span>Performance Evaluation</span></a></li>
+                <li><a href="ENTER" class="menu-item"><i class="fas fa-folder-open"></i><span>Documents</span></a></li>
+                <li><a href="../training_management/emp_training.html" class="menu-item"><i class="fas fa-chalkboard-teacher"></i><span>Trainings</span></a></li>
             </ul>
 
             <div class="bottom-section">
@@ -85,7 +45,7 @@
                     <span>Log Out</span>
                 </a>
             </div>
-        </div>
+        </nav>
 
         <main class="main-container" id="mainContent">
             
@@ -186,9 +146,7 @@
                 </div>
             </div>
 
-        </main>
-
-        <div class="history-modal" id="historyModal">
+        </main> <div class="history-modal" id="historyModal">
             <div class="history-modal-content">
                 <div class="history-modal-header">
                     <div class="employee-tab">Dela Cruz, Juan</div>
@@ -205,55 +163,29 @@
                     </div>
                     <span class="close-history" id="closeHistory">&times;</span>
                 </div>
-
                 <div class="history-modal-body">
                     <div class="history-layout-grid">
                         <div class="table-section">
                             <table class="history-log-table" id="weeklyTable">
                                 <thead>
-                                    <tr>
-                                        <th>Date</th>
-                                        <th>Day</th>
-                                        <th>Time In</th>
-                                        <th>Time Out</th>
-                                        <th>Total Hours</th>
-                                        <th>Status</th>
-                                    </tr>
+                                    <tr><th>Date</th><th>Day</th><th>Time In</th><th>Time Out</th><th>Total Hours</th><th>Status</th></tr>
                                 </thead>
                                 <tbody id="weeklyTableBody"></tbody>
                             </table>
                             <div class="monthly-grid" id="monthlyGrid"></div>
                         </div>
-
                         <aside class="history-sidebar">
                             <div class="employee-details-card">
                                 <h3>Employee Details</h3>
-                                <div class="profile-circle">
-                                    <i class="fas fa-user"></i>
-                                </div>
+                                <div class="profile-circle"><i class="fas fa-user"></i></div>
                                 <div class="details-rows">
-                                    <div class="detail-item">
-                                        <strong>Employee ID</strong>
-                                        <span>001</span>
-                                    </div>
-                                    <div class="detail-item">
-                                        <strong>Position</strong>
-                                        <span>Instructor</span>
-                                    </div>
-                                    <div class="detail-item">
-                                        <strong>Department</strong>
-                                        <span>CCS</span>
-                                    </div>
-                                    <div class="detail-item">
-                                        <strong>Employment Type</strong>
-                                        <span>Full-Time</span>
-                                    </div>
+                                    <div class="detail-item"><strong>Employee ID</strong><span>001</span></div>
+                                    <div class="detail-item"><strong>Position</strong><span>Instructor</span></div>
+                                    <div class="detail-item"><strong>Department</strong><span>CCS</span></div>
+                                    <div class="detail-item"><strong>Employment Type</strong><span>Full-Time</span></div>
                                 </div>
                             </div>
-                            <div class="hours-summary-box">
-                                Total Hours This Week
-                                <span id="totalHoursCount">42h 15m</span>
-                            </div>
+                            <div class="hours-summary-box">Total Hours This Week<span id="totalHoursCount">42h 15m</span></div>
                         </aside>
                     </div>
                 </div>
@@ -261,12 +193,10 @@
         </div>
 
         <div id="clockOutOverlay" class="clock-out-overlay" aria-hidden="true">
-            <div class="clock-out-dialog" role="dialog" aria-modal="true" aria-labelledby="clockOutDialogTitle">
+            <div class="clock-out-dialog" role="dialog" aria-modal="true">
                 <div id="clockOutConfirmStep" class="clock-out-step">
-                    <div class="clock-out-icon clock-out-icon--confirm" aria-hidden="true">
-                        <i class="fas fa-door-open"></i>
-                    </div>
-                    <h2 id="clockOutDialogTitle" class="clock-out-title">Clock out now?</h2>
+                    <div class="clock-out-icon clock-out-icon--confirm" aria-hidden="true"><i class="fas fa-door-open"></i></div>
+                    <h2 class="clock-out-title">Clock out now?</h2>
                     <p class="clock-out-message">Your shift will end and today’s working time will be recorded.</p>
                     <div class="clock-out-actions">
                         <button type="button" class="clock-out-btn clock-out-btn--ghost" id="clockOutCancel">Cancel</button>
@@ -274,9 +204,7 @@
                     </div>
                 </div>
                 <div id="clockOutSuccessStep" class="clock-out-step clock-out-step--hidden" hidden>
-                    <div class="clock-out-icon clock-out-icon--success" aria-hidden="true">
-                        <i class="fas fa-check"></i>
-                    </div>
+                    <div class="clock-out-icon clock-out-icon--success" aria-hidden="true"><i class="fas fa-check"></i></div>
                     <h2 class="clock-out-title">You’re clocked out</h2>
                     <p class="clock-out-duration" id="clockOutDurationText">Total time: 0h 00m</p>
                     <p class="clock-out-sub">Shift saved. See you next time.</p>
