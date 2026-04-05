@@ -310,6 +310,7 @@ function capitalize(str) { return str.charAt(0).toUpperCase() + str.slice(1); }
 switchView("weekly");
 
 
+
 /* ── 12. TAB SWITCHER IMPLEMENTATION ─────────────────────── */
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -332,7 +333,7 @@ document.addEventListener('DOMContentLoaded', function () {
         tabMonit.addEventListener('click', function () {
             tabMonit.classList.add('active');
             tabLog.classList.remove('active');
-            
+             
             // Logic to show Monitoring content and hide Log
             if (monitContent) monitContent.style.display = 'block';
             if (logContent) logContent.style.display = 'none';
