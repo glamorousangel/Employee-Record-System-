@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Attendance | HR System</title>
+    <title>Attendance Log | HR System</title>
     <link rel="shortcut icon" type="image/png" href="../../static/img/general/uph.png">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../../static/css/attendance/hr_attendance.css">
@@ -12,7 +12,6 @@
 
 <div class="background"></div>
 
-<!-- ── SIDEBAR ── -->
 <nav class="sidebar" id="sidebar">
     <div class="top-section">
         <div class="logo-wrapper" id="logoToggle">
@@ -28,7 +27,7 @@
         <hr>
         <li><a href="../application_management/hr_appmanagement.html" class="menu-item"><i class="fas fa-file"></i><span>Application Management</span></a></li>
         <li><a href="#" class="menu-item"><i class="fas fa-database"></i><span>Employee Records</span></a></li>
-        <li><a href="#" class="menu-item active"><i class="fas fa-calendar-alt"></i><span>Attendance</span></a></li>
+        <li><a href="hr_attendance_log.html" class="menu-item active"><i class="fas fa-calendar-alt"></i><span>Attendance</span></a></li>
         <li><a href="../leave/hr_leaveselect.html" class="menu-item"><i class="fas fa-briefcase"></i><span>Leave Management</span></a></li>
         <li><a href="#" class="menu-item"><i class="fas fa-star"></i><span>Performance Evaluation</span></a></li>
         <li><a href="#" class="menu-item"><i class="fas fa-folder-open"></i><span>Document Management</span></a></li>
@@ -43,24 +42,18 @@
     </div>
 </nav>
 
-<!-- ── MAIN CONTENT ── -->
 <main class="main-content">
     <div class="white-container">
 
-        <!-- TOP HEADER WITH TOGGLE -->
         <div class="dashboard-header">
             <h1>Attendance</h1>
             <div class="view-toggle-header">
-                <button class="toggle-btn active" id="btnAttLog">Attendance Log</button>
-                <button class="toggle-btn" id="btnAttMon">Attendance Monitoring</button>
+                <a href="hr_attendance_log.html" class="toggle-btn active">Attendance Log</a>
+                <a href="hr_attendance_monitoring.html" class="toggle-btn">Attendance Monitoring</a>
             </div>
         </div>
 
-        <!-- ══════════════════════════════════════
-             PANEL 1 — ATTENDANCE LOG
-        ══════════════════════════════════════ -->
-        <div class="section-panel active" id="panelLog">
-
+        <div class="section-panel active">
             <div class="al-header-banner">
                 <div class="al-header-inner">
                     <div>
@@ -155,128 +148,10 @@
                     <button class="btn-history" id="openHistory">View Full History</button>
                 </div>
             </div>
-
-        </div><!-- /panelLog -->
-
-        <!-- ══════════════════════════════════════
-             PANEL 2 — ATTENDANCE MONITORING
-        ══════════════════════════════════════ -->
-        <div class="section-panel" id="panelMonitoring">
-
-            <div class="am-top-bar">
-                <div class="am-search-pill">
-                    <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Search by Name / ID / Department / Position">
-                </div>
-            </div>
-
-            <section class="stats-container">
-                <div class="stat-card"><span class="label">Total Employees</span><span class="value">-</span></div>
-                <div class="stat-card"><span class="label">Present Today</span><span class="value">-</span></div>
-                <div class="stat-card"><span class="label">Absent Today</span><span class="value">-</span></div>
-                <div class="stat-card"><span class="label">On Leave</span><span class="value">-</span></div>
-                <div class="stat-card"><span class="label">Late Arrivals</span><span class="value">-</span></div>
-            </section>
-
-            <section class="controls-row">
-                <div class="active-filters">
-                    <button class="filter-tag">Sample Filter <i class="fas fa-times"></i></button>
-                </div>
-                <div class="action-buttons">
-                    <button class="btn-action"><i class="fas fa-filter"></i> Filter</button>
-                    <button class="btn-action"><i class="fas fa-calendar-alt"></i> Sample Date</button>
-                    <div class="am-pagination">
-                        <i class="fas fa-chevron-left"></i>
-                        <span>Week 5</span>
-                        <i class="fas fa-chevron-right"></i>
-                    </div>
-                </div>
-            </section>
-
-            <div class="table-card">
-                <table class="am-table">
-                    <thead>
-                        <tr>
-                            <th class="col-employee">Employee</th>
-                            <th>Sunday</th>
-                            <th>Monday</th>
-                            <th>Tuesday</th>
-                            <th>Wednesday</th>
-                            <th>Thursday</th>
-                            <th>Friday</th>
-                            <th>Saturday</th>
-                        </tr>
-                    </thead>
-                    <tbody id="amTableBody">
-                        <tr>
-                            <td>
-                                <div class="user-cell">
-                                    <div class="user-avatar"><i class="fas fa-user"></i></div>
-                                    <div class="user-info">
-                                        <span class="name">Juan Dela Cruz</span>
-                                        <span class="title">Instructor</span>
-                                        <span class="dept-badge">CCS</span>
-                                    </div>
-                                </div>
-                            </td>
-                            <td><span class="day-num">2</span></td>
-                            <td><span class="day-num">3</span><div class="am-pill pill-green"><i class="far fa-check-circle"></i> 8 hours</div></td>
-                            <td><span class="day-num">4</span><div class="am-pill pill-tan"><i class="far fa-clock"></i> 4h 36m</div></td>
-                            <td><span class="day-num">5</span><div class="am-pill pill-purple"><i class="far fa-smile"></i> Leave</div></td>
-                            <td><span class="day-num">6</span><div class="am-pill pill-green"><i class="far fa-check-circle"></i> 8h 39m</div></td>
-                            <td><span class="day-num">7</span><div class="am-pill pill-green">Active</div></td>
-                            <td><span class="day-num">8</span></td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="user-cell">
-                                    <div class="user-avatar"><i class="fas fa-user-tie"></i></div>
-                                    <div class="user-info">
-                                        <span class="name">Maria Santos</span>
-                                        <span class="title">Admin Staff</span>
-                                        <span class="dept-badge">HR</span>
-                                    </div>
-                                </div>
-                            </td>
-                            <td><span class="day-num">2</span></td>
-                            <td><span class="day-num">3</span><div class="am-pill pill-green"><i class="far fa-check-circle"></i> 9 hours</div></td>
-                            <td><span class="day-num">4</span><div class="am-pill pill-green"><i class="far fa-check-circle"></i> 8 hours</div></td>
-                            <td><span class="day-num">5</span><div class="am-pill pill-red"><i class="fas fa-times-circle"></i> Absent</div></td>
-                            <td><span class="day-num">6</span><div class="am-pill pill-green"><i class="far fa-check-circle"></i> 8 hours</div></td>
-                            <td><span class="day-num">7</span><div class="am-pill pill-green">Active</div></td>
-                            <td><span class="day-num">8</span></td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="user-cell">
-                                    <div class="user-avatar"><i class="fas fa-user-graduate"></i></div>
-                                    <div class="user-info">
-                                        <span class="name">Pedro Penduko</span>
-                                        <span class="title">Assistant Professor</span>
-                                        <span class="dept-badge">CBA</span>
-                                    </div>
-                                </div>
-                            </td>
-                            <td><span class="day-num">2</span></td>
-                            <td><span class="day-num">3</span><div class="am-pill pill-tan"><i class="far fa-clock"></i> 6h 15m</div></td>
-                            <td><span class="day-num">4</span><div class="am-pill pill-green"><i class="far fa-check-circle"></i> 8 hours</div></td>
-                            <td><span class="day-num">5</span><div class="am-pill pill-green"><i class="far fa-check-circle"></i> 8 hours</div></td>
-                            <td><span class="day-num">6</span><div class="am-pill pill-green"><i class="far fa-check-circle"></i> 8 hours</div></td>
-                            <td><span class="day-num">7</span><div class="am-pill pill-green">Active</div></td>
-                            <td><span class="day-num">8</span></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-        </div><!-- /panelMonitoring -->
-
-    </div><!-- /white-container -->
+        </div>
+    </div>
 </main>
 
-<!-- ══════════════════════════════════════
-     HISTORY MODAL (Attendance Log)
-══════════════════════════════════════ -->
 <div class="history-modal" id="historyModal">
     <div class="history-modal-content">
         <div class="history-modal-header">
@@ -333,60 +208,6 @@
     </div>
 </div>
 
-<!-- ══════════════════════════════════════
-     EMPLOYEE DETAIL MODAL (Monitoring)
-══════════════════════════════════════ -->
-<div id="amModal" class="am-modal">
-    <div class="am-modal-content">
-        <span class="close-am-modal" id="closeAmModal">&times;</span>
-        <div class="am-modal-body">
-            <div class="am-modal-main">
-                <div class="am-modal-header-row">
-                    <h2 id="amModalName">Employee Name</h2>
-                    <div class="am-view-toggles">
-                        <button class="am-view-btn active" id="amWeeklyBtn">Weekly View</button>
-                        <button class="am-view-btn" id="amMonthlyBtn">Monthly View</button>
-                    </div>
-                    <div class="date-pager">
-                        <i class="fas fa-chevron-left"></i>
-                        <span id="amDateRange">February 4 – 10, 2026</span>
-                        <i class="fas fa-chevron-right"></i>
-                    </div>
-                </div>
-                <div class="modal-table-wrapper">
-                    <table class="modal-table">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Day</th>
-                                <th>Time In</th>
-                                <th>Time Out</th>
-                                <th>Total Hours</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="amModalTableBody"></tbody>
-                    </table>
-                </div>
-                <div class="total-hours-footer">
-                    Total Hours This <span id="amPeriodText">Week</span>: <span id="amTotalHours">42h 15m</span>
-                </div>
-            </div>
-            <div class="am-modal-sidebar">
-                <h3>Employee Details</h3>
-                <div class="detail-avatar"><i class="fas fa-user"></i></div>
-                <div class="info-group"><label>Employee ID</label><span id="amDetID">001</span></div>
-                <div class="info-group"><label>Position</label><span id="amDetPos">Instructor</span></div>
-                <div class="info-group"><label>Department</label><span id="amDetDept">CCS</span></div>
-                <div class="info-group"><label>Employment Type</label><span>Full-Time</span></div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ══════════════════════════════════════
-     CLOCK OUT DIALOG
-══════════════════════════════════════ -->
 <div id="clockOutOverlay" class="clock-out-overlay" aria-hidden="true">
     <div class="clock-out-dialog" role="dialog" aria-modal="true">
         <div id="clockOutConfirmStep" class="clock-out-step">
