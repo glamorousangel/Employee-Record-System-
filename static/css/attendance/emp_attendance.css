@@ -239,11 +239,12 @@ body {
     background: #fdfdfd;
     border-radius: 25px;
     padding: 35px 40px;
-    box-shadow: none;
-    border: 1px solid #dcdcdc;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
     height: 100%;
     margin: 0 auto;
     width: 100%;
+    max-width: 1400px;
     overflow-y: auto;
     overflow-x: hidden;
     -ms-overflow-style: none;
@@ -464,26 +465,6 @@ hr {
 
 
 
-.header-banner-inner {
-
-    position: relative;
-
-    z-index: 1;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: space-between;
-
-    gap: 24px;
-
-    padding: 28px 32px;
-
-}
-
-
-
 .header-kicker {
 
     font-size: 0.72rem;
@@ -536,29 +517,7 @@ hr {
 
 
 
-.header-weather {
 
-    width: 64px;
-
-    height: 64px;
-
-    border-radius: 50%;
-
-    background: rgba(255, 255, 255, 0.15);
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    font-size: 1.75rem;
-
-    flex-shrink: 0;
-
-    border: 1px solid rgba(255, 255, 255, 0.25);
-
-}
 
 
 
@@ -571,6 +530,8 @@ hr {
     grid-template-columns: 1fr;
 
     gap: 22px;
+
+    margin-top: 18px;
 
     margin-bottom: 22px;
 
@@ -1366,14 +1327,6 @@ a.btn-secondary:visited {
     }
 
 
-
-    .header-banner-inner {
-
-        flex-direction: column;
-
-        align-items: flex-start;
-
-    }
 
 }
 
@@ -2323,21 +2276,32 @@ a.btn-secondary:visited {
     gap: 14px;
 }
 
+.dashboard-header--title-tabs {
+    margin-bottom: 18px;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
 .dashboard-header h1 {
     color: #1a1a1a;
     font-size: 28px;
     font-weight: 700;
+    margin: 0;
+    line-height: 1.2;
 }
 
 /* Compact Header - Right Aligned */
 .dashboard-header--compact-right {
-    justify-content: flex-end;
-    margin-bottom: 20px;
+    position: static;
+    margin: 0;
+    z-index: auto;
 }
 
 .dashboard-header--compact-right .view-toggle-header {
-    transform: scale(0.85);
-    transform-origin: right;
+    transform: none;
+    transform-origin: initial;
 }
 
 /* Tabs Container */
@@ -2377,23 +2341,28 @@ a.btn-secondary:visited {
 /* View Toggle Header */
 .view-toggle-header {
     display: flex;
-    gap: 0;
-    align-items: center;
-    margin: 20px 0;
-    border-bottom: 2px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1.5px solid #d0c8c8;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(74, 29, 29, 0.08);
+    width: fit-content;
 }
 
 .toggle-btn {
-    padding: 14px 20px;
+    padding: 10px 26px;
     background: transparent;
     border: none;
-    border-bottom: 3px solid transparent;
-    color: var(--text-muted);
-    font-size: 0.95rem;
+    color: #555;
+    font-size: 0.9rem;
     font-weight: 600;
     cursor: pointer;
     text-decoration: none;
     transition: all 0.2s ease;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .toggle-btn:hover {
@@ -2401,8 +2370,24 @@ a.btn-secondary:visited {
 }
 
 .toggle-btn.active {
+    background: var(--brand);
+    color: #fff !important;
+    text-decoration: none;
+}
+
+.toggle-btn:first-child {
+    border-right: 1.5px solid #d0c8c8;
+}
+
+.toggle-btn.active:hover {
+    opacity: 0.9;
+    color: #fff !important;
+}
+
+.toggle-btn:not(.active):hover {
+    text-decoration: none;
     color: var(--brand);
-    border-bottom-color: var(--brand);
+    background: #f9f9f9;
 }
 
 
