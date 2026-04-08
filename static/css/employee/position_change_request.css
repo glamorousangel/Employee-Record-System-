@@ -244,26 +244,44 @@ hr {
     line-height: 1.5;
 }
 
-.btn-records {
+.view-toggle-header {
+    display: flex;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1.5px solid #d0c8c8;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(74, 29, 29, 0.08);
     flex-shrink: 0;
-    padding: 12px 22px;
-    border: 1px solid rgba(74, 29, 29, 0.15);
-    border-radius: 999px;
-    background: linear-gradient(135deg, #ffffff 0%, #f7efef 100%);
-    color: #4a1d1d;
-    font-size: 12px;
-    font-weight: 700;
-    cursor: pointer;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    box-shadow: 0 8px 18px rgba(74, 29, 29, 0.08);
-    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
-.btn-records:hover {
-    background: linear-gradient(135deg, #fffafa 0%, #f4e6e6 100%);
-    transform: translateY(-1px);
-    box-shadow: 0 10px 22px rgba(74, 29, 29, 0.12);
+.toggle-btn {
+    padding: 10px 20px;
+    border: none;
+    background: transparent;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    color: #555;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.toggle-btn:first-child {
+    border-right: 1.5px solid #d0c8c8;
+}
+
+.toggle-btn.active {
+    background: #4a1d1d;
+    color: #fff;
+}
+
+.toggle-btn:not(.active):hover {
+    color: #4a1d1d;
+    background: #f9f9f9;
 }
 
 .position-form {
