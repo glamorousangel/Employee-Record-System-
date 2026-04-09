@@ -167,6 +167,26 @@ def employee_profile(request):
     return render(request, 'employee/emp_profile_view.html', context)
 
 @login_required
+def head_profile(request):
+    documents = Document.objects.filter(employee__user=request.user).select_related('employee')
+    context = {
+        'documents': documents,
+        'user': request.user,
+        'upload_form': DocumentUploadForm(user=request.user)
+    }
+    return render(request, 'head/head_profile_view.html', context)
+
+@login_required
+def sd_profile(request):
+    documents = Document.objects.filter(employee__user=request.user).select_related('employee')
+    context = {
+        'documents': documents,
+        'user': request.user,
+        'upload_form': DocumentUploadForm(user=request.user)
+    }
+    return render(request, 'sd/sd_profile_view.html', context)
+
+@login_required
 def employee_attendance(request):
     # This view will render the employee's attendance page
     return render(request, 'dashboards/employee_attendance.html')

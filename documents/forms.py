@@ -16,8 +16,7 @@ class DocumentUploadForm(forms.ModelForm):
         user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
         
-        # FIXED: If user is NOT HR, they cannot pick who the document belongs to.
-        # It must belong to them automatically.
-        if user and user.role != 'HR':
-            if 'employee' in self.fields:
-                self.fields.pop('employee')
+        # The employee field is hidden/excluded for everyone because it's set 
+        # either by the profile of the current user or via hidden input for HR.
+        if 'employee' in self.fields:
+            self.fields.pop('employee')

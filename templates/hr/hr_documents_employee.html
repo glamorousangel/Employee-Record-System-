@@ -3,36 +3,43 @@
 {% block content %}
 <h2>Documents for {{ employee.user.get_full_name|default:"Employee" }}</h2>
 
+<button onclick="document.getElementById('hrUploadModal').style.display='block'">Upload Document</button>
+
 <table>
     <thead>
         <tr>
-            <th>Type</th>
-            <th>Uploaded By</th>
-            <th>Upload Date</th>
-            <th>Expiry Date</th>
+            <th>Document Type</th>
+            <th>File Type</th>
+            <th>Status</th>
+            <th>Date Uploaded</th>
             <th>Actions</th>
         </tr>
     </thead>
     <tbody>
-        {% for document in documents %}
-        <tr {% if document.is_expired %}style="color: red;"{% elif document.is_approaching_expiry %}style="color: orange;"{% endif %}>
-            <td>{{ document.document_type }}</td>
-            <td>{{ document.uploaded_by }}</td>
-            <td>{{ document.upload_date|date:"M d, Y" }}</td>
+        {% for doc in documents %}
+        <tr>
+            <td>{{ doc.document_type }}</td>
+            <td>{% if doc.file %}{{ doc.file.name|slice:"-4:" }}{% else %}N/A{% endif %}</td>
             <td>
-                {{ document.expiry_date|default:"N/A" }}
-                {% if document.is_expired %}
-                    <strong>(Expired)</strong>
-                {% elif document.is_approaching_expiry %}
-                    <strong>(Expiring soon)</strong>
+                {% if doc.is_expired %}
+                    <span style="color: red;">Expired</span>
+                {% elif doc.is_approaching_expiry %}
+                    <span style="color: orange;">Needs Update</span>
+                {% else %}
+                    <span style="color: green;">Valid</span>
                 {% endif %}
             </td>
+            <td>{{ doc.upload_date|date:"M d, Y" }}</td>
             <td>
-                <a href="{% url 'documents:download_document' document.id %}">Download</a>
+                {% if doc.file %}
+                <a href="{% url 'documents:view_document_inline' doc.id %}" target="_blank">View</a>
+                {% endif %}
+                <a href="{% url 'documents:download_document' doc.id %}">Download</a>
+                
                 {% if request.user.role == 'HR' %}
-                <form action="{% url 'documents:delete_document' document.id %}" method="post" style="display:inline;">
+                <form method="POST" action="{% url 'documents:delete_document' doc.id %}" style="display:inline;">
                     {% csrf_token %}
-                    <button type="submit">Delete</button>
+                    <button type="submit" onclick="return confirm('Are you sure you want to delete this document?');">Delete</button>
                 </form>
                 {% endif %}
             </td>
@@ -44,4 +51,28 @@
         {% endfor %}
     </tbody>
 </table>
+
+<!-- HR Upload Modal -->
+<div id="hrUploadModal" style="display:none; position:fixed; left:0; top:0; width:100%; height:100%; overflow:auto; background-color:rgba(0,0,0,0.4);">
+    <div style="background-color:#fefefe; margin:15% auto; padding:20px; border:1px solid #888; width:80%;">
+        <span onclick="document.getElementById('hrUploadModal').style.display='none'" style="color:#aaa; float:right; font-size:28px; font-weight:bold; cursor:pointer;">&times;</span>
+        <h2>Upload Document</h2>
+        <form method="POST" action="{% url 'documents:upload_document' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ upload_form.as_p }}
+            <input type="hidden" name="employee_id" value="{{ employee.id }}">
+            <button type="submit">Upload</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Close the modal if the user clicks anywhere outside of it
+    window.onclick = function(event) {
+        var modal = document.getElementById('hrUploadModal');
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+</script>
 {% endblock %}
