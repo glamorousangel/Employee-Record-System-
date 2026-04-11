@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/admin/style.css' %}">
+<div class="main-content" style="padding: 20px; margin-left: 320px;">
+    <div class="form-card" style="background: white; padding: 30px; border-radius: 20px;">
+        <h2 style="color: #800000;">Admin Security & Data Management</h2>
+        <hr>
+        
+        <form method="POST">
+            {% csrf_token %}
+            <div style="margin-bottom: 20px;">
+                <label style="font-weight: bold; display: block; margin-bottom: 10px;">
+                    Session Timeout Duration (Minutes)
+                </label>
+                <input type="number" name="timeout" value="{{ config.session_timeout }}" 
+                       style="width: 100px; padding: 10px; border-radius: 10px; border: 1px solid #ddd;">
+                <p style="font-size: 0.8rem; color: #666;">Users will be logged out after this many minutes of inactivity.</p>
+            </div>
+
+            <button type="submit" style="background: #800000; color: white; padding: 10px 20px; border: none; border-radius: 10px; cursor: pointer;">
+                Update Security Policies
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
