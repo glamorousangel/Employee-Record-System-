@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .models import Application, ApplicationStatusHistory
-from .forms import ApplicationActionForm
+from .forms import ApplicationActionForm, PositionChangeRequestForm
 
 @login_required
 def application_list(request):
@@ -73,3 +73,21 @@ def process_application_action(request, pk):
             return redirect('application_detail', pk=pk)
             
     return redirect('application_detail', pk=pk)
+
+@login_required
+def create_position_change(request):
+    if request.method == 'POST':
+        form = PositionChangeRequestForm(request.POST, request.FILES)
+        if form.is_valid():
+            application = form.save(commit=False)
+            application.applicant_name = f"{request.user.first_name} {request.user.last_name}"
+            application.type = 'Position Change Request'
+            application.status = 'Pending'
+            application.save()
+            
+            messages.success(request, 'Position change request submitted successfully.')
+            return redirect('application_list')
+    else:
+        form = PositionChangeRequestForm()
+        
+    return render(request, 'employee/emp_position_change_request.html', {'form': form})

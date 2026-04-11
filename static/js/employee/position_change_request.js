@@ -12,16 +12,18 @@ const employeeDirectory = {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-    const recordsPageUrl = '../history/timeline.html';
     const sidebar        = document.getElementById('sidebar');
     const logoToggle     = document.getElementById('logoToggle');
     const closeBtn       = document.getElementById('closeBtn');
     const menuItems      = document.querySelectorAll('.menu-item');
+    const tabNewRequest  = document.getElementById('tabNewRequest');
     const positionForm   = document.getElementById('positionForm');
     const empNameInput   = document.getElementById('empName');
     const cancelBtn      = document.getElementById('cancelBtn');
     const submitBtn      = document.getElementById('submitBtn');
     const recordsBtn     = document.getElementById('recordsBtn');
+    const newRequestContainer = document.getElementById('newRequestContainer');
+    const recordsContainer    = document.getElementById('recordsContainer');
 
     // ── Static modal elements (defined in HTML) ──
     const cancelModal      = document.getElementById('cancelModal');
@@ -70,15 +72,23 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    if (recordsBtn) {
-        recordsBtn.addEventListener('click', () => {
-            const employeeName = empNameInput.value.trim();
-            const recordsUrl = employeeName
-                ? `${recordsPageUrl}?employee=${encodeURIComponent(employeeName)}`
-                : recordsPageUrl;
+    if (tabNewRequest && recordsBtn && newRequestContainer && recordsContainer) {
+        const showNewRequest = () => {
+            newRequestContainer.style.display = '';
+            recordsContainer.style.display = 'none';
+            tabNewRequest.classList.add('active');
+            recordsBtn.classList.remove('active');
+        };
 
-            window.location.href = recordsUrl;
-        });
+        const showRecords = () => {
+            newRequestContainer.style.display = 'none';
+            recordsContainer.style.display = '';
+            tabNewRequest.classList.remove('active');
+            recordsBtn.classList.add('active');
+        };
+
+        tabNewRequest.addEventListener('click', showNewRequest);
+        recordsBtn.addEventListener('click', showRecords);
     }
 
     // Close modal on backdrop click

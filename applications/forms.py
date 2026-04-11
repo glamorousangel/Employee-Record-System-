@@ -1,4 +1,5 @@
 from django import forms
+from .models import Application
 
 class ApplicationActionForm(forms.Form):
     DECISION_CHOICES = (
@@ -14,3 +15,8 @@ class ApplicationActionForm(forms.Form):
         widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
         required=False
     )
+
+class PositionChangeRequestForm(forms.ModelForm):
+    class Meta:
+        model = Application
+        fields = ['target_position', 'target_department', 'applicant_info', 'attached_documents']
