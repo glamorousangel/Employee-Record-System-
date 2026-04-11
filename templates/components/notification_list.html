@@ -1,0 +1,117 @@
+<div class="card border-0 shadow-sm">
+  <div class="card-header bg-white d-flex justify-content-between align-items-center py-2">
+    <h6 class="mb-0 fw-bold">Notifications</h6>
+    <button class="btn btn-sm btn-link text-decoration-none p-0" onclick="markAllAsRead()">
+      Mark All as Read
+    </button>
+  </div>
+  <div class="list-group list-group-flush" id="notification-list" style="max-height: 400px; overflow-y: auto;">
+    {% for notif in global_recent_notifications %}
+      <div class="list-group-item list-group-item-action py-3 {% if not notif.is_read %}bg-light{% endif %}" id="notif-{{ notif.id }}">
+        <div class="d-flex w-100 justify-content-between align-items-start">
+          <div>
+            <span class="badge bg-secondary mb-1">{{ notif.notification_type }}</span>
+            <p class="mb-1 small">{{ notif.message }}</p>
+            <small class="text-muted">{{ notif.created_at|date:"M d, Y H:i" }}</small>
+          </div>
+          {% if not notif.is_read %}
+            <button class="btn btn-sm btn-outline-primary ms-2 rounded-circle border-0" onclick="markAsRead({{ notif.id }})" title="Mark as read">
+              <i class="bi bi-circle-fill" style="font-size: 0.5rem;"></i>
+            </button>
+          {% endif %}
+        </div>
+      </div>
+    {% empty %}
+      <div class="list-group-item text-center py-4 text-muted">
+        <small>No recent notifications</small>
+      </div>
+    {% endfor %}
+  </div>
+  <div class="card-footer bg-white text-center py-2 border-top-0">
+    <a href="{% url 'notifications:notification_list' %}" class="text-decoration-none small fw-bold">View All Notifications</a>
+  </div>
+</div>
+
+<script>
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+  }
+
+  const csrftoken = getCookie('csrftoken');
+
+  function updateBadge(newCount) {
+    const badge = document.getElementById('notification-badge');
+    if (badge) {
+      if (newCount > 0) {
+        badge.textContent = newCount;
+        badge.classList.remove('d-none');
+      } else {
+        badge.textContent = '0';
+        badge.classList.add('d-none');
+      }
+    }
+  }
+
+  function markAsRead(id) {
+    fetch(`/notifications/mark-read/${id}/`, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': csrftoken,
+        'Content-Type': 'application/json'
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.status === 'success') {
+        const notifItem = document.getElementById(`notif-${id}`);
+        if (notifItem) {
+          notifItem.classList.remove('bg-light');
+          const btn = notifItem.querySelector('button');
+          if (btn) btn.remove();
+        }
+        
+        // Optionally update the badge count by fetching the unread count
+        fetch('/notifications/unread-count/')
+          .then(res => res.json())
+          .then(countData => {
+            updateBadge(countData.count);
+          });
+      }
+    })
+    .catch(error => console.error('Error:', error));
+  }
+
+  function markAllAsRead() {
+    fetch('/notifications/mark-all-read/', {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': csrftoken,
+        'Content-Type': 'application/json'
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.status === 'success') {
+        const items = document.querySelectorAll('#notification-list .bg-light');
+        items.forEach(item => {
+          item.classList.remove('bg-light');
+          const btn = item.querySelector('button');
+          if (btn) btn.remove();
+        });
+        updateBadge(0);
+      }
+    })
+    .catch(error => console.error('Error:', error));
+  }
+</script>

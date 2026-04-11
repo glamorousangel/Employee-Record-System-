@@ -1,8 +1,12 @@
 from django.urls import path
 from . import views
 
-# Make sure it's exactly 'urlpatterns' in lowercase
+app_name = 'notifications'
+
 urlpatterns = [
-    # You can leave this list empty for now, or add a path:
-    # path('', views.attendance_view, name='attendance_view'),
+    path('list/', views.notification_list, name='notification_list'),
+    path('mark-read/<int:pk>/', views.mark_as_read, name='mark_as_read'),
+    path('mark-all-read/', views.mark_all_as_read, name='mark_all_as_read'),
+    path('unread-count/', views.unread_count, name='unread_count'),
+    path('preferences/', views.update_preferences, name='update_preferences'),
 ]
