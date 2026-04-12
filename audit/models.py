@@ -5,7 +5,8 @@ class LoginLog(models.Model):
     # Foreign Key to your custom accounts.User
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     username = models.CharField(max_length=150)
-    ip_address = models.GenericIPAddressField()
+    # ADDED null=True, blank=True
+    ip_address = models.GenericIPAddressField(null=True, blank=True) 
     user_agent = models.CharField(max_length=255, null=True, blank=True)
     datetime = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20) # Success/Failed
@@ -20,5 +21,6 @@ class ActivityLog(models.Model):
     action = models.CharField(max_length=255)
     module = models.CharField(max_length=100)
     details = models.TextField(blank=True, null=True)
-    ip_address = models.GenericIPAddressField()
+    # ADDED null=True, blank=True
+    ip_address = models.GenericIPAddressField(null=True, blank=True) 
     timestamp = models.DateTimeField(auto_now_add=True)

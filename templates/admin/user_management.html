@@ -215,10 +215,12 @@
     
     <input type="email" id="email" name="email" placeholder="Email" required style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #ddd;">
     
-    <select id="role" name="role" required style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 8px;">
+    <select name="role" id="userRole" class="form-control">
         <option value="ADMIN">Admin</option>
-        <option value="HR">HR</option>
-        <option value="EMPLOYEE">Employee</option>
+        <option value="HR">HR Staff</option>
+        <option value="HEAD">Department Head</option>
+        <option value="EMP">Employee</option> 
+        <option value="SD">Software Developer</option>
     </select>
     
     <input type="password" id="password" name="password1" placeholder="Password" required style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #ddd;">
@@ -226,7 +228,7 @@
     
     <div style="display: flex; justify-content: flex-end; gap: 10px;">
         <button type="button" onclick="closeUserModal()" style="padding: 10px 20px; border-radius: 8px; border: 1px solid #ccc;">Cancel</button>
-        <button type="submit" class="btn-primary" style="background: #800000;">Save User</button>
+        <button type="submit" class="btn-primary" style="background: #800000;">Create User</button>
     </div>
 </form>
     </div>
