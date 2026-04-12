@@ -118,26 +118,12 @@ document.getElementById('role')?.addEventListener('change', function() {
 
     if (deptGroup && deptSelect) {
         // Use 'HEAD' (Uppercase) to match your Django Choices
-        if (this.value === 'HEAD' || this.value === 'EMPLOYEE') { 
+        if (this.value.toUpperCase() === 'HEAD' || this.value.toUpperCase() === 'EMPLOYEE') { 
             deptGroup.style.display = 'block';
             deptSelect.required = true;
         } else {
             deptGroup.style.display = 'none';
             deptSelect.required = false;
-        }
-    }
-});
-
-   // Department filter for create/edit user modal
-document.getElementById('role')?.addEventListener('change', function() {
-    const deptGroup = document.getElementById('departmentSelectGroupUserModal');
-    
-    if (deptGroup) {
-        // Change to lowercase 'head' or 'employee' to match the HTML above!
-        if (this.value === 'head' || this.value === 'employee') { 
-            deptGroup.style.display = 'block';
-        } else {
-            deptGroup.style.display = 'none';
         }
     }
 });
@@ -255,8 +241,8 @@ async function editUser(userId) {
         if (document.getElementById('userIdForEdit')) document.getElementById('userIdForEdit').value = userId;
 
         // Password fields are not required for edit unless explicitly changing
-            const pwdField = document.getElementById('password1'); // Updated ID
-            const confirmPwdField = document.getElementById('password2'); // Updated ID
+            const pwdField = document.getElementById('password'); // Updated ID
+            const confirmPwdField = document.getElementById('confirmPassword'); // Updated ID
 
             if (pwdField) {
                 pwdField.required = false;
