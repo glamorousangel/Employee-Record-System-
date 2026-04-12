@@ -1,7 +1,7 @@
 from django.urls import path
-from . import views
+from . import views  # The dot means "look in the current folder"
 
 urlpatterns = [
-    # The 'name' here MUST match the '{% url 'audit_trails' %}' in your sidebar
-    path('trails/', views.audit_trail_view, name='audit_trails'),
+    # Based on your last error, make sure this matches your views.py function name
+    path('trails/', views.audit_trail_view, name='audit_trails'), 
 ]

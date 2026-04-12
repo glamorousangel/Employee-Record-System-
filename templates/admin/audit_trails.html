@@ -1,257 +1,108 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Audit Trails | Employee Portal</title>
-    {% load static %}
     <link rel="shortcut icon" type="image/png" href="{% static 'img/general/uph.png' %}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    
     <link rel="stylesheet" href="{% static 'css/application/application_info.css' %}">
     <link rel="stylesheet" href="{% static 'css/admin/admin.css' %}">
 
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <style>
-        html, body {
-            height: 100%;
-            overflow: hidden;
+        /* --- 1. THE GLASSMORPHISM ENGINE (Layout & Sidebar) --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        html, body { height: 100%; margin: 0; overflow: hidden; }
+        body { height: 100vh; background: transparent; }
+
+        .background {
+            position: fixed; inset: 0;
+            background: url('{% static "img/general/bg.jpeg" %}') no-repeat center/cover;
+            filter: blur(10px); transform: scale(1.1); z-index: -1;
         }
 
-        body {
-            background: transparent;
-        }
+        .dashboard-viewport { display: flex; height: 100vh; width: 100vw; padding: 20px; box-sizing: border-box; gap: 20px; }
 
         .sidebar {
-            z-index: 1000;
+            position: fixed; top: 20px; left: 20px; height: calc(100% - 40px); width: 300px; padding: 25px;
+            border-radius: 20px; display: flex; flex-direction: column; justify-content: space-between;
+            background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15); transition: width 0.35s ease-in-out; z-index: 1000;
         }
+        .sidebar.collapsed { width: 90px; }
 
-        .dashboard-viewport {
-            display: flex;
-            height: 100vh;
-            width: 100%;
-            padding: 20px;
-            box-sizing: border-box;
-            gap: 20px;
-        }
-
-        .main-content.audit-main {
-            flex: 1;
-            height: 100%;
-            margin-left: 320px;
-            display: flex;
-            min-width: 0;
-            transition: margin-left 0.35s ease;
-        }
-
-        .sidebar.collapsed ~ .dashboard-viewport .main-content.audit-main {
-            margin-left: 110px;
-        }
+        .main-content.audit-main { flex: 1; display: flex; height: 100%; margin-left: 320px; transition: margin-left 0.35s ease-in-out; min-width: 0;}
+        .sidebar.collapsed ~ .dashboard-viewport .main-content.audit-main { margin-left: 110px; }
 
         .leave-card.audit-card {
-            background: #ffffff;
-            border-radius: 25px;
-            padding: 25px 32px;
-            width: 100%;
-            height: 100%;
-            flex: 1;
-            min-width: 0;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            box-sizing: border-box;
+            background: #ffffff; border-radius: 25px; padding: 25px 32px; width: 100%;
+            display: flex; flex-direction: column; height: 100%; box-shadow: 0 4px 20px rgba(0,0,0,0.1); box-sizing: border-box; flex: 1; min-width: 0;
         }
 
-        .form-body.audit-body {
-            flex: 1;
-            overflow: auto;
-            padding-right: 0.5rem;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-        }
+        /* Sidebar Menu Styles */
+        .menu { list-style: none; margin-top: 30px; flex: 1; }
+        .menu-item { display: flex; align-items: center; height: 48px; color: white; text-decoration: none; border-radius: 12px; transition: background 0.3s; margin-bottom: 5px; cursor: pointer;}
+        .menu-item i { width: 50px; text-align: center; }
+        .menu-item:hover { background: rgba(255,255,255,0.15); }
+        .menu-item.active { background: rgba(255,255,255,0.25); }
+        .sidebar.collapsed .menu-item span { display: none; }
+        .logo-wrapper { cursor: pointer; display: flex; align-items: center; justify-content: center; width: 45px; height: 45px;}
 
-        .form-body.audit-body::-webkit-scrollbar {
-            display: none;
-        }
+        /* --- 2. YOUR EXACT AUDIT CSS RULES (Functions & Modals) --- */
+        .form-body.audit-body { flex: 1; overflow: auto; padding-right: 0.5rem; scrollbar-width: none; -ms-overflow-style: none; }
+        .form-body.audit-body::-webkit-scrollbar { display: none; }
+        .admin-section { padding: 0; background: transparent; min-height: auto; }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; gap: 1rem; flex-wrap: wrap; }
+        .header h1 { margin: 0; color: var(--admin-text, #1a1a1a); font-size: 1.9rem; font-weight: 700; }
+        .search-add { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; justify-content: flex-end; }
+        
+        .quick-filters { display: flex; gap: 0.75rem; flex-wrap: wrap; justify-content: flex-start; width: 100%; align-items: end; }
+        .quick-filters .search-box { min-width: 320px; margin: 0; }
+        .quick-filters .date-range { min-width: 145px; }
+        .quick-filters .btn { white-space: nowrap; }
+        
+        .logs-section { margin-bottom: 2rem; }
+        .logs-section .section-title { display: block; width: 100%; max-width: none; margin: 0 0 1rem 0; padding-bottom: 0.75rem; border-bottom: none; box-sizing: border-box; position: relative; }
+        .logs-section .section-title::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--admin-border, #eee); }
+        
+        .log-details-content { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+        .detail-group { background: var(--admin-light, #f8f9fa); border: 1px solid var(--admin-border, #eee); border-radius: 0.5rem; padding: 0.875rem; }
+        .detail-group label { display: block; font-size: 0.8rem; color: var(--admin-text-light, #888); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 0.4rem; font-weight: 600; }
+        .detail-group p { margin: 0; color: var(--admin-text, #333); word-break: break-word; }
+        
+        .format-options { display: grid; gap: 0.5rem; }
+        .format-options label { display: flex; align-items: center; gap: 0.5rem; margin: 0; }
+        
+        #loginLogsBody td:last-child, #loginLogsBody th:last-child, .logs-section .data-table th:last-child, .logs-section .data-table td:last-child { text-align: center; }
+        #loginLogsBody td:last-child .btn-icon { margin: 0 auto; }
+        
+        .btn-icon { padding: 4px 6px; font-size: 0.75rem; min-width: auto; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--admin-border, #ddd); border-radius: 0.5rem; background: var(--admin-light, #fff); cursor: pointer; }
 
-        .admin-section {
-            padding: 0;
-            background: transparent;
-            min-height: auto;
-        }
+        /* Ensuring buttons and inputs look right if admin.css isn't loading properly */
+        .btn-secondary { padding: 10px 15px; background: #607d8b; color: white; border: none; border-radius: 8px; cursor: pointer; }
+        .filter-select, .search-box input, .date-range input { padding: 10px; border: 1px solid #ddd; border-radius: 8px; }
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th { text-align: left; padding: 12px; border-bottom: 2px solid #eee; }
+        .data-table td { padding: 12px; border-bottom: 1px solid #f5f5f5; }
 
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            gap: 1rem;
-            flex-wrap: wrap;
-        }
-
-        .header h1 {
-            margin: 0;
-            color: var(--admin-text);
-            font-size: 1.9rem;
-            font-weight: 700;
-        }
-
-        .search-add {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            flex-wrap: wrap;
-            justify-content: flex-end;
-        }
-
-        .quick-filters {
-            display: flex;
-            gap: 0.75rem;
-            flex-wrap: wrap;
-            justify-content: flex-start;
-            width: 100%;
-            align-items: end;
-        }
-
-        .quick-filters .search-box {
-            min-width: 320px;
-            margin: 0;
-        }
-
-        .quick-filters .date-range {
-            min-width: 145px;
-        }
-
-        .quick-filters .btn {
-            white-space: nowrap;
-        }
-
-        .logs-section {
-            margin-bottom: 2rem;
-        }
-
-        .logs-section .section-title {
-            display: block;
-            width: 100%;
-            max-width: none;
-            margin: 0 0 1rem 0;
-            padding-bottom: 0.75rem;
-            border-bottom: none;
-            box-sizing: border-box;
-            position: relative;
-        }
-
-        .logs-section .section-title::after {
-            content: "";
-            position: absolute;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            height: 2px;
-            background: var(--admin-border);
-        }
-
-        .log-details-content {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 1rem;
-        }
-
-        .detail-group {
-            background: var(--admin-light);
-            border: 1px solid var(--admin-border);
-            border-radius: 0.5rem;
-            padding: 0.875rem;
-        }
-
-        .detail-group label {
-            display: block;
-            font-size: 0.8rem;
-            color: var(--admin-text-light);
-            text-transform: uppercase;
-            letter-spacing: 0.4px;
-            margin-bottom: 0.4rem;
-            font-weight: 600;
-        }
-
-        .detail-group p {
-            margin: 0;
-            color: var(--admin-text);
-            word-break: break-word;
-        }
-
-        .format-options {
-            display: grid;
-            gap: 0.5rem;
-        }
-
-        .format-options label {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin: 0;
-        }
-
-        #loginLogsBody td:last-child,
-        #loginLogsBody th:last-child,
-        .logs-section .data-table th:last-child,
-        .logs-section .data-table td:last-child {
-            text-align: center;
-        }
-
-        #loginLogsBody td:last-child .btn-icon {
-            margin: 0 auto;
-        }
-
-        .btn-icon {
-            padding: 4px 6px;
-            font-size: 0.75rem;
-            min-width: auto;
-            width: 28px;
-            height: 28px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid var(--admin-border);
-            border-radius: 0.5rem;
-            background: var(--admin-light);
-            cursor: pointer;
-        }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+        .modal-content { background: white; padding: 30px; border-radius: 20px; width: 500px; max-width: 90%; }
+        .close { float: right; font-size: 28px; cursor: pointer; }
 
         @media (max-width: 1100px) {
-            .main-content.audit-main {
-                margin-left: 110px;
-            }
-
-            .search-add {
-                justify-content: flex-start;
-            }
-
-            .quick-filters .search-box {
-                min-width: 100%;
-            }
+            .main-content.audit-main { margin-left: 110px; }
+            .search-add { justify-content: flex-start; }
+            .quick-filters .search-box { min-width: 100%; }
         }
-
         @media (max-width: 768px) {
-            .dashboard-viewport {
-                padding: 12px;
-                gap: 12px;
-            }
-
-            .main-content.audit-main {
-                margin-left: 0;
-            }
-
-            .leave-card.audit-card {
-                padding: 18px;
-                border-radius: 18px;
-            }
-
-            .header h1 {
-                font-size: 1.4rem;
-            }
-
-            .quick-filters {
-                justify-content: flex-start;
-            }
+            .dashboard-viewport { padding: 12px; gap: 12px; }
+            .main-content.audit-main { margin-left: 0; }
+            .leave-card.audit-card { padding: 18px; border-radius: 18px; }
+            .header h1 { font-size: 1.4rem; }
+            .quick-filters { justify-content: flex-start; }
         }
     </style>
 </head>
@@ -259,229 +110,206 @@
 
     <div class="background"></div>
 
-    {% include 'components/sidebar.html' %}
-
     <div class="dashboard-viewport">
+        <nav class="sidebar" id="sidebar">
+            <div class="top-section">
+                <div class="logo-wrapper" onclick="toggleSidebar()">
+                    <img src="{% static 'img/general/uph.png' %}" style="width: 45px; border-radius: 50%;">
+                </div>
+            </div>
+            <ul class="menu">
+                <li><a href="{% url 'admin_dashboard' %}" class="menu-item"><i class="fas fa-users-cog"></i><span>User Management</span></a></li>
+                <li><a href="{% url 'employee_list' %}" class="menu-item"><i class="fas fa-address-card"></i><span>Employee Records</span></a></li>
+                <li><a href="{% url 'department_management' %}" class="menu-item"><i class="fas fa-sitemap"></i><span>Department Management</span></a></li>
+                
+                <li><a href="{% url 'audit_trails' %}" class="menu-item active"><i class="fas fa-history"></i><span>Audit Trails</span></a></li>
+                
+                <li><a href="{% url 'security_settings' %}" class="menu-item"><i class="fas fa-shield-alt"></i><span>Security Settings</span></a></li>
+            </ul>
+            <div class="bottom-section">
+                <hr style="border: 0.5px solid rgba(255,255,255,0.2); margin: 10px 0;">
+                <a href="{% url 'logout' %}" class="menu-item"><i class="fas fa-sign-out-alt"></i><span>Log Out</span></a>
+            </div>
+        </nav>
+
         <main class="main-content audit-main">
             <div class="leave-card audit-card">
                 <div class="form-body audit-body">
-                <div class="admin-section">
-                    <div class="header">
-                        <h1>Audit Trails</h1>
-                        <div class="search-add">
-                            <button class="btn btn-secondary" id="exportBtn">
-                                <i class="fas fa-download"></i> Export Logs
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="filters-container">
-                        <div class="quick-filters">
-                        <div class="search-box">
-                            <i class="fas fa-search"></i>
-                            <input type="text" id="auditSearch" name="search" placeholder="Search by username, email, or IP..." value="{{ current_search|default:'' }}">
-                        </div>
-                        <div class="date-range">
-                            <label>From Date</label>
-                            <input type="date" id="fromDate" name="from_date" value="{{ current_from_date|default:'' }}">
+                    <div class="admin-section">
+                        <div class="header">
+                            <h1>Audit Trails</h1>
+                            <div class="search-add">
+                                <button class="btn btn-secondary" id="exportBtn" onclick="document.getElementById('exportModal').style.display='flex'">
+                                    <i class="fas fa-download"></i> Export Logs
+                                </button>
+                            </div>
                         </div>
 
-                        <div class="date-range">
-                            <label>To Date</label>
-                            <input type="date" id="toDate" name="to_date" value="{{ current_to_date|default:'' }}">
+                        <div class="filters-container">
+                            <div class="quick-filters">
+                                <div class="search-box">
+                                    <i class="fas fa-search" style="margin-left: 10px;"></i>
+                                    <input type="text" id="auditSearch" name="search" placeholder="Search by username, email, or IP..." value="{{ current_search|default:'' }}" style="padding-left: 35px;">
+                                </div>
+                                <div class="date-range">
+                                    <label style="display:block; font-size:12px; margin-bottom:4px; color:#666;">From Date</label>
+                                    <input type="date" id="fromDate" name="from_date" value="{{ current_from_date|default:'' }}">
+                                </div>
+                                <div class="date-range">
+                                    <label style="display:block; font-size:12px; margin-bottom:4px; color:#666;">To Date</label>
+                                    <input type="date" id="toDate" name="to_date" value="{{ current_to_date|default:'' }}">
+                                </div>
+                                <select id="activityFilter" class="filter-select" name="action_type">
+                                    <option value="">All Activities</option>
+                                    <option value="login" {% if current_action_type == 'login' %}selected{% endif %}>Login</option>
+                                    <option value="logout" {% if current_action_type == 'logout' %}selected{% endif %}>Logout</option>
+                                    <option value="user_created" {% if current_action_type == 'user_created' %}selected{% endif %}>User Created</option>
+                                    <option value="user_edited" {% if current_action_type == 'user_edited' %}selected{% endif %}>User Edited</option>
+                                    <option value="user_deleted" {% if current_action_type == 'user_deleted' %}selected{% endif %}>User Deleted</option>
+                                    <option value="role_changed" {% if current_action_type == 'role_changed' %}selected{% endif %}>Role Changed</option>
+                                    <option value="password_changed" {% if current_action_type == 'password_changed' %}selected{% endif %}>Password Changed</option>
+                                    <option value="account_activated" {% if current_action_type == 'account_activated' %}selected{% endif %}>Account Activated</option>
+                                    <option value="account_deactivated" {% if current_action_type == 'account_deactivated' %}selected{% endif %}>Account Deactivated</option>
+                                    <option value="failed_login" {% if current_action_type == 'failed_login' %}selected{% endif %}>Failed Login</option>
+                                </select>
+                                <select id="statusFilter" class="filter-select" name="status">
+                                    <option value="">All Status</option>
+                                    <option value="success" {% if current_status == 'success' %}selected{% endif %}>Success</option>
+                                    <option value="failed" {% if current_status == 'failed' %}selected{% endif %}>Failed</option>
+                                    <option value="warning" {% if current_status == 'warning' %}selected{% endif %}>Warning</option>
+                                </select>
+                                <button class="btn btn-secondary" id="filterBtn"><i class="fas fa-filter"></i> Apply Filters</button>
+                                <button class="btn btn-secondary" id="clearFilterBtn" style="background: #cfd8dc; color: #455a64;"><i class="fas fa-times"></i> Clear</button>
+                            </div>
                         </div>
 
-                        <select id="activityFilter" class="filter-select" name="action_type">
-                            <option value="">All Activities</option>
-                            <option value="login" {% if current_action_type == 'login' %}selected{% endif %}>Login</option>
-                            <option value="logout" {% if current_action_type == 'logout' %}selected{% endif %}>Logout</option>
-                            <option value="user_created" {% if current_action_type == 'user_created' %}selected{% endif %}>User Created</option>
-                            <option value="user_edited" {% if current_action_type == 'user_edited' %}selected{% endif %}>User Edited</option>
-                            <option value="user_deleted" {% if current_action_type == 'user_deleted' %}selected{% endif %}>User Deleted</option>
-                            <option value="role_changed" {% if current_action_type == 'role_changed' %}selected{% endif %}>Role Changed</option>
-                            <option value="password_changed" {% if current_action_type == 'password_changed' %}selected{% endif %}>Password Changed</option>
-                            <option value="account_activated" {% if current_action_type == 'account_activated' %}selected{% endif %}>Account Activated</option>
-                            <option value="account_deactivated" {% if current_action_type == 'account_deactivated' %}selected{% endif %}>Account Deactivated</option>
-                            <option value="failed_login" {% if current_action_type == 'failed_login' %}selected{% endif %}>Failed Login</option>
-                        </select>
-
-                        <select id="statusFilter" class="filter-select" name="status">
-                            <option value="">All Status</option>
-                            <option value="success" {% if current_status == 'success' %}selected{% endif %}>Success</option>
-                            <option value="failed" {% if current_status == 'failed' %}selected{% endif %}>Failed</option>
-                            <option value="warning" {% if current_status == 'warning' %}selected{% endif %}>Warning</option>
-                        </select>
-
-                        <button class="btn btn-secondary" id="filterBtn">
-                            <i class="fas fa-filter"></i> Apply Filters
-                        </button>
-                        <button class="btn btn-secondary" id="clearFilterBtn">
-                            <i class="fas fa-times"></i> Clear
-                        </button>
+                        <div class="logs-section">
+                            <h2 class="section-title">Login &amp; Access Logs</h2>
+                            <div class="table-container">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Username</th>
+                                            <th>Email</th>
+                                            <th>Login Time</th>
+                                            <th>Logout Time</th>
+                                            <th>IP Address</th>
+                                            <th>Device / Browser</th>
+                                            <th>Status</th>
+                                            <th>Details</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="loginLogsBody">
+                                        {% for log in login_logs %}
+                                        <tr class="log-row" data-log-id="{{ log.id }}">
+                                            <td><strong>{{ log.username }}</strong></td>
+                                            <td>{{ log.user.email|default:"N/A" }}</td>
+                                            <td><span class="timestamp">{{ log.datetime|date:"M d, Y H:i" }}</span></td>
+                                            <td><span class="timestamp">-</span></td>
+                                            <td><code class="ip-address" style="background:#f8f9fa; padding:2px 6px; border:1px solid #eee; border-radius:4px;">{{ log.ip_address }}</code></td>
+                                            <td><span class="device-info">{{ log.user_agent|default:"Unknown" }}</span></td>
+                                           <td>
+                                             <span class="status-badge {% if log.is_success %}success{% elif log.status == 'Warning' %}warning{% else %}failed{% endif %}">
+                                             {{ log.status }}
+                                                  </span>
+                                                    </td>
+                                            <td>
+                                                <button class="btn-icon view-details" data-log-id="{{ log.id }}" title="View Details" onclick="document.getElementById('logDetailsModal').style.display='flex'">
+                                                    <i class="fas fa-circle-info"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="8" style="text-align: center; padding: 20px; color:#666;">No login logs found yet.</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="logs-section">
-                        <h2 class="section-title">Login &amp; Access Logs</h2>
-                        <div class="table-container">
-                            <table class="data-table">
-                                <thead>
-                                    <tr>
-                                        <th>Username</th>
-                                        <th>Email</th>
-                                        <th>Login Time</th>
-                                        <th>Logout Time</th>
-                                        <th>IP Address</th>
-                                        <th>Device / Browser</th>
-                                        <th>Status</th>
-                                        <th>Details</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="loginLogsBody">
-                                    {% for log in login_logs %}
-                                    <tr class="log-row" data-log-id="{{ log.id }}">
-                                        <td><strong>{{ log.username }}</strong></td>
-                                        <td>{{ log.user.email|default:"N/A" }}</td>
-                                        <td><span class="timestamp">{{ log.datetime|date:"M d, Y H:i" }}</span></td>
-                                        <td><span class="timestamp">-</span></td>
-                                        <td><code class="ip-address">{{ log.ip_address }}</code></td>
-                                        <td><span class="device-info">{{ log.user_agent|default:"Unknown" }}</span></td>
-                                        <td><span class="status-badge {% if log.is_success %}success{% elif log.status == 'Warning' %}warning{% else %}failed{% endif %}">{{ log.status }}</span></td>
-                                        <td>
-                                            <button class="btn-icon view-details" data-log-id="{{ log.id }}" title="View Details">
-                                                <i class="fas fa-circle-info"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    {% empty %}
-                                    <tr>
-                                        <td colspan="8" style="text-align: center; padding: 20px;">No login logs found yet.</td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <div class="logs-section">
-                        <h2 class="section-title">Activity Logs</h2>
-                        <div class="activity-logs-list">
-                            {% for log in activity_logs %}
-                            <div class="activity-log-item">
-                                <div class="log-icon"><i class="fas fa-history"></i></div>
-                                <div class="log-content">
-                                    <div class="log-header">
-                                        <p class="log-activity">{{ log.action }}{% if log.target_user %}: {{ log.target_user.get_full_name }}{% endif %}</p>
-                                        <span class="log-time">{{ log.timestamp|date:"M d, Y H:i:s" }}</span>
+                        <div class="logs-section">
+                            <h2 class="section-title">Activity Logs</h2>
+                            <div class="activity-logs-list">
+                                {% for log in activity_logs %}
+                                <div class="activity-log-item" style="display:flex; gap:15px; padding:15px; border:1px solid #eee; border-radius:10px; margin-bottom:10px;">
+                                    <div class="log-icon" style="color:#800000; font-size:20px; margin-top:5px;"><i class="fas fa-history"></i></div>
+                                    <div class="log-content" style="flex:1;">
+                                        <div class="log-header" style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                                            <p class="log-activity" style="margin:0; font-weight:bold; color:#333;">{{ log.action }}{% if log.target_user %}: {{ log.target_user.get_full_name }}{% endif %}</p>
+                                            <span class="log-time" style="color:#888; font-size:12px;">{{ log.timestamp|date:"M d, Y H:i:s" }}</span>
+                                        </div>
+                                        <div class="log-details" style="font-size:13px; color:#555;">
+                                            <p class="log-user" style="margin-bottom:5px;"><strong>Actor:</strong> {% if log.actor %}{{ log.actor.get_full_name }} ({{ log.actor.email }}){% else %}System{% endif %}</p>
+                                            <p class="log-ip" style="margin-bottom:5px;"><strong>IP Address:</strong> <code style="background:#f8f9fa; padding:2px 4px; border:1px solid #eee;">{{ log.ip_address|default:"N/A" }}</code></p>
+                                            <p class="log-description" style="margin:0;"><strong>Details:</strong> {{ log.details }}</p>
+                                        </div>
                                     </div>
-                                    <div class="log-details">
-                                        <p class="log-user"><strong>Actor:</strong> {% if log.actor %}{{ log.actor.get_full_name }} ({{ log.actor.email }}){% else %}System{% endif %}</p>
-                                        <p class="log-ip"><strong>IP Address:</strong> <code>{{ log.ip_address|default:"N/A" }}</code></p>
-                                        <p class="log-description"><strong>Details:</strong> {{ log.details }}</p>
+                                    <div class="log-status">
+                                        <span style="background:#d4edda; color:#155724; padding:4px 8px; border-radius:10px; font-size:11px; font-weight:bold;">Recorded</span>
                                     </div>
                                 </div>
-                                <div class="log-status"><span class="status-badge success">Recorded</span></div>
+                                {% empty %}
+                                <div style="padding: 2rem; text-align: center; color: #666; border:1px dashed #ddd; border-radius:10px;">
+                                    <p>No real activity logs found yet. Try performing an action!</p>
+                                </div>
+                                {% endfor %}
                             </div>
-                            {% empty %}
-                            <div style="padding: 2rem; text-align: center; color: #666;">
-                                <p>No real activity logs found yet. Try performing an action!</p>
-                            </div>
-                            {% endfor %}
                         </div>
-                    </div>
 
-                    <div class="pagination-container">
-                        <div class="pagination">
-                            <a href="#" class="pagination-btn">&laquo; First</a>
-                            <a href="#" class="pagination-btn">Previous</a>
-                            <span class="page-numbers">Page 1 of 3</span>
-                            <a href="#" class="pagination-btn">Next</a>
-                            <a href="#" class="pagination-btn">Last &raquo;</a>
+                        <div class="pagination-container" style="margin-top:20px; display:flex; justify-content:center;">
+                            <div class="pagination" style="display:flex; gap:10px; align-items:center;">
+                                <a href="#" style="padding:8px 12px; border:1px solid #ddd; border-radius:6px; text-decoration:none; color:#555; font-size:13px;">&laquo; First</a>
+                                <a href="#" style="padding:8px 12px; border:1px solid #ddd; border-radius:6px; text-decoration:none; color:#555; font-size:13px;">Previous</a>
+                                <span class="page-numbers" style="font-size:13px; font-weight:bold;">Page 1 of 3</span>
+                                <a href="#" style="padding:8px 12px; border:1px solid #ddd; border-radius:6px; text-decoration:none; color:#555; font-size:13px;">Next</a>
+                                <a href="#" style="padding:8px 12px; border:1px solid #ddd; border-radius:6px; text-decoration:none; color:#555; font-size:13px;">Last &raquo;</a>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
             </div>
         </main>
     </div>
 
     <div id="logDetailsModal" class="modal">
-        <div class="modal-content modal-large">
-            <span class="close">&times;</span>
-            <h2>Log Details</h2>
-
+        <div class="modal-content">
+            <span class="close" onclick="closeLogDetailsModal()">&times;</span>
+            <h2 style="color:#800000; margin-bottom:20px;">Log Details</h2>
             <div class="log-details-content">
-                <div class="detail-group">
-                    <label>Username</label>
-                    <p id="detailUsername"></p>
-                </div>
-                <div class="detail-group">
-                    <label>Email</label>
-                    <p id="detailEmail"></p>
-                </div>
-                <div class="detail-group">
-                    <label>Login Time</label>
-                    <p id="detailLoginTime"></p>
-                </div>
-                <div class="detail-group">
-                    <label>Logout Time</label>
-                    <p id="detailLogoutTime"></p>
-                </div>
-                <div class="detail-group">
-                    <label>IP Address</label>
-                    <p id="detailIp"></p>
-                </div>
-                <div class="detail-group">
-                    <label>User Agent / Browser</label>
-                    <p id="detailUserAgent"></p>
-                </div>
-                <div class="detail-group">
-                    <label>Status</label>
-                    <p id="detailStatus"></p>
-                </div>
-                <div class="detail-group">
-                    <label>Session Duration</label>
-                    <p id="detailDuration"></p>
-                </div>
-                <div class="detail-group">
-                    <label>Additional Notes</label>
-                    <p id="detailNotes">No additional notes available.</p>
-                </div>
+                <div class="detail-group"><label>Username</label><p id="detailUsername"></p></div>
+                <div class="detail-group"><label>Email</label><p id="detailEmail"></p></div>
+                <div class="detail-group"><label>Login Time</label><p id="detailLoginTime"></p></div>
+                <div class="detail-group"><label>Logout Time</label><p id="detailLogoutTime"></p></div>
+                <div class="detail-group"><label>IP Address</label><p id="detailIp"></p></div>
+                <div class="detail-group"><label>User Agent / Browser</label><p id="detailUserAgent"></p></div>
+                <div class="detail-group"><label>Status</label><p id="detailStatus"></p></div>
+                <div class="detail-group"><label>Session Duration</label><p id="detailDuration"></p></div>
+                <div class="detail-group" style="grid-column: 1 / -1;"><label>Additional Notes</label><p id="detailNotes">No additional notes available.</p></div>
             </div>
-
-            <div class="form-actions">
-                <button class="btn btn-secondary" onclick="closeLogDetailsModal()">Close</button>
+            <div style="margin-top:20px; display:flex; justify-content:flex-end;">
+                <button class="btn-secondary" onclick="closeLogDetailsModal()">Close</button>
             </div>
         </div>
     </div>
 
     <div id="exportModal" class="modal">
         <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Export Logs</h2>
-
+            <span class="close" onclick="closeExportModal()">&times;</span>
+            <h2 style="color:#800000; margin-bottom:20px;">Export Logs</h2>
             <form id="exportForm">
-                <div class="form-group">
-                    <label>Select Format *</label>
+                <div style="margin-bottom:15px;">
+                    <label style="font-weight:bold; display:block; margin-bottom:10px;">Select Format *</label>
                     <div class="format-options">
-                        <label>
-                            <input type="radio" name="format" value="csv" checked>
-                            CSV File
-                        </label>
-                        <label>
-                            <input type="radio" name="format" value="pdf">
-                            PDF Document
-                        </label>
-                        <label>
-                            <input type="radio" name="format" value="excel">
-                            Excel Spreadsheet
-                        </label>
+                        <label><input type="radio" name="format" value="csv" checked> CSV File</label>
+                        <label><input type="radio" name="format" value="pdf"> PDF Document</label>
+                        <label><input type="radio" name="format" value="excel"> Excel Spreadsheet</label>
                     </div>
                 </div>
-
-                <div class="form-group">
-                    <label>Time Range</label>
-                    <select id="exportFromDate">
+                <div style="margin-bottom:15px;">
+                    <label style="font-weight:bold; display:block; margin-bottom:10px;">Time Range</label>
+                    <select id="exportFromDate" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd;">
                         <option value="1w">Last 1 Week</option>
                         <option value="1m" selected>Last 1 Month</option>
                         <option value="3m">Last 3 Months</option>
@@ -489,24 +317,14 @@
                         <option value="1y">Last 1 Year</option>
                     </select>
                 </div>
-
-                <div class="form-group">
-                    <label>Include Log Types</label>
-                    <div class="checkbox-group">
-                        <label>
-                            <input type="checkbox" name="log_types" value="login" checked>
-                            Login Logs
-                        </label>
-                        <label>
-                            <input type="checkbox" name="log_types" value="activity" checked>
-                            Activity Logs
-                        </label>
-                    </div>
+                <div style="margin-bottom:20px;">
+                    <label style="font-weight:bold; display:block; margin-bottom:10px;">Include Log Types</label>
+                    <label style="margin-right:15px;"><input type="checkbox" name="log_types" value="login" checked> Login Logs</label>
+                    <label><input type="checkbox" name="log_types" value="activity" checked> Activity Logs</label>
                 </div>
-
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Export</button>
-                    <button type="button" class="btn btn-secondary" onclick="closeExportModal()">Cancel</button>
+                <div style="display:flex; justify-content:flex-end; gap:10px;">
+                    <button type="button" class="btn-secondary" onclick="closeExportModal()">Cancel</button>
+                    <button type="submit" class="btn-primary" style="background:#800000;">Export</button>
                 </div>
             </form>
         </div>
@@ -514,5 +332,10 @@
 
     <script src="{% static 'js/admin/sidebar.js' %}"></script>
     <script src="{% static 'js/admin/audit_trails.js' %}"></script>
+    <script>
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
+        function closeLogDetailsModal() { document.getElementById('logDetailsModal').style.display = 'none'; }
+        function closeExportModal() { document.getElementById('exportModal').style.display = 'none'; }
+    </script>
 </body>
 </html>

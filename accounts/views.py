@@ -238,10 +238,43 @@ def get_user_data(request, user_id):
         'date_joined': user.date_joined.strftime('%Y-%m-%d %H:%M:%S'),
     }
     return JsonResponse(data)
-
 @login_required
 @user_passes_test(is_admin)
 @require_POST
+def create_user(request):
+    # This matches the form data sent by your JS
+    form = CustomUserCreationForm(request.POST, request.FILES)
+    
+    if form.is_valid():
+        try:
+            with transaction.atomic():
+                user = form.save()
+                
+                # Log the activity correctly
+                log_activity(
+                    actor=request.user,
+                    action="Create User",
+                    target_user=user,
+                    details=f"Created new user {user.username}"
+                )
+                
+            return JsonResponse({
+                'status': 'success', 
+                'message': f'User {user.username} created successfully.'
+            })
+        except Exception as e:
+            return JsonResponse({
+                'status': 'error', 
+                'message': f'Database Error: {str(e)}'
+            }, status=500)
+    else:
+        # If the form is invalid (e.g., password mismatch), send errors back to JS
+        errors = json.loads(form.errors.as_json())
+        return JsonResponse({
+            'status': 'error', 
+            'message': 'Validation failed.', 
+            'errors': errors
+        }, status=400)
 def edit_user(request, user_id):
     user = get_object_or_404(User, pk=user_id)
     form = CustomUserChangeForm(request.POST, request.FILES, instance=user)

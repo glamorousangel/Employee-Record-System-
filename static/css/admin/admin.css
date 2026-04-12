@@ -21,7 +21,7 @@
 .sidebar {
     width: 260px;
     height: 100vh;
-    background: #4a1d1d; /* Deep Maroon consistent with UPH logo */
+    background-color: transparent !important;
     color: white;
     display: flex;
     flex-direction: column;
