@@ -1,8 +1,20 @@
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
+<nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
   <div class="container-fluid">
-    <a class="navbar-brand" href="#">ERS-HCI</a>
+    <a class="navbar-brand fw-bold" href="#">ERS-HCI</a>
     
-    <div class="d-flex align-items-center">
+    <!-- Inspirational Quote -->
+    <div class="mx-auto d-none d-md-block text-muted text-center" style="font-style: italic; font-size: 0.9rem; max-width: 50%;">
+        "{{ global_quote }}"
+    </div>
+
+    <div class="d-flex align-items-center gap-3">
+      <!-- User Role -->
+      {% if global_user_role %}
+      <span class="badge rounded-pill" style="background-color: #800000; color: white;">
+          {{ global_user_role }}
+      </span>
+      {% endif %}
+
       <div class="dropdown">
         <a class="nav-link dropdown-toggle position-relative" href="#" role="button" id="notificationDropdown" data-bs-toggle="dropdown" aria-expanded="false">
           <i class="fas fa-bell"></i> {% if global_unread_count > 0 %}

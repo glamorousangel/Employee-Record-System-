@@ -2,36 +2,18 @@
    Employee Dashboard JavaScript
    ================================= */
 
-// Daily Quotes Array
-const inspirationalQuotes = [
-    "Success is the sum of small efforts repeated day in and day out.",
-    "The only way to do great work is to love what you do.",
-    "Your work is going to fill a large part of your life.",
-    "Great things never come from comfort zones.",
-    "Don't watch the clock; do what it does. Keep going.",
-    "The future depends on what you do today.",
-    "Success doesn't just find you. You have to go out and get it.",
-    "Opportunities don't happen. You create them.",
-    "Believe you can and you're halfway there.",
-    "Excellence is not a skill, it's an attitude."
-];
-
 // Initialize Dashboard on DOM Load
 document.addEventListener('DOMContentLoaded', function() {
     initializeDashboard();
     setupEventListeners();
-    loadDailyQuote();
 });
 
 function initializeDashboard() {
     // Initialize charts
     initializeAttendanceChart();
     
-    // Load dynamic data
+    // Load dynamic data hooks
     loadDashboardData();
-    
-    // Setup quote rotation
-    setDailyQuote();
 }
 
 /* =================================
@@ -72,6 +54,8 @@ function setupEventListeners() {
             item.classList.add('active');
         });
     });
+
+    setupComingSoonLinks();
     
     // Evaluation card click
     setupEvaluationCard();
@@ -128,32 +112,32 @@ function clearAllNotifications() {
 function initializeAttendanceChart() {
     const ctx = document.getElementById('attendanceChart');
     if (!ctx) return;
-    
-    // Get last 7 days
-    const labels = getLast7Days();
-    
-    // Employee-specific attendance data (simulated)
+
+    const payloadElement = document.getElementById('employeeAttendanceSummary');
+    let summary = { present: 0, late: 0, undertime: 0, absent: 0 };
+    if (payloadElement) {
+        try {
+            summary = JSON.parse(payloadElement.textContent || '{}');
+        } catch (error) {
+            console.warn('Invalid employee attendance summary payload', error);
+        }
+    }
+
     const data = {
-        labels: labels,
+        labels: ['Present', 'Late', 'Undertime', 'Absent'],
         datasets: [
             {
-                label: 'Hours Worked',
-                data: [8, 8.5, 8, 7.5, 8, 8.5, 0],
-                backgroundColor: 'rgba(37, 99, 235, 0.1)',
-                borderColor: '#2563eb',
+                label: 'Days',
+                data: [summary.present || 0, summary.late || 0, summary.undertime || 0, summary.absent || 0],
+                backgroundColor: ['#10b981', '#f59e0b', '#3b82f6', '#ef4444'],
+                borderColor: '#ffffff',
                 borderWidth: 2,
-                fill: true,
-                tension: 0.4,
-                pointBackgroundColor: '#2563eb',
-                pointBorderColor: '#fff',
-                pointBorderWidth: 2,
-                pointRadius: 5
             }
         ]
     };
     
     new Chart(ctx, {
-        type: 'line',
+        type: 'doughnut',
         data: data,
         options: {
             responsive: true,
@@ -169,80 +153,9 @@ function initializeAttendanceChart() {
                         color: '#1e293b'
                     }
                 }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    max: 10,
-                    ticks: {
-                        callback: function(value) {
-                            return value + 'h';
-                        }
-                    },
-                    grid: {
-                        color: 'rgba(0, 0, 0, 0.05)'
-                    },
-                    ticks: {
-                        color: '#64748b',
-                        font: { size: 12 }
-                    }
-                },
-                x: {
-                    ticks: {
-                        color: '#64748b',
-                        font: { size: 12 }
-                    }
-                }
             }
         }
     });
-}
-
-/* =================================
-   DATE & QUOTE UTILITIES
-   ================================= */
-
-function getLast7Days() {
-    const days = [];
-    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    
-    for (let i = 6; i >= 0; i--) {
-        const date = new Date();
-        date.setDate(date.getDate() - i);
-        const dayIndex = date.getDay();
-        const day = dayNames[dayIndex];
-        const dateNum = date.getDate();
-        days.push(`${day} ${dateNum}`);
-    }
-    
-    return days;
-}
-
-function setDailyQuote() {
-    const quoteElement = document.getElementById('dailyQuote');
-    if (quoteElement) {
-        // Get quote based on day of year for consistency
-        const today = new Date();
-        const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / 86400000);
-        const quoteIndex = dayOfYear % inspirationalQuotes.length;
-        
-        quoteElement.textContent = inspirationalQuotes[quoteIndex];
-    }
-}
-
-function loadDailyQuote() {
-    setDailyQuote();
-    
-    // Refresh quote at midnight
-    const now = new Date();
-    const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-    const timeUntilMidnight = tomorrow - now;
-    
-    setTimeout(() => {
-        setDailyQuote();
-        // Then refresh every 24 hours
-        setInterval(setDailyQuote, 24 * 60 * 60 * 1000);
-    }, timeUntilMidnight);
 }
 
 /* =================================
@@ -250,51 +163,16 @@ function loadDailyQuote() {
    ================================= */
 
 function loadDashboardData() {
-    // Load evaluation data
-    loadEvaluationData();
+    // Reserved for future dynamic dashboard widgets.
 }
 
-function loadEvaluationData() {
-    // Simulate loading employee evaluation data
-    const scoreEl = document.getElementById('evaluationScore');
-    const starsEl = document.getElementById('evaluationStars');
-    const dateEl = document.getElementById('evaluationDate');
-    
-    // Simulated employee evaluation data
-    const evaluationData = {
-        score: 4.2,
-        stars: '⭐⭐⭐⭐',
-        date: 'March 15, 2026'
-    };
-    
-    if (scoreEl) {
-        animateScore(scoreEl, 0, evaluationData.score, 800);
-    }
-    
-    if (starsEl) {
-        setTimeout(() => {
-            starsEl.textContent = evaluationData.stars;
-        }, 800);
-    }
-    
-    if (dateEl) {
-        dateEl.textContent = `Last evaluated: ${evaluationData.date}`;
-    }
-}
-
-function animateScore(element, start, end, duration) {
-    let startTimestamp = null;
-    
-    const step = (timestamp) => {
-        if (!startTimestamp) startTimestamp = timestamp;
-        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-        const value = (progress * (end - start) + start).toFixed(1);
-        element.textContent = value;
-        
-        if (progress < 1) {
-            requestAnimationFrame(step);
-        }
-    };
-    
-    requestAnimationFrame(step);
+function setupComingSoonLinks() {
+    const comingSoonLinks = document.querySelectorAll('.coming-soon-link');
+    comingSoonLinks.forEach((link) => {
+        link.addEventListener('click', (event) => {
+            event.preventDefault();
+            const featureName = link.dataset.feature || 'This feature';
+            window.alert(`${featureName} is coming soon.`);
+        });
+    });
 }

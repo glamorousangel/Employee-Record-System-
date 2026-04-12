@@ -15,7 +15,7 @@ def application_list(request):
     else:
         applications = Application.objects.none()
         
-    return render(request, 'application/application_list.html', {'applications': applications})
+    return render(request, 'application_management/hr_appmanagement.html', {'applications': applications})
 
 @login_required
 def application_detail(request, pk):

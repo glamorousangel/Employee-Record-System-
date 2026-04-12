@@ -7,35 +7,73 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initializeDashboard() {
+    const dashboardData = getDashboardData();
+
     // Initialize charts
-    initializeLoginChart();
-    initializeRoleChart();
+    initializeLoginChart(dashboardData.login_chart_data || {});
+    initializeRoleChart(dashboardData.role_summary || []);
     
     // Add event listeners
     addEventListeners();
 }
 
+function getDashboardData() {
+    const dataElement = document.getElementById('adminDashboardData');
+    if (!dataElement) {
+        return {};
+    }
+
+    try {
+        return JSON.parse(dataElement.textContent || '{}');
+    } catch (error) {
+        console.warn('Invalid admin dashboard payload', error);
+        return {};
+    }
+}
+
 // Initialize Login Activity Chart
-function initializeLoginChart() {
+function initializeLoginChart(loginChartData) {
     const ctx = document.getElementById('loginChart');
     if (!ctx) return;
 
-    const labels = getLast7Days();
+    const labels = loginChartData.labels || [];
+    const successData = loginChartData.success || [];
+    const failedData = loginChartData.failed || [];
+
+    if (!labels.length) {
+        return;
+    }
+
     const data = {
         labels: labels,
-        datasets: [{
-            label: 'Logins',
-            data: [12, 19, 8, 14, 11, 16, 18],
-            borderColor: '#2563eb',
-            backgroundColor: 'rgba(37, 99, 235, 0.1)',
-            fill: true,
-            tension: 0.4,
-            borderWidth: 2,
-            pointBackgroundColor: '#2563eb',
-            pointBorderColor: '#fff',
-            pointBorderWidth: 2,
-            pointRadius: 4
-        }]
+        datasets: [
+            {
+                label: 'Successful Logins',
+                data: successData,
+                borderColor: '#2563eb',
+                backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                fill: true,
+                tension: 0.35,
+                borderWidth: 2,
+                pointBackgroundColor: '#2563eb',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 4
+            },
+            {
+                label: 'Failed Logins',
+                data: failedData,
+                borderColor: '#ef4444',
+                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                fill: true,
+                tension: 0.35,
+                borderWidth: 2,
+                pointBackgroundColor: '#ef4444',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 4
+            }
+        ]
     };
 
     new Chart(ctx, {
@@ -63,19 +101,27 @@ function initializeLoginChart() {
 }
 
 // Initialize Role Distribution Chart
-function initializeRoleChart() {
+function initializeRoleChart(roleSummary) {
     const ctx = document.getElementById('roleChart');
     if (!ctx) return;
 
+    const labels = roleSummary.map((item) => item.label || item.role);
+    const values = roleSummary.map((item) => Number(item.count || 0));
+
+    if (!labels.length) {
+        return;
+    }
+
     const data = {
-        labels: ['Admin', 'HR', 'Department Head', 'Employee'],
+        labels: labels,
         datasets: [{
-            data: [2, 5, 8, 120],
+            data: values,
             backgroundColor: [
                 '#2563eb',
                 '#8b5cf6',
                 '#06b6d4',
-                '#64748b'
+                '#64748b',
+                '#f59e0b'
             ],
             borderColor: '#fff',
             borderWidth: 2
@@ -95,23 +141,6 @@ function initializeRoleChart() {
             }
         }
     });
-}
-
-// Get last 7 days
-function getLast7Days() {
-    const days = [];
-    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    
-    for (let i = 6; i >= 0; i--) {
-        const date = new Date();
-        date.setDate(date.getDate() - i);
-        const dayIndex = date.getDay();
-        const day = dayNames[dayIndex];
-        const dateNum = date.getDate();
-        days.push(`${day} ${dateNum}`);
-    }
-    
-    return days;
 }
 
 function addEventListeners() {

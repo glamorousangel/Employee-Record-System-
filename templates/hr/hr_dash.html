@@ -1,11 +1,12 @@
 <!DOCTYPE html>
+{% load static %}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard | HR System</title>
-    <link rel="shortcut icon" type="image/png" href="../../static/img/general/uph.png">
-    <link rel="stylesheet" href="../../static/css/hr/hr_dash.css">
+    <link rel="shortcut icon" type="image/png" href="{% static 'img/general/uph.png' %}">
+    <link rel="stylesheet" href="{% static 'css/hr/hr_dash.css' %}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -16,7 +17,7 @@
     <div class="sidebar" id="sidebar">
         <div class="top-section">
             <div class="logo-wrapper" id="logoToggle">
-                <img src="../../static/img/general/uph.png" class="logo" alt="Logo">
+                <img src="{% static 'img/general/uph.png' %}" class="logo" alt="Logo">
                 <div class="open-icon">
                     <i class="fas fa-chevron-right"></i>
                 </div>
@@ -27,20 +28,20 @@
         </div>
 
             <ul class="menu">
-        <li><a href="hr_dash.html" class="menu-item active"><i class="fas fa-border-all"></i><span>Dashboard</span></a></li>
-        <li><a href="hr_profile_view.html" class="menu-item"><i class="fas fa-user"></i><span>Profile</span></a></li>
+        <li><a href="{% url 'hr_dashboard' %}" class="menu-item active"><i class="fas fa-border-all"></i><span>Dashboard</span></a></li>
+        <li><a href="{% url 'history:hr_profile' %}" class="menu-item"><i class="fas fa-user"></i><span>Profile</span></a></li>
         <hr>
         <li><a href="{% url 'application_list' %}" class="menu-item"><i class="fas fa-file"></i><span>Application Management</span></a></li>
-        <li><a href="hr_employeelist.html" class="menu-item"><i class="fas fa-database"></i><span>Employee Records</span></a></li>
-        <li><a href="hr_attendancemonitoring.html" class="menu-item"><i class="fas fa-calendar"></i><span>Attendance Monitoring</span></a></li>
-        <li><a href="hr_leaveselect.html" class="menu-item"><i class="fas fa-briefcase"></i><span>Leave Management</span></a></li>
-        <li><a href="#" class="menu-item"><i class="fas fa-star"></i><span>Performance Evaluation</span></a></li>
-        <li><a href="hr_training.html" class="menu-item"><i class="fas fa-chalkboard-teacher"></i><span>Trainings</span></a></li>
-        <li><a href="hr_reports.html" class="menu-item"><i class="fas fa-chart-line"></i><span>Reports / Analytics</span></a></li>
+        <li><a href="{% url 'employee_list' %}" class="menu-item"><i class="fas fa-database"></i><span>Employee Records</span></a></li>
+        <li><a href="{% url 'attendance:hr_attendance_monitoring' %}" class="menu-item"><i class="fas fa-calendar"></i><span>Attendance Monitoring</span></a></li>
+        <li><a href="{% url 'leaves:hr_leave_select' %}" class="menu-item"><i class="fas fa-briefcase"></i><span>Leave Management</span></a></li>
+        <li><a href="#" class="menu-item coming-soon-link" data-feature="Performance Evaluation" aria-disabled="true"><i class="fas fa-star"></i><span>Performance Evaluation</span></a></li>
+        <li><a href="#" class="menu-item coming-soon-link" data-feature="Trainings" aria-disabled="true"><i class="fas fa-chalkboard-teacher"></i><span>Trainings</span></a></li>
+        <li><a href="#" class="menu-item coming-soon-link" data-feature="Reports / Analytics" aria-disabled="true"><i class="fas fa-chart-line"></i><span>Reports / Analytics</span></a></li>
     </ul>
 
             <div class="bottom-section">
-        <a href="../login/login.html" class="menu-item logout"><i class="fas fa-sign-out-alt"></i><span>Log Out</span></a>
+        <a href="{% url 'logout' %}" class="menu-item logout"><i class="fas fa-sign-out-alt"></i><span>Log Out</span></a>
     </div>
     </div>
 
@@ -51,32 +52,32 @@
                 <!-- Header Section -->
                 <div class="dashboard-header">
                     <h1 class="dashboard-title">Dashboard</h1>
-                    <p class="dashboard-greeting">Hello, <span id="userName">Tatsu</span>! ðŸ‘‹</p>
-                    <p class="daily-quote" id="dailyQuote">Success is the sum of small efforts repeated day in and day out.</p>
+                    <p class="dashboard-greeting">Hello, <span id="userName">{{ welcome_name }}</span>!</p>
+                    <p class="daily-quote" id="dailyQuote">{{ global_quote|default:"Success is the sum of small efforts repeated day in and day out." }}</p>
                 </div>
 
                 <!-- Quick Actions Section -->
                 <section class="quick-actions-section">
                     <h2 class="section-title">Quick Actions</h2>
                     <div class="quick-actions-grid">
-                        <button class="action-card primary">
+                        <a href="{{ quick_action_urls.add_employee }}" class="action-card primary">
                             <div class="action-icon">
                                 <i class="fas fa-user-plus"></i>
                             </div>
                             <span>Add Employee</span>
-                        </button>
-                        <button class="action-card secondary">
+                        </a>
+                        <a href="{{ quick_action_urls.approve_leave }}" class="action-card secondary">
                             <div class="action-icon">
                                 <i class="fas fa-check-double"></i>
                             </div>
                             <span>Approve Leave</span>
-                        </button>
-                        <button class="action-card tertiary">
+                        </a>
+                        <a href="{{ quick_action_urls.generate_report }}" class="action-card tertiary">
                             <div class="action-icon">
                                 <i class="fas fa-file-pdf"></i>
                             </div>
                             <span>Generate Report</span>
-                        </button>
+                        </a>
                     </div>
                 </section>
 
@@ -90,9 +91,9 @@
                             </div>
                             <div class="kpi-content">
                                 <p class="kpi-label">Total Employees</p>
-                                <p class="kpi-number" id="totalEmployees">450</p>
+                                <p class="kpi-number" id="totalEmployees" data-value="{{ total_employees }}">{{ total_employees }}</p>
                                 <p class="kpi-change positive">
-                                    <i class="fas fa-arrow-up"></i> 12 this quarter
+                                    <i class="fas fa-calendar"></i> As of {{ welcome_date }}
                                 </p>
                             </div>
                         </div>
@@ -102,9 +103,9 @@
                             </div>
                             <div class="kpi-content">
                                 <p class="kpi-label">Active Employees</p>
-                                <p class="kpi-number" id="activeEmployees">428</p>
+                                <p class="kpi-number" id="activeEmployees" data-value="{{ active_employees }}">{{ active_employees }}</p>
                                 <p class="kpi-change positive">
-                                    <i class="fas fa-arrow-up"></i> 95% active rate
+                                    <i class="fas fa-info-circle"></i> Currently active accounts
                                 </p>
                             </div>
                         </div>
@@ -114,9 +115,9 @@
                             </div>
                             <div class="kpi-content">
                                 <p class="kpi-label">Employees on Leave</p>
-                                <p class="kpi-number" id="onLeave">22</p>
+                                <p class="kpi-number" id="onLeave" data-value="{{ on_leave_today }}">{{ on_leave_today }}</p>
                                 <p class="kpi-change neutral">
-                                    <i class="fas fa-info-circle"></i> 5% on leave
+                                    <i class="fas fa-clock"></i> On leave today
                                 </p>
                             </div>
                         </div>
@@ -135,9 +136,15 @@
                 <section class="support-section">
                     <h2 class="section-title">Need Help?</h2>
                     <div class="support-content">
-                        <p class="support-text">Our support team is here to help. Contact us anytime for assistance with HR processes.</p>
-                        <a href="mailto:support@company.com" class="support-link">
-                            <i class="fas fa-envelope"></i> support@company.com
+                        <p class="support-text">Our support team is here to help. Use the FAQ for quick answers or contact HR/ITS directly.</p>
+                        <a href="{% url 'audit_trails' %}" class="support-link">
+                            <i class="fas fa-circle-question"></i> FAQ / Help Center
+                        </a>
+                        <a href="mailto:hr@uph.edu" class="support-link">
+                            <i class="fas fa-user-tie"></i> HR: hr@uph.edu
+                        </a>
+                        <a href="mailto:its@uph.edu" class="support-link">
+                            <i class="fas fa-laptop-code"></i> ITS: its@uph.edu
                         </a>
                     </div>
                 </section>
@@ -147,43 +154,36 @@
             <aside class="notification-panel">
                 <div class="notification-header">
                     <h3>Notifications</h3>
+                    <span class="notification-time">Pending: {{ pending_notification_count }}</span>
                     <button class="notification-clear" title="Clear all">
                         <i class="fas fa-trash-alt"></i>
                     </button>
                 </div>
                 <div class="notifications-list">
-                    <div class="notification-item">
-                        <div class="notification-icon success">
-                            <i class="fas fa-check-circle"></i>
-                        </div>
-                        <div class="notification-content">
-                            <p class="notification-message">Leave request approved</p>
-                            <p class="notification-time">2 hours ago</p>
-                        </div>
-                    </div>
-                    <div class="notification-item">
-                        <div class="notification-icon info">
-                            <i class="fas fa-info-circle"></i>
-                        </div>
-                        <div class="notification-content">
-                            <p class="notification-message">New policy updated</p>
-                            <p class="notification-time">1 day ago</p>
-                        </div>
-                    </div>
+                    {% for notification in pending_notifications %}
                     <div class="notification-item">
                         <div class="notification-icon warning">
-                            <i class="fas fa-exclamation-circle"></i>
+                            <i class="fas fa-bell"></i>
                         </div>
                         <div class="notification-content">
-                            <p class="notification-message">Pending reports review</p>
-                            <p class="notification-time">3 days ago</p>
+                            <p class="notification-message">{{ notification.message }}</p>
+                            <p class="notification-time">{{ notification.created_at|timesince }} ago</p>
                         </div>
                     </div>
+                    {% empty %}
+                    <div class="notification-item">
+                        <div class="notification-content">
+                            <p class="notification-message">No pending notifications</p>
+                        </div>
+                    </div>
+                    {% endfor %}
                 </div>
             </aside>
         </div>
     </main>
 
-    <script src="../../static/js/hr/hr_dash.js"></script>
+    {{ attendance_chart_data|json_script:"hrAttendanceData" }}
+    <script src="{% static 'js/charts.js' %}"></script>
+    <script src="{% static 'js/hr/hr_dash.js' %}"></script>
 </body>
 </html>

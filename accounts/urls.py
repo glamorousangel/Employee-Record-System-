@@ -9,6 +9,9 @@ urlpatterns = [
 
     # Dashboards
     path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
+    path('hr-dashboard/', views.hr_dashboard, name='hr_dashboard'),
+    path('head-dashboard/', views.head_dashboard, name='head_dashboard'),
+    path('sd-dashboard/', views.sd_dashboard, name='sd_dashboard'),
     path('employee-dashboard/', views.employee_dashboard, name='employee_dashboard'),
     
     # Employee Dashboard Sub-pages
@@ -35,7 +38,7 @@ urlpatterns = [
 path('hr/employees/', views.employee_list, name='employee_list'),
 path('hr/employees/add/', views.add_employee, name='add_employee'),
 # Add this line to your urlpatterns
-path('hr/employees/profile/<int:user_id>/', views.employee_profile_view, name='employee_profile'),
+path('hr/employees/profile/<int:user_id>/', views.employee_profile_view, name='employee_profile_view'),
 # Make sure the name matches 'edit_employee'
 path('hr/employees/edit/<int:user_id>/', views.edit_employee, name='edit_employee'),
 path('hr/employees/delete/<int:user_id>/', views.delete_employee, name='delete_employee'),

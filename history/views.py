@@ -17,8 +17,7 @@ def is_head(user):
     return user.is_authenticated and user.role == 'HEAD'
 
 def is_sd(user):
-    # Assuming School Director has ADMIN level privileges
-    return user.is_authenticated and user.role == 'ADMIN'
+    return user.is_authenticated and user.role == 'SD'
 
 @login_required
 def employee_timeline(request, employee_id=None):
@@ -37,8 +36,8 @@ def employee_timeline(request, employee_id=None):
     has_permission = False
     if user == target_employee:
         has_permission = True  # Can view own timeline
-    elif user.role in ['HR', 'ADMIN']:
-        has_permission = True  # HR/SD can view everyone
+    elif user.role in ['HR', 'SD', 'ADMIN']:
+        has_permission = True  # HR/SD/Admin can view everyone
     elif user.role == 'HEAD' and user.department == target_employee.department:
         has_permission = True  # Heads can view their own department members
 

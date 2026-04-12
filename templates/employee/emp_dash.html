@@ -104,13 +104,13 @@
                 </a>
             </li>
             <li>
-                <a href="#" class="menu-item">
+                <a href="#" class="menu-item coming-soon-link" data-feature="Performance Evaluation" aria-disabled="true">
                     <i class="fas fa-star"></i>
                     <span>Performance Evaluation</span>
                 </a>
             </li>
             <li>
-                <a href="#" class="menu-item">
+                <a href="#" class="menu-item coming-soon-link" data-feature="Trainings" aria-disabled="true">
                     <i class="fas fa-chalkboard-teacher"></i>
                     <span>Trainings</span>
                 </a>
@@ -130,13 +130,13 @@
             <div class="dashboard-container">
                 
                 <div class="welcome-section">
-                    <h1>Welcome back, {{ user.first_name|default:"Employee" }}! 👋</h1>
+                    <h1>Welcome back, {{ welcome_name|default:"Employee" }}! 👋</h1>
                     <p style="color: #666; font-size: 1.1rem; margin-bottom: 10px;">
                         <strong>Role:</strong> {{ user.get_role_display|default:"Staff" }} | 
                         <strong>Department:</strong> {{ user.department.name|default:"General" }}
                     </p>
                     <p class="daily-quote" id="dailyQuote" style="font-style: italic; color: #888;">
-                        "Success is the sum of small efforts repeated day in and day out."
+                        {{ global_quote|default:"Success is the sum of small efforts repeated day in and day out." }}
                     </p>
                 </div>
 
@@ -144,32 +144,34 @@
                     <div class="stat-card">
                         <i class="fas fa-clock"></i>
                         <div>
-                            <h3>Latest Time-In</h3>
-                            <p>{{ user.last_login|date:"M d, Y H:i"|default:"No recent login" }}</p>
+                            <h3>{{ current_month_name }} Attendance</h3>
+                            <p>Total logs: {{ month_attendance_summary.total }}</p>
                         </div>
                     </div>
                     <div class="stat-card">
                         <i class="fas fa-calendar-day"></i>
                         <div>
-                            <h3>Leave Credits</h3>
-                            <p>Remaining: 15 Days</p>
+                            <h3>Attendance Breakdown</h3>
+                            <p>P: {{ month_attendance_summary.present }} | L: {{ month_attendance_summary.late }} | U: {{ month_attendance_summary.undertime }} | A: {{ month_attendance_summary.absent }}</p>
                         </div>
                     </div>
                 </div>
 
                 <section class="evaluation-section">
-                    <h2 class="section-title">My Evaluation</h2>
-                    <a href="#" class="evaluation-card" id="evaluationCard">
+                    <h2 class="section-title">Recent Leave Requests</h2>
+                    <a href="{% url 'leaves:leave_history' %}" class="evaluation-card" id="evaluationCard">
                         <div class="evaluation-content">
-                            <div class="evaluation-label">Latest Evaluation</div>
-                            <div class="evaluation-score">
-                                <span class="score-value" id="evaluationScore">4.5</span>
-                                <span class="score-stars" id="evaluationStars">⭐⭐⭐⭐⭐</span>
-                            </div>
+                            {% for leave in recent_leaves %}
                             <div class="evaluation-date">
                                 <i class="fas fa-calendar"></i>
-                                <span id="evaluationDate">Last evaluated: March 15, 2026</span>
+                                <span>{{ leave.leave_type.name }} ({{ leave.start_date|date:"M d" }} - {{ leave.end_date|date:"M d, Y" }}) - {{ leave.get_status_display }}</span>
                             </div>
+                            {% empty %}
+                            <div class="evaluation-date">
+                                <i class="fas fa-info-circle"></i>
+                                <span>No recent leave requests.</span>
+                            </div>
+                            {% endfor %}
                         </div>
                         <div class="card-arrow">
                             <i class="fas fa-arrow-right"></i>
@@ -187,9 +189,15 @@
                 <section class="support-section" style="margin-top: 30px;">
                     <h2 class="section-title">Need Help?</h2>
                     <div class="support-content" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
-                        <p class="support-text">Our support team is here to help. Contact us anytime for assistance with HR processes.</p>
-                        <a href="mailto:support@company.com" class="support-link" style="color: #800000; text-decoration: none; font-weight: bold;">
-                            <i class="fas fa-envelope"></i> support@company.com
+                        <p class="support-text">Our support team is here to help. Check the FAQ first, then reach out to HR or ITS if needed.</p>
+                        <a href="{% url 'audit_trails' %}" class="support-link" style="color: #800000; text-decoration: none; font-weight: bold; display: inline-block; margin-right: 14px;">
+                            <i class="fas fa-circle-question"></i> FAQ / Help Center
+                        </a>
+                        <a href="mailto:hr@uph.edu" class="support-link" style="color: #800000; text-decoration: none; font-weight: bold; display: inline-block; margin-right: 14px;">
+                            <i class="fas fa-user-tie"></i> HR: hr@uph.edu
+                        </a>
+                        <a href="mailto:its@uph.edu" class="support-link" style="color: #800000; text-decoration: none; font-weight: bold; display: inline-block;">
+                            <i class="fas fa-laptop-code"></i> ITS: its@uph.edu
                         </a>
                     </div>
                 </section>
@@ -198,43 +206,35 @@
             <aside class="notification-panel">
                 <div class="notification-header">
                     <h3>Notifications</h3>
+                    <span class="notification-time">Pending: {{ pending_notification_count }}</span>
                     <button class="notification-clear" title="Clear all" style="background: none; border: none; cursor: pointer; color: #888;">
                         <i class="fas fa-trash-alt"></i>
                     </button>
                 </div>
                 <div class="notifications-list">
+                    {% for notification in recent_notifications %}
+                    <div class="notification-item"{% if not forloop.first %} style="margin-top: 15px;"{% endif %}>
+                        <div class="notification-icon {% if notification.is_read %}info{% else %}warning{% endif %}">
+                            <i class="fas fa-bell" style="color: {% if notification.is_read %}blue{% else %}orange{% endif %};"></i>
+                        </div>
+                        <div class="notification-content">
+                            <p class="notification-message" style="margin: 0; font-weight: bold;">{{ notification.message }}</p>
+                            <p class="notification-time" style="margin: 0; font-size: 0.8rem; color: #888;">{{ notification.created_at|timesince }} ago</p>
+                        </div>
+                    </div>
+                    {% empty %}
                     <div class="notification-item">
-                        <div class="notification-icon success">
-                            <i class="fas fa-check-circle" style="color: green;"></i>
-                        </div>
                         <div class="notification-content">
-                            <p class="notification-message" style="margin: 0; font-weight: bold;">Leave request approved</p>
-                            <p class="notification-time" style="margin: 0; font-size: 0.8rem; color: #888;">2 hours ago</p>
+                            <p class="notification-message" style="margin: 0; font-weight: bold;">No notifications yet.</p>
                         </div>
                     </div>
-                    <div class="notification-item" style="margin-top: 15px;">
-                        <div class="notification-icon info">
-                            <i class="fas fa-info-circle" style="color: blue;"></i>
-                        </div>
-                        <div class="notification-content">
-                            <p class="notification-message" style="margin: 0; font-weight: bold;">New policy updated</p>
-                            <p class="notification-time" style="margin: 0; font-size: 0.8rem; color: #888;">1 day ago</p>
-                        </div>
-                    </div>
-                    <div class="notification-item" style="margin-top: 15px;">
-                        <div class="notification-icon warning">
-                            <i class="fas fa-exclamation-circle" style="color: orange;"></i>
-                        </div>
-                        <div class="notification-content">
-                            <p class="notification-message" style="margin: 0; font-weight: bold;">Assessment required</p>
-                            <p class="notification-time" style="margin: 0; font-size: 0.8rem; color: #888;">3 days ago</p>
-                        </div>
-                    </div>
+                    {% endfor %}
                 </div>
             </aside>
         </div>
     </main>
 
+    {{ month_attendance_summary|json_script:"employeeAttendanceSummary" }}
     <script src="{% static 'js/employee/emp_dash.js' %}"></script>
 </body>
 </html>

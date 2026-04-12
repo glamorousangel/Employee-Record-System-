@@ -8,13 +8,19 @@ from django.views.decorators.http import require_POST
 from django.conf import settings
 from django.utils import timezone
 import json 
+from datetime import timedelta
 from django.db import models, transaction # Correctly added here
 from django.db.models import Q, Count
+from django.urls import reverse
+from django.urls.exceptions import NoReverseMatch
+from django.contrib.sessions.models import Session
 
+from audit.models import LoginLog
 from audit.utils import log_activity
 from .models import User, Department, EmployeeProfile, SystemConfig
 from documents.models import Document
 from documents.forms import DocumentUploadForm
+from notifications.models import Notification
 
 # ADDED AddEmployeeForm TO THIS LIST BELOW:
 from .forms import (
@@ -27,6 +33,18 @@ from .forms import (
 def is_admin(user):
     return user.is_authenticated and user.role == 'ADMIN'
 
+def is_hr(user):
+    return user.is_authenticated and user.role == 'HR'
+
+def is_head(user):
+    return user.is_authenticated and user.role == 'HEAD'
+
+def is_sd(user):
+    return user.is_authenticated and user.role == 'SD'
+
+def is_emp(user):
+    return user.is_authenticated and user.role == 'EMP'
+
 def login_view(request):
     # If a user is already logged in, redirect them from the login page.
     if request.user.is_authenticated:
@@ -36,6 +54,12 @@ def login_view(request):
         # Otherwise, send them to their respective dashboard.
         if request.user.role == 'ADMIN':
             return redirect('admin_dashboard')
+        if request.user.role == 'HR':
+            return redirect('hr_dashboard')
+        if request.user.role == 'HEAD':
+            return redirect('head_dashboard')
+        if request.user.role == 'SD':
+            return redirect('sd_dashboard')
         return redirect('employee_dashboard')
 
     if request.method == 'POST':
@@ -76,6 +100,12 @@ def login_view(request):
                 
                 if authenticated_user.role == 'ADMIN':
                     return redirect('admin_dashboard')
+                elif authenticated_user.role == 'HR':
+                    return redirect('hr_dashboard')
+                elif authenticated_user.role == 'HEAD':
+                    return redirect('head_dashboard')
+                elif authenticated_user.role == 'SD':
+                    return redirect('sd_dashboard')
                 else:
                     return redirect('employee_dashboard')
             else:
@@ -100,63 +130,308 @@ def logout_view(request):
 @login_required
 @user_passes_test(is_admin)
 def admin_dashboard(request):
-    # This view will now serve as the user management list
-    users = User.objects.all().order_by('last_name', 'first_name')
-    all_users = User.objects.all().order_by('last_name', 'first_name')
-    departments = Department.objects.all()
-    
-    # Apply filters if present in GET request
-    search_term = request.GET.get('search', '')
-    role_filter = request.GET.get('role', '')
-    status_filter = request.GET.get('status', '')
-    department_filter = request.GET.get('department', '')
+    today = timezone.now().date()
 
-    if search_term:
-        users = users.filter(
-            Q(first_name__icontains=search_term) |
-            Q(last_name__icontains=search_term) |
-            Q(email__icontains=search_term) |
-            Q(username__icontains=search_term)
-        )
-    if role_filter:
-        users = users.filter(role=role_filter)
-    if status_filter:
-        if status_filter == 'active':
-            users = users.filter(is_active=True, is_locked=False)
-        elif status_filter == 'inactive':
-            users = users.filter(is_active=False)
-        elif status_filter == 'locked':
-            users = users.filter(is_locked=True)
-    if department_filter:
-        try:
-            users = users.filter(department__id=int(department_filter))
-            department_filter = int(department_filter) # Convert for template comparison
-        except ValueError:
-            pass
+    def role_label(role_code):
+        return dict(User.ROLE_CHOICES).get(role_code, role_code)
 
-    # Dashboard Statistics
-    stats = {
-        'total_users': User.objects.count(),
-        'active_users': User.objects.filter(is_active=True, is_locked=False).count(),
-        'total_departments': Department.objects.count(),
-    }
+    total_users = User.objects.count()
+    active_users = User.objects.filter(is_active=True, is_locked=False).count()
+    inactive_users = User.objects.filter(is_active=False).count()
+    locked_users = User.objects.filter(is_locked=True).count()
+    total_departments = Department.objects.count()
+
+    session_count = 0
+    for session in Session.objects.filter(expire_date__gte=timezone.now()):
+        if session.get_decoded().get('_auth_user_id'):
+            session_count += 1
+
+    role_summary = []
+    for role_code, _role_name in User.ROLE_CHOICES:
+        role_summary.append({
+            'role': role_code,
+            'label': role_label(role_code),
+            'count': User.objects.filter(role=role_code).count(),
+        })
+
+    login_logs_qs = LoginLog.objects.order_by('-datetime')
+    recent_login_activity = login_logs_qs.select_related('user')[:7]
+    failed_login_count = login_logs_qs.filter(status='Failed').count()
+    failed_login_today = login_logs_qs.filter(status='Failed', datetime__date=today).count()
+
+    login_chart_labels = []
+    login_chart_success = []
+    login_chart_failed = []
+    for days_ago in range(6, -1, -1):
+        target_date = today - timedelta(days=days_ago)
+        login_chart_labels.append(target_date.strftime('%b %d'))
+        login_chart_success.append(login_logs_qs.filter(status='Success', datetime__date=target_date).count())
+        login_chart_failed.append(login_logs_qs.filter(status='Failed', datetime__date=target_date).count())
+
+    system_notifications = Notification.objects.filter(user=request.user).order_by('-created_at')[:5]
 
     context = {
-        'users': users,
-        'all_users': all_users,
-        'roles': User.ROLE_CHOICES,
-        'departments': departments,
-        'current_search': search_term,
-        'current_role_filter': role_filter,
-        'current_status_filter': status_filter,
-        'current_department_filter': department_filter,
-        'stats': stats,
+        'welcome_name': request.user.first_name or request.user.username,
+        'system_overview': {
+            'total_users': total_users,
+            'total_departments': total_departments,
+            'active_sessions': session_count,
+        },
+        'user_account_summary': {
+            'total_users': total_users,
+            'active_users': active_users,
+            'inactive_users': inactive_users,
+            'locked_users': locked_users,
+        },
+        'role_summary': role_summary,
+        'recent_login_activity': recent_login_activity,
+        'failed_login_count': failed_login_count,
+        'failed_login_today': failed_login_today,
+        'system_notifications': system_notifications,
+        'login_chart_data': {
+            'labels': login_chart_labels,
+            'success': login_chart_success,
+            'failed': login_chart_failed,
+        },
+        'dashboard_payload': {
+            'login_chart_data': {
+                'labels': login_chart_labels,
+                'success': login_chart_success,
+                'failed': login_chart_failed,
+            },
+            'role_summary': role_summary,
+        },
+        'quick_action_urls': {
+            'manage_users': reverse('employee_list'),
+            'manage_departments': reverse('department_management'),
+            'audit_trails': reverse('audit_trails'),
+            'export_report': reverse('audit_trails'),
+        },
     }
-    return render(request, 'admin/user_management.html', context) # Changed to user_management.html
+    return render(request, 'admin/dashboard.html', context)
+
+from attendance.models import AttendanceLog
+from leaves.models import LeaveRequest
+from notifications.models import Notification
 
 @login_required
+@user_passes_test(is_hr)
+def hr_dashboard(request):
+    today = timezone.now().date()
+
+    def safe_reverse(name, fallback='#'):
+        try:
+            return reverse(name)
+        except NoReverseMatch:
+            return fallback
+    
+    # 1. Summary Cards
+    total_employees = User.objects.filter(role='EMP').count()
+    active_employees = User.objects.filter(role='EMP', is_active=True, is_locked=False).count()
+    
+    on_leave_today = LeaveRequest.objects.filter(
+        status=LeaveRequest.Status.APPROVED,
+        start_date__lte=today,
+        end_date__gte=today
+    ).values('user').distinct().count()
+
+    # 2. Attendance Pie Chart Data
+    present_today = AttendanceLog.objects.filter(date=today, status__in=[AttendanceLog.Status.PRESENT, AttendanceLog.Status.LATE, AttendanceLog.Status.UNDERTIME]).values('employee').distinct().count()
+    absent_today = AttendanceLog.objects.filter(date=today, status=AttendanceLog.Status.ABSENT).values('employee').distinct().count()
+    
+    # If no absent logs, calculate implicit absents (total - present - on leave)
+    if absent_today == 0 and total_employees > 0:
+        absent_today = max(0, total_employees - present_today - on_leave_today)
+        
+    attendance_data = {
+        'present': present_today,
+        'absent': absent_today,
+        'on_leave': on_leave_today
+    }
+
+    pending_notifications_qs = Notification.objects.filter(user=request.user, is_read=False)
+    pending_notifications = pending_notifications_qs[:5]
+
+    context = {
+        'welcome_name': request.user.first_name or request.user.username,
+        'welcome_date': today.strftime('%B %d, %Y'),
+        'pending_notification_count': pending_notifications_qs.count(),
+        'pending_notifications': pending_notifications,
+        'total_employees': total_employees,
+        'active_employees': active_employees,
+        'on_leave_today': on_leave_today,
+        'attendance_chart_data': attendance_data,
+        'attendance_data': json.dumps(attendance_data),
+        'quick_action_urls': {
+            'add_employee': safe_reverse('add_employee', '#'),
+            'approve_leave': safe_reverse('leaves:hr_leave_history', '#'),
+            'generate_report': safe_reverse('history:hr_profile', '#'),
+        },
+    }
+    return render(request, 'hr/hr_dash.html', context)
+
+
+@login_required
+@user_passes_test(is_head)
+def head_dashboard(request):
+    today = timezone.now().date()
+    department = request.user.department
+
+    def safe_reverse(name, fallback='#'):
+        try:
+            return reverse(name)
+        except NoReverseMatch:
+            return fallback
+
+    department_employees = User.objects.filter(department=department).exclude(role__in=['ADMIN', 'HR', 'SD'])
+    total_department_employees = department_employees.count()
+    active_department_employees = department_employees.filter(is_active=True, is_locked=False).count()
+
+    department_attendance = AttendanceLog.objects.filter(
+        employee__department=department,
+        date=today,
+    )
+
+    attendance_counts = {'present': 0, 'absent': 0, 'on_leave': 0}
+    attendance_counts['present'] = department_attendance.filter(
+        status__in=[AttendanceLog.Status.PRESENT, AttendanceLog.Status.LATE, AttendanceLog.Status.UNDERTIME]
+    ).values('employee').distinct().count()
+    attendance_counts['absent'] = department_attendance.filter(status=AttendanceLog.Status.ABSENT).values('employee').distinct().count()
+    attendance_counts['on_leave'] = LeaveRequest.objects.filter(
+        user__department=department,
+        status=LeaveRequest.Status.APPROVED,
+        start_date__lte=today,
+        end_date__gte=today,
+    ).values('user').distinct().count()
+
+    pending_leave_approvals = LeaveRequest.objects.filter(
+        user__department=department,
+        status=LeaveRequest.Status.PENDING_HEAD_APPROVAL,
+    ).select_related('user', 'leave_type').order_by('-created_at')[:5]
+
+    evaluation_reminders = Notification.objects.filter(
+        user=request.user,
+        notification_type='Evaluation Reminder',
+        is_read=False,
+    ).order_by('-created_at')[:5]
+
+    context = {
+        'welcome_name': request.user.first_name or request.user.username,
+        'department_name': department.name if department else 'No Department',
+        'total_department_employees': total_department_employees,
+        'active_department_employees': active_department_employees,
+        'pending_leave_count': pending_leave_approvals.count(),
+        'attendance_chart_data': attendance_counts,
+        'attendance_data': json.dumps(attendance_counts),
+        'pending_leave_approvals': pending_leave_approvals,
+        'evaluation_reminders': evaluation_reminders,
+        'quick_action_urls': {
+            'view_leaves': safe_reverse('leaves:head_leave_history', '#'),
+            'view_evaluations': safe_reverse('history:head_profile', '#'),
+            'view_attendance': safe_reverse('attendance:employee_attendance_records', '#'),
+        },
+    }
+    return render(request, 'head/head_dash.html', context)
+
+
+@login_required
+@user_passes_test(is_sd)
+def sd_dashboard(request):
+    today = timezone.now().date()
+
+    def safe_reverse(name, fallback='#'):
+        try:
+            return reverse(name)
+        except NoReverseMatch:
+            return fallback
+
+    institution_employees = User.objects.exclude(role__in=['ADMIN'])
+    total_employees = institution_employees.count()
+    active_employees = institution_employees.filter(is_active=True, is_locked=False).exclude(role='ADMIN').count()
+    total_departments = Department.objects.filter(is_active=True).count()
+
+    attendance_logs = AttendanceLog.objects.filter(date=today)
+    attendance_counts = {
+        'present': attendance_logs.filter(status__in=[AttendanceLog.Status.PRESENT, AttendanceLog.Status.LATE, AttendanceLog.Status.UNDERTIME]).values('employee').distinct().count(),
+        'absent': attendance_logs.filter(status=AttendanceLog.Status.ABSENT).values('employee').distinct().count(),
+        'on_leave': LeaveRequest.objects.filter(
+            status=LeaveRequest.Status.APPROVED,
+            start_date__lte=today,
+            end_date__gte=today,
+        ).values('user').distinct().count(),
+    }
+
+    leave_overview = {
+        'pending_head': LeaveRequest.objects.filter(status=LeaveRequest.Status.PENDING_HEAD_APPROVAL).count(),
+        'pending_hr': LeaveRequest.objects.filter(status=LeaveRequest.Status.PENDING_HR_APPROVAL).count(),
+        'approved': LeaveRequest.objects.filter(status=LeaveRequest.Status.APPROVED).count(),
+        'rejected': LeaveRequest.objects.filter(status=LeaveRequest.Status.REJECTED).count(),
+    }
+
+    hr_announcements = Notification.objects.filter(
+        user=request.user,
+        notification_type='System Announcement',
+    ).order_by('-created_at')[:5]
+
+    context = {
+        'welcome_name': request.user.first_name or request.user.username,
+        'total_employees': total_employees,
+        'active_employees': active_employees,
+        'total_departments': total_departments,
+        'leave_overview': leave_overview,
+        'attendance_chart_data': attendance_counts,
+        'attendance_data': json.dumps(attendance_counts),
+        'hr_announcements': hr_announcements,
+        'quick_action_urls': {
+            'view_leave_summary': safe_reverse('leaves:leave_summary', '#'),
+            'view_history': safe_reverse('history:sd_profile', '#'),
+        },
+    }
+    return render(request, 'sd/sd_dash.html', context)
+
+@login_required
+@user_passes_test(is_emp)
 def employee_dashboard(request):
-    return render(request, 'employee/emp_dash.html')
+    today = timezone.now().date()
+    current_month = today.month
+    current_year = today.year
+    
+    # 1. Current Month Attendance Summary
+    attendance_summary = AttendanceLog.objects.filter(
+        employee=request.user, 
+        date__month=current_month, 
+        date__year=current_year
+    ).values('status').annotate(count=Count('id'))
+    
+    # Restructure into a dictionary for easier template access
+    attendance_stats = { 'PRESENT': 0, 'ABSENT': 0, 'LATE': 0, 'UNDERTIME': 0 }
+    for item in attendance_summary:
+        attendance_stats[item['status']] = item['count']
+        
+    # 2. Recent Leave Requests (Last 5)
+    recent_leaves = LeaveRequest.objects.filter(user=request.user).order_by('-created_at')[:5]
+    
+    # 3. Recent Notifications (Dashboard specific, even though global exists)
+    recent_notifications = Notification.objects.filter(user=request.user).order_by('-created_at')[:5]
+
+    month_attendance_summary = {
+        'present': attendance_stats.get(AttendanceLog.Status.PRESENT, 0),
+        'late': attendance_stats.get(AttendanceLog.Status.LATE, 0),
+        'undertime': attendance_stats.get(AttendanceLog.Status.UNDERTIME, 0),
+        'absent': attendance_stats.get(AttendanceLog.Status.ABSENT, 0),
+    }
+    month_attendance_summary['total'] = sum(month_attendance_summary.values())
+    
+    context = {
+        'welcome_name': request.user.first_name or request.user.username,
+        'attendance_stats': attendance_stats,
+        'month_attendance_summary': month_attendance_summary,
+        'recent_leaves': recent_leaves,
+        'recent_notifications': recent_notifications,
+        'pending_notification_count': Notification.objects.filter(user=request.user, is_read=False).count(),
+        'current_month_name': today.strftime('%B %Y')
+    }
+    return render(request, 'employee/emp_dash.html', context)
 
 @login_required
 def employee_profile(request):
@@ -639,7 +914,7 @@ def edit_employee(request, user_id):
                 profile.save()
 
             messages.success(request, f"Successfully updated {employee.get_full_name()}!")
-            return redirect('employee_profile', user_id=employee.id)
+            return redirect('employee_profile_view', user_id=employee.id)
             
         except Exception as e:
             messages.error(request, f"Database Error: {str(e)}")
@@ -665,7 +940,7 @@ def delete_employee(request, user_id):
         employee.delete()
         messages.success(request, "Employee record deleted successfully.")
         return redirect('employee_list')
-    return redirect('employee_profile', user_id=user_id)
+    return redirect('employee_profile_view', user_id=user_id)
 
 @login_required
 @user_passes_test(is_admin)

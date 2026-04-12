@@ -64,9 +64,21 @@
     </style>
 </head>
 <body>
-    <aside class="sidebar">
-        <div style="padding: 20px; text-align: center;">
-            <img src="{% static 'img/general/uph.png' %}" width="60" alt="Logo">
+    <aside class="sidebar" id="sidebar">
+        <div class="top-section" style="padding: 20px; text-align: center;">
+            <div class="logo-wrapper">
+                <img src="{% static 'img/general/uph.png' %}" style="width: 50px;" alt="Logo">
+            </div>
+            {% if global_user_role %}
+            <div style="margin-top: 15px;">
+                <span style="background: rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 12px; color: white; font-size: 0.85rem; font-weight: bold; letter-spacing: 0.5px;">
+                    {{ global_user_role }}
+                </span>
+            </div>
+            {% endif %}
+            <div style="margin-top: 15px; color: rgba(255,255,255,0.8); font-size: 0.75rem; font-style: italic; line-height: 1.4; padding: 0 10px;">
+                "{{ global_quote }}"
+            </div>
         </div>
         
         <ul style="list-style: none; padding: 0;">
