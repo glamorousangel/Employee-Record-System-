@@ -19,8 +19,7 @@ def is_hr(user):
     return user.is_authenticated and user.role == 'HR'
 
 def is_sd(user):
-    # Assuming School Director has ADMIN level privileges for viewing summaries
-    return user.is_authenticated and user.role == 'ADMIN'
+    return user.is_authenticated and user.role in ['SD', 'ADMIN']
 
 @login_required
 def leave_select_view(request):

@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 
 def is_sd(user):
     return user.is_authenticated and user.role == 'ADMIN'
+    return user.is_authenticated and user.role in ['SD', 'ADMIN']
 
 @login_required
 @user_passes_test(is_sd)
@@ -13,6 +14,10 @@ def sd_application_overview(request):
 @login_required
 def application_list(request):
     """View to list applications."""
+    # Route to the SD App Management template if user is SD
+    if request.user.role == 'SD':
+        return render(request, 'application_management/sd_appmanagement.html', {'applications': []})
+        
     # Route to the HR App Management template if user is HR/Admin
     if request.user.role in ['HR', 'ADMIN']:
         return render(request, 'hr/hr_appmanagement.html', {'applications': []})
