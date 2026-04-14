@@ -46,6 +46,10 @@ const clockOutConfirmBtn   = document.getElementById("clockOutConfirmBtn");
 const clockOutDismissBtn   = document.getElementById("clockOutDismiss");
 const clockOutDurationText = document.getElementById("clockOutDurationText");
 
+// Export actions
+const exportAttendancePdfBtn = document.getElementById("exportAttendancePdf");
+const exportAttendanceExcelBtn = document.getElementById("exportAttendanceExcel");
+
 
 /* ── 2. SIDEBAR NAVIGATION ───────────────────────────────── */
 
@@ -284,6 +288,35 @@ closeHistoryBtn.addEventListener("click", () => historyModal.classList.remove("o
 historyModal.addEventListener("click", (e) => { if (e.target === historyModal) historyModal.classList.remove("open"); });
 
 
+/* ── 11. EXPORT ACTIONS (HEAD SCOPE) ────────────────────── */
+
+function triggerHeadAttendanceExport(button) {
+    if (!button) return;
+
+    const exportUrl = (button.dataset.exportUrl || button.getAttribute("data-export-url") || "").trim();
+
+    if (!exportUrl) {
+        console.error("Head attendance export missing required attributes", {
+            exportUrl,
+            buttonId: button.id,
+        });
+        window.alert("Unable to export attendance right now.");
+        return;
+    }
+
+    console.log("Triggering export to:", exportUrl);
+    window.location.href = exportUrl;
+}
+
+if (exportAttendancePdfBtn) {
+    exportAttendancePdfBtn.addEventListener("click", () => triggerHeadAttendanceExport(exportAttendancePdfBtn));
+}
+
+if (exportAttendanceExcelBtn) {
+    exportAttendanceExcelBtn.addEventListener("click", () => triggerHeadAttendanceExport(exportAttendanceExcelBtn));
+}
+
+
 /* ── 12. TAB SWITCHER (LOG VS MONITORING) ────────────────── */
 
 // This implements the specific request to toggle between Attendance Log and Monitoring
@@ -312,7 +345,7 @@ if (tabLog && tabMonit) {
 }
 
 
-/* ── 11. HELPERS & INIT ──────────────────────────────────── */
+/* ── 12. HELPERS & INIT ──────────────────────────────────── */
 
 function capitalize(str) { return str.charAt(0).toUpperCase() + str.slice(1); }
 

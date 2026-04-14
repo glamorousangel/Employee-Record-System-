@@ -167,6 +167,24 @@
                 </div>
                 <div class="footer-actions">
                     <button class="btn-history" id="openHistory">View Full History</button>
+                    <button
+                        type="button"
+                        class="btn-history"
+                        id="exportAttendancePdf"
+                        style="margin-left: 8px;"
+                        data-export-url="{% url 'attendance:head_export_attendance_pdf' %}"
+                    >
+                        Export to PDF
+                    </button>
+                    <button
+                        type="button"
+                        class="btn-history"
+                        id="exportAttendanceExcel"
+                        style="margin-left: 8px;"
+                        data-export-url="{% url 'attendance:head_export_attendance_excel' %}"
+                    >
+                        Export to Excel
+                    </button>
                 </div>
             </div>
 

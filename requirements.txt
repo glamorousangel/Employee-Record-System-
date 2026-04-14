@@ -1,0 +1,4 @@
+django
+openpyxl
+reportlab
+xhtml2pdf

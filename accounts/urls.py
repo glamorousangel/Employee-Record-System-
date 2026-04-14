@@ -18,6 +18,18 @@ urlpatterns = [
     path('accounts/sd/profile/edit/', views.sd_profile_edit, name='sd_profile_edit'),
     path('accounts/sd/documents/', views.sd_documents_view, name='sd_documents_view'),
     path('accounts/sd/reports/', views.sd_reports, name='sd_reports'),
+    path('sd/reports/summary/api/', views.sd_reports_summary_api, name='sd_reports_summary'),
+
+    # HR Dashboard Sub-pages
+    path('hr/reports/', views.hr_reports_page_view, name='hr_reports'),
+
+    # Reports Export Endpoints (HR & SD)
+    path('reports/export/pdf/', views.reports_export_pdf_view, name='reports_export_pdf'),
+    path('reports/export/excel/', views.reports_export_excel_view, name='reports_export_excel'),
+    path('reports/hr/export/pdf/', views.hr_export_pdf_view, name='hr_export_pdf'),
+    path('reports/hr/export/excel/', views.hr_export_excel_view, name='hr_export_excel'),
+    path('reports/sd/export/pdf/', views.sd_export_pdf_view, name='sd_export_pdf'),
+    path('reports/sd/export/excel/', views.sd_export_excel_view, name='sd_export_excel'),
 
     # Employee Dashboard Sub-pages
     path('employee-dashboard/profile/', views.employee_profile, name='employee_profile'),

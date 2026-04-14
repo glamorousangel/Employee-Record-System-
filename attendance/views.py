@@ -6,11 +6,13 @@ from django.contrib import messages
 from django.utils.dateparse import parse_date
 import calendar
 import csv
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseForbidden
 
 from .models import AttendanceLog
 from .forms import AttendanceEditForm
 from accounts.models import User, Department
+from utils.pdf_generator import generate_pdf
+from utils.excel_generator import generate_excel
 
 # Create your views here.
 
@@ -97,10 +99,15 @@ def head_attendance(request):
     """
     Displays attendance logs for employees in the department of the logged-in Head.
     """
-    department = request.user.department
+    department = _get_head_department(request.user)
 
     if department:
-        logs = AttendanceLog.objects.filter(employee__department=department).select_related('employee').order_by('-date', 'employee__last_name')
+        logs = (
+            AttendanceLog.objects
+            .filter(employee__department_id=department.id)
+            .select_related('employee', 'employee__department')
+            .order_by('-date', 'employee__last_name')
+        )
     else:
         logs = AttendanceLog.objects.none()
     
@@ -119,6 +126,80 @@ def head_attendance_monitoring(request):
     """
     context = {'page_title': 'Attendance Monitoring'}
     return render(request, 'head/head_attendancemonitoring.html', context)
+
+
+def _get_head_department_attendance_logs(request):
+    """Return attendance logs strictly scoped to the logged-in Head's department."""
+    department = _get_head_department(request.user)
+    if not department:
+        return None, AttendanceLog.objects.none()
+
+    department_id = department.id
+
+    logs = (
+        AttendanceLog.objects
+        .filter(employee__department_id=department_id)
+        .select_related('employee', 'employee__department')
+        .order_by('-date', 'employee__last_name')
+    )
+    return department, logs
+
+
+def _get_head_department(user):
+    """Resolve the department a Head controls.
+
+    Supports both direct user.department assignment and Department.head linkage.
+    """
+    if getattr(user, 'department_id', None):
+        return user.department
+    return Department.objects.filter(head=user).first()
+
+
+@login_required
+@user_passes_test(is_head)
+def head_export_attendance_pdf(request):
+    """Export department-scoped attendance report as PDF for Department Heads."""
+    department, logs = _get_head_department_attendance_logs(request)
+    if not department:
+        return HttpResponse('You are not currently assigned as the head of any department.', status=400)
+
+    filters = {
+        'department': department.name,
+        'status': request.GET.get('status', 'All Statuses'),
+    }
+    pdf_buffer = generate_pdf('Attendance Report', logs, filters)
+
+    safe_department_name = department.name.lower().replace(' ', '_')
+    filename = f'head_attendance_{safe_department_name}.pdf'
+
+    response = HttpResponse(pdf_buffer.getvalue(), content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return response
+
+
+@login_required
+@user_passes_test(is_head)
+def head_export_attendance_excel(request):
+    """Export department-scoped attendance report as Excel for Department Heads."""
+    department, logs = _get_head_department_attendance_logs(request)
+    if not department:
+        return HttpResponse('You are not currently assigned as the head of any department.', status=400)
+
+    filters = {
+        'department': department.name,
+        'status': request.GET.get('status', 'All Statuses'),
+    }
+    excel_buffer = generate_excel('Attendance Report', logs, filters)
+
+    safe_department_name = department.name.lower().replace(' ', '_')
+    filename = f'head_attendance_{safe_department_name}.xlsx'
+
+    response = HttpResponse(
+        excel_buffer.getvalue(),
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    )
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return response
 
 @login_required
 @user_passes_test(is_sd)

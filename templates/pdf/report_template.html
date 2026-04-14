@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>{{ report_type }}</title>
+	<style>
+		@page {
+			size: A4;
+			margin: 16mm;
+		}
+
+		body {
+			font-family: Arial, sans-serif;
+			font-size: 12px;
+			color: #1f2937;
+			margin: 0;
+		}
+
+		.report-header {
+			border-bottom: 2px solid #d1d5db;
+			padding-bottom: 10px;
+			margin-bottom: 14px;
+		}
+
+		.institution-name {
+			margin: 0;
+			font-size: 18px;
+			font-weight: 700;
+		}
+
+		.report-title {
+			margin: 6px 0 4px;
+			font-size: 16px;
+			font-weight: 700;
+		}
+
+		.generated-at {
+			margin: 0;
+			color: #4b5563;
+			font-size: 11px;
+		}
+
+		.filters {
+			border: 1px solid #d1d5db;
+			background: #f9fafb;
+			padding: 10px;
+			margin-bottom: 14px;
+		}
+
+		.filters h3 {
+			margin: 0 0 8px;
+			font-size: 13px;
+		}
+
+		.filter-grid {
+			width: 100%;
+			border-collapse: collapse;
+		}
+
+		.filter-grid td {
+			padding: 2px 0;
+			vertical-align: top;
+		}
+
+		.filter-label {
+			width: 140px;
+			color: #4b5563;
+			font-weight: 600;
+		}
+
+		table.report-table {
+			width: 100%;
+			border-collapse: collapse;
+			table-layout: fixed;
+		}
+
+		.report-table th,
+		.report-table td {
+			border: 1px solid #d1d5db;
+			padding: 8px;
+			text-align: left;
+			vertical-align: top;
+			word-wrap: break-word;
+			font-size: 11px;
+		}
+
+		.report-table th {
+			background: #f3f4f6;
+			font-weight: 700;
+		}
+
+		.muted {
+			color: #6b7280;
+		}
+	</style>
+</head>
+<body>
+	<header class="report-header">
+		<h1 class="institution-name">University of Perpetual Help System DALTA</h1>
+		<h2 class="report-title">{{ report_type }}</h2>
+		<p class="generated-at">Generated on: {% now "F d, Y h:i A" %}</p>
+	</header>
+
+	<section class="filters">
+		<h3>Active Filters</h3>
+		<table class="filter-grid">
+			<tr>
+				<td class="filter-label">Date Range</td>
+				<td>
+					{% if filters.start_date or filters.end_date %}
+						{{ filters.start_date|default:"-" }} to {{ filters.end_date|default:"-" }}
+					{% elif filters.date_from or filters.date_to %}
+						{{ filters.date_from|default:"-" }} to {{ filters.date_to|default:"-" }}
+					{% else %}
+						All Dates
+					{% endif %}
+				</td>
+			</tr>
+			<tr>
+				<td class="filter-label">Department</td>
+				<td>{{ filters.department|default:"All Departments" }}</td>
+			</tr>
+			<tr>
+				<td class="filter-label">Status</td>
+				<td>{{ filters.status|default:"All Statuses" }}</td>
+			</tr>
+		</table>
+	</section>
+
+	<section>
+		<table class="report-table">
+			<thead>
+				{% if report_type == "Employee List" %}
+					<tr>
+						<th>Employee ID</th>
+						<th>Employee Name</th>
+						<th>Department</th>
+						<th>Employment Type</th>
+						<th>Status</th>
+					</tr>
+				{% elif report_type == "Attendance Report" %}
+					<tr>
+						<th>Employee</th>
+						<th>Date</th>
+						<th>Time In</th>
+						<th>Time Out</th>
+						<th>Status</th>
+					</tr>
+				{% elif report_type == "Leave Report" %}
+					<tr>
+						<th>Employee</th>
+						<th>Leave Type</th>
+						<th>Start Date</th>
+						<th>End Date</th>
+						<th>Days Requested</th>
+						<th>Status</th>
+					</tr>
+				{% else %}
+					<tr>
+						<th>Employee</th>
+						<th>Period</th>
+						<th>Score</th>
+						<th>Rating</th>
+						<th>Status</th>
+					</tr>
+				{% endif %}
+			</thead>
+			<tbody>
+				{% for item in queryset %}
+					{% if report_type == "Employee List" %}
+						<tr>
+							<td>{{ item.employee_id|default:"-" }}</td>
+							<td>{{ item.user.get_full_name|default:item.user.username|default:"-" }}</td>
+							<td>{{ item.user.department.name|default:"-" }}</td>
+							<td>{{ item.get_employment_type_display|default:item.employment_type|default:"-" }}</td>
+							<td>{{ item.is_active|yesno:"Active,Inactive"|default:"-" }}</td>
+						</tr>
+					{% elif report_type == "Attendance Report" %}
+						<tr>
+							<td>{{ item.employee.get_full_name|default:item.employee.username|default:"-" }}</td>
+							<td>{{ item.date|date:"Y-m-d"|default:"-" }}</td>
+							<td>{{ item.time_in|time:"H:i:s"|default:"-" }}</td>
+							<td>{{ item.time_out|time:"H:i:s"|default:"-" }}</td>
+							<td>{{ item.get_status_display|default:item.status|default:"-" }}</td>
+						</tr>
+					{% elif report_type == "Leave Report" %}
+						<tr>
+							<td>{{ item.user.get_full_name|default:item.user.username|default:"-" }}</td>
+							<td>{{ item.leave_type.name|default:item.leave_type|default:"-" }}</td>
+							<td>{{ item.start_date|date:"Y-m-d"|default:"-" }}</td>
+							<td>{{ item.end_date|date:"Y-m-d"|default:"-" }}</td>
+							<td>{{ item.days_requested|default:"-" }}</td>
+							<td>{{ item.get_status_display|default:item.status|default:"-" }}</td>
+						</tr>
+					{% else %}
+						<tr>
+							<td>{{ item.employee.get_full_name|default:item.user.get_full_name|default:item.employee|default:item.user|default:"-" }}</td>
+							<td>{{ item.evaluation_period|default:item.period|default:item.year|default:"-" }}</td>
+							<td>{{ item.score|default:item.total_score|default:item.overall_score|default:"-" }}</td>
+							<td>{{ item.rating|default:item.final_rating|default:"-" }}</td>
+							<td>{{ item.get_status_display|default:item.status|default:"-" }}</td>
+						</tr>
+					{% endif %}
+				{% empty %}
+					<tr>
+						<td colspan="6" class="muted">No records found for the selected filters.</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</section>
+</body>
+</html>

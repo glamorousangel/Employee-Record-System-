@@ -12,6 +12,8 @@ urlpatterns = [
     # Head URLs
     path('head/records/', views.head_attendance, name='head_department_attendance'),
     path('head/monitoring/', views.head_attendance_monitoring, name='head_attendance_monitoring'),
+    path('head/export/pdf/', views.head_export_attendance_pdf, name='head_export_attendance_pdf'),
+    path('head/export/excel/', views.head_export_attendance_excel, name='head_export_attendance_excel'),
     # HR URLs
     path('hr/records/', views.hr_attendance, name='hr_attendance'),
     path('hr/monitoring/', views.hr_attendance_monitoring, name='hr_attendance_monitoring'),

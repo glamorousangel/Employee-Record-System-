@@ -3,10 +3,11 @@ from django.contrib.auth import authenticate, login, logout, update_session_auth
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
 from django.views.decorators.http import require_POST
 from django.conf import settings
 from django.utils import timezone
+from django.utils.dateparse import parse_date
 import json 
 from datetime import timedelta
 from django.db import models, transaction # Correctly added here
@@ -21,6 +22,8 @@ from .models import User, Department, EmployeeProfile, SystemConfig
 from documents.models import Document
 from documents.forms import DocumentUploadForm
 from notifications.models import Notification
+from utils.pdf_generator import generate_pdf
+from utils.excel_generator import generate_excel
 
 # ADDED AddEmployeeForm TO THIS LIST BELOW:
 from .forms import (
@@ -42,6 +45,10 @@ def is_head(user):
 def is_sd(user):
     # Allow ADMIN privileges to access SD views to match other apps
     return user.is_authenticated and user.role in ['SD', 'ADMIN']
+
+
+def is_sd_only(user):
+    return user.is_authenticated and user.role == 'SD'
 
 def is_emp(user):
     return user.is_authenticated and user.role == 'EMP'
@@ -269,10 +276,25 @@ def hr_dashboard(request):
         'quick_action_urls': {
             'add_employee': safe_reverse('add_employee', '#'),
             'approve_leave': safe_reverse('leaves:hr_leave_history', '#'),
-            'generate_report': safe_reverse('history:hr_profile', '#'),
+            'generate_report': safe_reverse('hr_reports', '#'),
         },
     }
     return render(request, 'hr/hr_dash.html', context)
+
+
+@login_required
+@user_passes_test(is_hr)
+def hr_reports_page_view(request):
+    departments = Department.objects.filter(is_active=True).order_by('name')
+    return render(
+        request,
+        'hr/hr_reports.html',
+        {
+            'departments': departments,
+            'pdf_export_endpoint': reverse('hr_export_pdf'),
+            'excel_export_endpoint': reverse('hr_export_excel'),
+        },
+    )
 
 
 @login_required
@@ -482,7 +504,276 @@ def sd_documents_view(request):
 @login_required
 @user_passes_test(is_sd)
 def sd_reports(request):
-    return render(request, 'sd/sd_reports.html')
+    return render(
+        request,
+        'sd/sd_reports.html',
+        {
+            'summary_endpoint': reverse('sd_reports_summary'),
+            'pdf_export_endpoint': reverse('sd_export_pdf'),
+            'excel_export_endpoint': reverse('sd_export_excel'),
+        },
+    )
+
+
+@login_required
+@user_passes_test(is_sd)
+def sd_reports_summary_api(request):
+    total_employees = User.objects.filter(role='EMP').count()
+    attendance_logs = AttendanceLog.objects.count()
+    leave_requests = LeaveRequest.objects.count()
+
+    return JsonResponse(
+        {
+            'totals': {
+                'total_employees': total_employees,
+                'attendance_logs': attendance_logs,
+                'leave_requests': leave_requests,
+            },
+            'report_counts': {
+                'employee_list': total_employees,
+                'attendance_report': attendance_logs,
+                'leave_report': leave_requests,
+                'evaluation_summary': 0,
+            },
+            'recent_reports': [],
+        }
+    )
+
+
+def _normalize_report_type(report_type):
+    value = (report_type or '').strip().lower()
+    mapping = {
+        'employee list': 'Employee List',
+        'attendance report': 'Attendance Report',
+        'leave report': 'Leave Report',
+        'evaluation summary': 'Evaluation Summary',
+    }
+    return mapping.get(value)
+
+
+def _apply_department_filter(queryset, department_value, field_prefix):
+    if not department_value:
+        return queryset
+    department_value = str(department_value).strip()
+    if not department_value:
+        return queryset
+    if department_value.isdigit():
+        return queryset.filter(**{f'{field_prefix}__id': int(department_value)})
+    return queryset.filter(**{f'{field_prefix}__name__iexact': department_value})
+
+
+def _build_report_queryset(report_type, start_date, end_date, department, status, institution_wide=True):
+    if report_type == 'Employee List':
+        queryset = (
+            EmployeeProfile.objects
+            .filter(user__role='EMP')
+            .select_related('user', 'user__department')
+            .order_by('user__last_name', 'user__first_name')
+        )
+        queryset = _apply_department_filter(queryset, department if institution_wide else None, 'user__department')
+
+        status_value = (status or '').upper()
+        if status_value == 'ACTIVE':
+            queryset = queryset.filter(is_active=True, user__is_active=True, user__is_locked=False)
+        elif status_value == 'INACTIVE':
+            queryset = queryset.filter(
+                models.Q(is_active=False)
+                | models.Q(user__is_active=False)
+                | models.Q(user__is_locked=True)
+            )
+        elif status_value == 'ON_LEAVE':
+            today = timezone.now().date()
+            queryset = queryset.filter(
+                user__leave_requests__status=LeaveRequest.Status.APPROVED,
+                user__leave_requests__start_date__lte=today,
+                user__leave_requests__end_date__gte=today,
+            ).distinct()
+
+        if start_date:
+            queryset = queryset.filter(date_hired__gte=start_date)
+        if end_date:
+            queryset = queryset.filter(date_hired__lte=end_date)
+        return queryset
+
+    if report_type == 'Attendance Report':
+        queryset = AttendanceLog.objects.select_related('employee', 'employee__department').order_by('-date', 'employee__last_name')
+        queryset = _apply_department_filter(queryset, department if institution_wide else None, 'employee__department')
+
+        status_value = (status or '').upper()
+        if status_value in {
+            AttendanceLog.Status.PRESENT,
+            AttendanceLog.Status.ABSENT,
+            AttendanceLog.Status.LATE,
+            AttendanceLog.Status.UNDERTIME,
+        }:
+            queryset = queryset.filter(status=status_value)
+
+        if start_date:
+            queryset = queryset.filter(date__gte=start_date)
+        if end_date:
+            queryset = queryset.filter(date__lte=end_date)
+        return queryset
+
+    if report_type == 'Leave Report':
+        queryset = LeaveRequest.objects.select_related('user', 'user__department', 'leave_type').order_by('-created_at')
+        queryset = _apply_department_filter(queryset, department if institution_wide else None, 'user__department')
+
+        status_value = (status or '').upper()
+        if status_value in {
+            LeaveRequest.Status.PENDING_HEAD_APPROVAL,
+            LeaveRequest.Status.PENDING_HR_APPROVAL,
+            LeaveRequest.Status.APPROVED,
+            LeaveRequest.Status.REJECTED,
+            LeaveRequest.Status.CANCELLED,
+        }:
+            queryset = queryset.filter(status=status_value)
+
+        if start_date:
+            queryset = queryset.filter(start_date__gte=start_date)
+        if end_date:
+            queryset = queryset.filter(end_date__lte=end_date)
+        return queryset
+
+    queryset = User.objects.filter(role='EMP').select_related('department').order_by('last_name', 'first_name')
+    queryset = _apply_department_filter(queryset, department if institution_wide else None, 'department')
+    if start_date:
+        queryset = queryset.filter(date_joined__date__gte=start_date)
+    if end_date:
+        queryset = queryset.filter(date_joined__date__lte=end_date)
+    return queryset
+
+
+def _build_report_request_data(request, allow_department_filter=True):
+    report_type = _normalize_report_type(request.GET.get('report_type'))
+    if not report_type:
+        raise ValueError('Invalid or missing report_type.')
+
+    start_date = parse_date(request.GET.get('start_date') or '')
+    end_date = parse_date(request.GET.get('end_date') or '')
+    if start_date and end_date and start_date > end_date:
+        raise ValueError('start_date cannot be after end_date.')
+
+    department = request.GET.get('department', '') if allow_department_filter else ''
+    status = request.GET.get('status', '')
+
+    queryset = _build_report_queryset(
+        report_type=report_type,
+        start_date=start_date,
+        end_date=end_date,
+        department=department,
+        status=status,
+        institution_wide=allow_department_filter,
+    )
+
+    filters = {
+        'start_date': start_date.isoformat() if start_date else '',
+        'end_date': end_date.isoformat() if end_date else '',
+        'department': department,
+        'status': status,
+    }
+    return report_type, queryset, filters
+
+
+def _build_export_response(buffer, filename, content_type):
+    response = HttpResponse(buffer.getvalue(), content_type=content_type)
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return response
+
+
+def _export_pdf_for_hr(request):
+    report_type, queryset, filters = _build_report_request_data(request, allow_department_filter=True)
+    pdf_buffer = generate_pdf(report_type, queryset, filters)
+    filename = f"hr_{report_type.lower().replace(' ', '_')}.pdf"
+    return _build_export_response(pdf_buffer, filename, 'application/pdf')
+
+
+def _export_excel_for_hr(request):
+    report_type, queryset, filters = _build_report_request_data(request, allow_department_filter=True)
+    excel_buffer = generate_excel(report_type, queryset, filters)
+    filename = f"hr_{report_type.lower().replace(' ', '_')}.xlsx"
+    return _build_export_response(
+        excel_buffer,
+        filename,
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    )
+
+
+def _export_pdf_for_sd(request):
+    report_type, queryset, filters = _build_report_request_data(request, allow_department_filter=False)
+    pdf_buffer = generate_pdf(report_type, queryset, filters)
+    filename = f"sd_{report_type.lower().replace(' ', '_')}.pdf"
+    return _build_export_response(pdf_buffer, filename, 'application/pdf')
+
+
+def _export_excel_for_sd(request):
+    report_type, queryset, filters = _build_report_request_data(request, allow_department_filter=False)
+    excel_buffer = generate_excel(report_type, queryset, filters)
+    filename = f"sd_{report_type.lower().replace(' ', '_')}.xlsx"
+    return _build_export_response(
+        excel_buffer,
+        filename,
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    )
+
+
+@login_required
+@user_passes_test(is_hr)
+def hr_export_pdf_view(request):
+    try:
+        return _export_pdf_for_hr(request)
+    except ValueError as exc:
+        return HttpResponseBadRequest(str(exc))
+
+
+@login_required
+@user_passes_test(is_hr)
+def hr_export_excel_view(request):
+    try:
+        return _export_excel_for_hr(request)
+    except ValueError as exc:
+        return HttpResponseBadRequest(str(exc))
+
+
+@login_required
+@user_passes_test(is_sd_only)
+def sd_export_pdf_view(request):
+    try:
+        return _export_pdf_for_sd(request)
+    except ValueError as exc:
+        return HttpResponseBadRequest(str(exc))
+
+
+@login_required
+@user_passes_test(is_sd_only)
+def sd_export_excel_view(request):
+    try:
+        return _export_excel_for_sd(request)
+    except ValueError as exc:
+        return HttpResponseBadRequest(str(exc))
+
+
+@login_required
+def reports_export_pdf_view(request):
+    try:
+        if request.user.role == 'HR':
+            return _export_pdf_for_hr(request)
+        if request.user.role == 'SD':
+            return _export_pdf_for_sd(request)
+    except ValueError as exc:
+        return HttpResponseBadRequest(str(exc))
+    return HttpResponseForbidden('You are not allowed to export reports from this endpoint.')
+
+
+@login_required
+def reports_export_excel_view(request):
+    try:
+        if request.user.role == 'HR':
+            return _export_excel_for_hr(request)
+        if request.user.role == 'SD':
+            return _export_excel_for_sd(request)
+    except ValueError as exc:
+        return HttpResponseBadRequest(str(exc))
+    return HttpResponseForbidden('You are not allowed to export reports from this endpoint.')
 
 @login_required
 def employee_attendance(request):
@@ -494,44 +785,6 @@ def employee_documents(request):
     # This view will render the employee's documents page
     return render(request, 'dashboards/employee_documents.html')
 
-@login_required
-@user_passes_test(is_admin)
-@require_POST
-def create_user(request):
-    form = CustomUserCreationForm(request.POST, request.FILES)
-    if form.is_valid():
-        user = form.save()
-        log_activity(
-            actor=request.user,
-            action="Create User",
-            target_user=user,
-            details=f"Created new user {user.username}"
-        )
-        messages.success(request, f"User {user.username} created successfully. Password change required on first login.")
-        return JsonResponse({'status': 'success', 'message': 'User created successfully.'})
-    else:
-        print(form.errors) # Log form errors to the console for debugging
-        errors = form.errors.as_json()
-        return JsonResponse({'status': 'error', 'message': 'Error creating user.', 'errors': json.loads(errors)}, status=400)
-
-@login_required
-@user_passes_test(is_admin)
-def get_user_data(request, user_id):
-    user = get_object_or_404(User, pk=user_id)
-    data = {
-        'first_name': user.first_name,
-        'last_name': user.last_name,
-        'email': user.email,
-        'username': user.username,
-        'role': user.role,
-        'department_id': user.department.id if user.department else None,
-        'is_active': user.is_active,
-        'is_locked': user.is_locked,
-        'must_change_password': user.must_change_password,
-        'profile_pic_url': user.profile_pic.url if user.profile_pic else None,
-        'date_joined': user.date_joined.strftime('%Y-%m-%d %H:%M:%S'),
-    }
-    return JsonResponse(data)
 @login_required
 @user_passes_test(is_admin)
 @require_POST
@@ -569,6 +822,30 @@ def create_user(request):
             'message': 'Validation failed.', 
             'errors': errors
         }, status=400)
+
+
+@login_required
+@user_passes_test(is_admin)
+def get_user_data(request, user_id):
+    user = get_object_or_404(User, pk=user_id)
+    data = {
+        'first_name': user.first_name,
+        'last_name': user.last_name,
+        'email': user.email,
+        'username': user.username,
+        'role': user.role,
+        'department_id': user.department.id if user.department else None,
+        'is_active': user.is_active,
+        'is_locked': user.is_locked,
+        'must_change_password': user.must_change_password,
+        'profile_pic_url': user.profile_pic.url if user.profile_pic else None,
+        'date_joined': user.date_joined.strftime('%Y-%m-%d %H:%M:%S'),
+    }
+    return JsonResponse(data)
+
+
+@login_required
+@user_passes_test(is_admin)
 def edit_user(request, user_id):
     user = get_object_or_404(User, pk=user_id)
     form = CustomUserChangeForm(request.POST, request.FILES, instance=user)
