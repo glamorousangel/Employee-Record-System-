@@ -14,15 +14,18 @@ def sd_application_overview(request):
 @login_required
 def application_list(request):
     """View to list applications."""
-    # Route to the SD App Management template if user is SD
-    if request.user.role == 'SD':
-        return render(request, 'application_management/sd_appmanagement.html', {'applications': []})
-        
-    # Route to the HR App Management template if user is HR/Admin
-    if request.user.role in ['HR', 'ADMIN']:
-        return render(request, 'hr/hr_appmanagement.html', {'applications': []})
-        
-    return render(request, 'application_management/application_list.html', {'applications': []})
+    role = (request.user.role or '').upper()
+
+    if role == 'HR':
+        template_name = 'hr/hr_appmanagement.html'
+    elif role == 'HEAD':
+        template_name = 'head/head_appmanagement.html'
+    elif role == 'SD':
+        template_name = 'sd/sd_appmanagement.html'
+    else:
+        template_name = 'hr/hr_appmanagement.html'
+
+    return render(request, template_name, {'applications': []})
 
 @login_required
 def application_detail(request, pk):

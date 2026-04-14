@@ -56,6 +56,10 @@ def is_emp(user):
 def is_hr_or_admin(user):
     return user.is_authenticated and user.role in ['HR', 'ADMIN']
 
+
+def is_hr_admin_or_head(user):
+    return user.is_authenticated and user.role in ['HR', 'ADMIN', 'HEAD']
+
 def login_view(request):
     # If a user is already logged in, redirect them from the login page.
     if request.user.is_authenticated:
@@ -1093,7 +1097,7 @@ def deactivate_department(request, dept_id):
 # === TASK 04: EMPLOYEE RECORDS (HR CORE) ===
 
 @login_required
-@user_passes_test(is_hr_or_admin)
+@user_passes_test(is_hr_admin_or_head)
 def employee_list(request):
     """ View to list all employees with search and filter """
     employees = User.objects.all().select_related('profile', 'department').order_by('last_name')
