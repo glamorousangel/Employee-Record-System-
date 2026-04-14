@@ -29,16 +29,16 @@
             </div>
 
                 <ul class="menu">
-        <li><a href="{% url 'admin_dashboard' %}" class="menu-item"><i class="fas fa-border-all"></i><span>Dashboard</span></a></li>
-        <li><a href="#" class="menu-item"><i class="fas fa-user"></i><span>Profile</span></a></li>
+        <li><a href="{% url 'hr_dashboard' %}" class="menu-item"><i class="fas fa-border-all"></i><span>Dashboard</span></a></li>
+        <li><a href="{% url 'history:hr_profile' %}" class="menu-item"><i class="fas fa-user"></i><span>Profile</span></a></li>
         <hr>
-        <li><a href="#" class="menu-item"><i class="fas fa-file"></i><span>Application Management</span></a></li>
+        <li><a href="{% url 'application_list' %}" class="menu-item"><i class="fas fa-file"></i><span>Application Management</span></a></li>
         <li><a href="{% url 'employee_list' %}" class="menu-item"><i class="fas fa-database"></i><span>Employee Records</span></a></li>
         <li><a href="{% url 'attendance:hr_attendance' %}" class="menu-item active"><i class="fas fa-calendar"></i><span>Attendance Monitoring</span></a></li>
         <li><a href="{% url 'leaves:hr_leave_select' %}" class="menu-item"><i class="fas fa-briefcase"></i><span>Leave Management</span></a></li>
-        <li><a href="#" class="menu-item"><i class="fas fa-star"></i><span>Performance Evaluation</span></a></li>
-        <li><a href="#" class="menu-item"><i class="fas fa-chalkboard-teacher"></i><span>Trainings</span></a></li>
-        <li><a href="#" class="menu-item"><i class="fas fa-chart-line"></i><span>Reports / Analytics</span></a></li>
+        <li><a href="javascript:void(0);" class="menu-item" onclick="alert('This module is currently under development.'); return false;" aria-disabled="true"><i class="fas fa-star"></i><span>Performance Evaluation</span></a></li>
+        <li><a href="{% url 'hr_training' %}" class="menu-item"><i class="fas fa-chalkboard-teacher"></i><span>Trainings</span></a></li>
+        <li><a href="{% url 'hr_reports' %}" class="menu-item"><i class="fas fa-chart-line"></i><span>Reports / Analytics</span></a></li>
     </ul>
 
                 <div class="bottom-section">
