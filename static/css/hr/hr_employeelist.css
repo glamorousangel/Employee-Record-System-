@@ -194,45 +194,76 @@ hr { border: 0.5px solid rgba(255,255,255,0.2); margin: 15px 0; }
 .form-body::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 .form-body::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-/* 8. Modern Table Design */
+/* 8. Modern Table Design (MOCKUP STYLE) */
+.form-body { 
+    flex: 1; 
+    overflow-y: auto; 
+    padding-right: 5px; 
+    /* Adding a border and radius to the container makes the table look contained */
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+}
+
 table { 
     width: 100%; 
-    border-collapse: separate; 
+    border-collapse: collapse; /* Switched to collapse so the header background is solid */
     border-spacing: 0; 
 }
+
+/* The Dark Red/Maroon Header */
 thead { 
     position: sticky; 
     top: 0; 
-    background: #f8fafc;
+    background: #3b1818; /* Dark maroon matching your sidebar/mockup */
     z-index: 10; 
 }
+
 thead th { 
     text-align: left; 
     padding: 16px 20px; 
-    border-bottom: 2px solid #e2e8f0; 
-    color: #64748b; 
-    font-size: 12px; 
-    font-weight: 700;
-    text-transform: uppercase; 
+    color: #ffffff; /* Pure white text for high contrast */
+    font-size: 13px; /* Slightly smaller, sharper font */
+    font-weight: 600;
     letter-spacing: 0.5px;
+    border: none;
 }
 
+/* Rounding the top corners of the dark header */
+thead th:first-child { border-top-left-radius: 10px; }
+thead th:last-child { border-top-right-radius: 10px; }
+
+/* Data Rows */
 tbody tr {
     transition: background-color 0.2s ease;
+    border-bottom: 1px solid #f3f4f6; /* Very subtle dividing line */
 }
+
+tbody tr:last-child { border-bottom: none; }
+
 tbody tr:hover {
-    background-color: #f1f5f9; 
+    background-color: #f9fafb; /* Ultra-subtle gray on hover */
 }
+
 tbody td { 
     padding: 16px 20px; 
-    border-bottom: 1px solid #f1f5f9; 
-    font-size: 14px; 
-    color: #475569; 
+    font-size: 13px; /* Clean, professional data size */
+    color: #4b5563; /* Slate gray, easier on the eyes than pure black */
     font-weight: 500;
     vertical-align: middle;
 }
-.emp-name { color: #0f172a; font-weight: 600; }
-.emp-id { color: #64748b; font-family: monospace; font-size: 13px; }
+
+/* Specific Column Tweaks */
+.emp-name { 
+    color: #111827; 
+    font-weight: 600; 
+    font-size: 14px; /* Make the name stand out slightly */
+}
+
+.emp-id { 
+    color: #6b7280; 
+    font-size: 12px; /* De-emphasize the ID slightly */
+}
 
 /* 9. Status Badges */
 .status-badge { 
