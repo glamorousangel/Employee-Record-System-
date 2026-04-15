@@ -1097,22 +1097,22 @@ def deactivate_department(request, dept_id):
 # === TASK 04: EMPLOYEE RECORDS (HR CORE) ===
 
 @login_required
-@user_passes_test(is_hr_admin_or_head)
 def employee_list(request):
-    """ View to list all employees with search and filter """
-    employees = User.objects.all().select_related('profile', 'department').order_by('last_name')
+    user = request.user
     
-    search_query = request.GET.get('search', '')
-    if search_query:
-        employees = employees.filter(
-            Q(first_name__icontains=search_query) | 
-            Q(last_name__icontains=search_query) |
-            Q(profile__employee_id__icontains=search_query)
-        )
-
-    return render(request, 'hr/hr_employeelist.html', {
-        'employees': employees,
-    })
+    # 1. If Admin or HR: See everyone
+    if user.role in ['ADMIN', 'HR']: # (Make sure these strings match your actual role choices)
+        employees = User.objects.all().order_by('-date_joined')
+        
+    # 2. If Department Head: See ONLY their department
+    elif user.role == 'HEAD' or user.role == 'Department Head': 
+        employees = User.objects.filter(department=user.department).order_by('-date_joined')
+        
+    # 3. Regular Employees: Should they even be here? (Optional fallback)
+    else:
+        employees = User.objects.filter(id=user.id) # They only see themselves
+        
+    return render(request, 'hr/hr_employeelist.html', {'employees': employees})
 
 
 @login_required
@@ -1168,12 +1168,34 @@ def add_employee(request):
 
     return render(request, 'hr/hr_addemployee.html', {'form': form})
 
+from django.shortcuts import get_object_or_404, redirect, render
+from django.contrib import messages
+
 @login_required
-@user_passes_test(is_hr_or_admin)
 def employee_profile_view(request, user_id):
-    # Fetch the employee or show 404 if not found
-    employee = get_object_or_404(User, id=user_id)
-    return render(request, 'hr/hr_profile_view.html', {'employee': employee})
+    # 1. Grab the employee they clicked on
+    target_employee = get_object_or_404(User, id=user_id)
+    viewer = request.user
+
+    # 2. ROLE-BASED SECURITY CHECK
+    if viewer.role in ['ADMIN', 'HR']:
+        pass # Allow access to see anyone
+        
+    elif viewer.role == 'HEAD' or viewer.role == 'Department Head':
+        # Check if the target employee's department matches Janine's department
+        if target_employee.department != viewer.department:
+            messages.error(request, "Access Denied: This employee is not in your department.")
+            return redirect('head_dashboard') # Kick them back to dashboard
+            
+    else:
+        # Regular employees shouldn't be snooping on other profiles at all
+        if viewer.id != target_employee.id:
+            messages.error(request, "Access Denied.")
+            return redirect('employee_dashboard')
+
+    # 3. If they pass the check, show the profile!
+    # (If you had document-fetching logic here, keep it, then return the render)
+    return render(request, 'hr/hr_profile_view.html', {'employee': target_employee})
 
 @login_required
 @user_passes_test(is_hr_or_admin)
