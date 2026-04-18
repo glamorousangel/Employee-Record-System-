@@ -111,14 +111,14 @@ function setupEventListeners() {
     document.getElementById('newPassword')?.addEventListener('input', updatePasswordStrength);
     document.getElementById('password')?.addEventListener('input', updatePasswordStrengthForCreateEdit); // For create/edit user modal
 
-    // Department filter for create/edit user modal
-document.getElementById('role')?.addEventListener('change', function() {
+ // Department filter for create/edit user modal
+document.getElementById('userRole')?.addEventListener('change', function() {
     const deptGroup = document.getElementById('departmentSelectGroupUserModal');
     const deptSelect = document.getElementById('departmentUserModal');
 
     if (deptGroup && deptSelect) {
-        // Use 'HEAD' (Uppercase) to match your Django Choices
-        if (this.value === 'HEAD' || this.value === 'EMPLOYEE') { 
+        // Use 'HEAD' and 'EMP' (Uppercase) to match your Django backend Choices
+        if (this.value === 'HEAD' || this.value === 'EMP') { 
             deptGroup.style.display = 'block';
             deptSelect.required = true;
         } else {
@@ -127,21 +127,6 @@ document.getElementById('role')?.addEventListener('change', function() {
         }
     }
 });
-
-   // Department filter for create/edit user modal
-document.getElementById('role')?.addEventListener('change', function() {
-    const deptGroup = document.getElementById('departmentSelectGroupUserModal');
-    
-    if (deptGroup) {
-        // Change to lowercase 'head' or 'employee' to match the HTML above!
-        if (this.value === 'head' || this.value === 'employee') { 
-            deptGroup.style.display = 'block';
-        } else {
-            deptGroup.style.display = 'none';
-        }
-    }
-});
-
     // Bulk Actions
     document.getElementById('bulkDeactivate')?.addEventListener('click', bulkDeactivateUsers);
     document.getElementById('bulkActivate')?.addEventListener('click', bulkActivateUsers);
