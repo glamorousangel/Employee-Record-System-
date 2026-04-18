@@ -41,54 +41,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Submit Logic (Notification with Credits) ---
     if (leaveForm) {
-        leaveForm.onsubmit = (e) => {
-            e.preventDefault();
-
-            const TOTAL_SICK_CREDITS = 15;
-            let finalMessage = "Leave request submitted successfully";
-
-            // 1. Get Selected Leave Type
-            const activeBtn = document.querySelector('.type-btn.active');
-            const leaveTypeText = activeBtn ? activeBtn.innerText : "";
-
-            // 2. Get Dates using Name attributes (from your HTML)
-            const startDateInput = document.querySelector('input[name="start_date"]');
-            const endDateInput = document.querySelector('input[name="end_date"]');
-
-            // 3. Calculate Credits if Sick Leave
-            if (leaveTypeText.includes("Sick Leave") && startDateInput.value && endDateInput.value) {
-                const start = new Date(startDateInput.value);
-                const end = new Date(endDateInput.value);
-                
-                // Difference in days (inclusive)
-                const diffTime = Math.abs(end - start);
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-
-                const remaining = TOTAL_SICK_CREDITS - diffDays;
-                finalMessage = `Success! You have ${remaining} sick leave credits remaining.`;
-            }
-
-            // 4. Trigger SweetAlert (Matching Employee style)
-            // Note: Ensure SweetAlert CDN is in your Head HTML
-            if (typeof Swal !== 'undefined') {
-                Swal.fire({
-                    icon: "success",
-                    title: "Request Sent",
-                    text: finalMessage,
-                    confirmButtonColor: '#4a1d1d'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        const historyUrl = leaveForm.dataset.historyUrl || '/leaves/head/history/';
-                        window.location.href = historyUrl;
-                    }
-                });
-            } else {
-                // Fallback if Swal is not loaded
-                alert(finalMessage);
-                const historyUrl = leaveForm.dataset.historyUrl || '/leaves/head/history/';
-                window.location.href = historyUrl;
-
-            }
-        };
+        // Form intercepts removed to ensure standard Django native database save occurs.
     }
 });

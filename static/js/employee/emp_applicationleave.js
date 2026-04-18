@@ -22,6 +22,10 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', () => {
             typeButtons.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
+            
+            // Pass the selected leave type to the Django form
+            const hiddenType = document.getElementById('hiddenLeaveType');
+            if (hiddenType) hiddenType.value = btn.innerText;
         });
     });
 
@@ -40,44 +44,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Submit & Credits Calculation ---
     if (leaveForm) {
-        leaveForm.onsubmit = (e) => {
-            e.preventDefault();
-            const historyUrl = leaveForm.dataset.historyUrl || '/leaves/employee/history/';
-
-            const TOTAL_SICK_CREDITS = 15;
-            let finalMessage = "Leave request submitted successfully";
-            
-            // Get active button text
-            const activeBtn = document.querySelector('.type-btn.active');
-            const leaveTypeText = activeBtn ? activeBtn.innerText : "";
-
-            // Select inputs by NAME (matching your HTML)
-            const startDateInput = document.querySelector('input[name="start_date"]');
-            const endDateInput = document.querySelector('input[name="end_date"]');
-
-            if (leaveTypeText.includes("Sick Leave") && startDateInput.value && endDateInput.value) {
-                const start = new Date(startDateInput.value);
-                const end = new Date(endDateInput.value);
-                
-                // Calculate days inclusive
-                const diffTime = Math.abs(end - start);
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-
-                const remaining = TOTAL_SICK_CREDITS - diffDays;
-                finalMessage = `Success! You have ${remaining} sick leave credits remaining.`;
-            }
-
-            // Notification
-            Swal.fire({
-                icon: "success",
-                title: "Request Submitted",
-                text: finalMessage,
-                confirmButtonColor: '#4a1d1d' 
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = historyUrl;
-                }
-            });
-        };
+        // Form intercepts removed to ensure standard Django native database save occurs.
     }
 });

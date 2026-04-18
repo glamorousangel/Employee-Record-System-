@@ -1,57 +1,7 @@
 /* emp_leaverequest.js */
 const empInfo = { name: "John Smith" };
 
-// HARDCODED SAMPLE DATA
-const sampleLeaveData = [
-    {
-        id: 101,
-        name: "John Smith",
-        dateFiled: "March 28, 2026",
-        submitTime: "09:15 AM",
-        leaveType: "Sick Leave",
-        startDate: "2026-04-01",
-        endDate: "2026-04-02",
-        numDays: 2,
-        status: "Pending",
-        reviewedBy: "---",
-        reason: "Having a severe fever and need to rest.",
-        fileName: "Medical_Certificate.pdf",
-        fileData: null, // Placeholder
-        reviewRemarks: "Awaiting initial review from Department Head."
-    },
-    {
-        id: 102,
-        name: "John Smith",
-        dateFiled: "February 10, 2026",
-        submitTime: "02:30 PM",
-        leaveType: "Vacation Leave",
-        startDate: "2026-02-15",
-        endDate: "2026-02-20",
-        numDays: 6,
-        status: "Approved",
-        reviewedBy: "HR Manager",
-        reason: "Family vacation to Palawan.",
-        fileName: "Flight_Itinerary.pdf",
-        fileData: null,
-        reviewRemarks: "Enjoy your vacation! Approved by HR."
-    },
-    {
-        id: 103,
-        name: "John Smith",
-        dateFiled: "January 05, 2026",
-        submitTime: "11:00 AM",
-        leaveType: "Personal Leave",
-        startDate: "2026-01-10",
-        endDate: "2026-01-10",
-        numDays: 1,
-        status: "Rejected",
-        reviewedBy: "Dept. Head",
-        reason: "Personal errands.",
-        fileName: "No Document Attached",
-        fileData: null,
-        reviewRemarks: "Requested date conflicts with a major department meeting."
-    }
-];
+let leaveData = [];
 
 document.addEventListener('DOMContentLoaded', () => {
     const sidebar = document.getElementById("sidebar");
@@ -67,8 +17,34 @@ document.addEventListener('DOMContentLoaded', () => {
         if (span) { item.setAttribute("data-text", span.innerText); }
     });
 
-    // Initial Render
-    renderLeaveTable("Active");
+    // Fetch real data from Django Backend
+    const table = document.getElementById('leaveTable');
+    const dataSourceUrl = table && table.dataset.sourceUrl ? table.dataset.sourceUrl : '/leaves/employee/history/?format=json';
+
+    fetch(dataSourceUrl, { headers: { 'Accept': 'application/json' }, cache: 'no-store' })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Database Response:", data); // Check your browser console!
+            leaveData = (data.history || []).map(item => ({
+                id: item.id,
+                dateFiled: item.dateFiled || "---",
+                submitTime: item.submitTime || "---",
+                leaveType: item.leave_type__name || "General Leave",
+                startDate: item.start_date,
+                endDate: item.end_date,
+                numDays: item.days_requested,
+                status: (item.status || '').includes('PENDING') ? 'Pending' : (item.status ? item.status.charAt(0).toUpperCase() + item.status.slice(1).toLowerCase() : 'Unknown'),
+                reviewedBy: "---",
+                reason: item.reason,
+                fileName: item.attachment ? "Document Attached" : "No Document Attached",
+                reviewRemarks: "Awaiting response"
+            }));
+            renderLeaveTable("Active");
+        })
+        .catch(error => {
+            console.error("Error fetching data:", error);
+            renderLeaveTable("Active");
+        });
 
     if (closeBtn) closeBtn.onclick = () => sidebar.classList.add("collapsed");
     if (logoToggle) logoToggle.onclick = () => sidebar.classList.toggle("collapsed");
@@ -99,8 +75,7 @@ function renderLeaveTable(filter) {
     const template = document.getElementById('leaveRowTemplate');
     body.innerHTML = "";
     
-    // Filter sample data instead of LocalStorage
-    sampleLeaveData.forEach((leave) => {
+    leaveData.forEach((leave) => {
         const isFinal = leave.status === "Approved" || leave.status === "Rejected";
         
         // Logic: Active tab shows Pending. History tab shows Approved/Rejected.
@@ -129,7 +104,7 @@ function renderLeaveTable(filter) {
 }
 
 function openViewModalByID(id) {
-    const data = sampleLeaveData.find(l => l.id === id);
+    const data = leaveData.find(l => l.id === id);
     if (!data) return;
     
     // Fill Modal Data

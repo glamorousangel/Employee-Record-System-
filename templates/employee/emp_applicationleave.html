@@ -44,7 +44,23 @@
                 <h1>Leave Management</h1>
                 
                 <div class="form-body">
-                    <form id="leaveRequestForm" data-history-url="{% url 'leaves:leave_history' %}">
+                    {% if form.errors %}
+                        <div style="background-color: #ffe6e6; color: #990000; padding: 15px; border: 1px solid #cc0000; border-radius: 5px; margin-bottom: 20px;">
+                            <strong>Submission Failed:</strong>
+                            <ul style="margin-top: 5px; padding-left: 20px;">
+                                {% for field, errors in form.errors.items %}
+                                    {% for error in errors %}
+                                        <li>{{ field|title }}: {{ error }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+
+                    <form id="leaveRequestForm" method="POST" action="{% url 'leaves:apply_leave' %}" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <input type="hidden" name="leave_type" id="hiddenLeaveType" value="Sick Leave">
+
                         <label class="section-label">Select Leave</label>
                         <div class="leave-type-grid">
                             <button type="button" class="type-btn active">Sick Leave</button>
@@ -68,12 +84,12 @@
 
                         <div class="input-group">
                             <label>Reason for Leave</label>
-                            <textarea class="form-textarea" placeholder="Please brief reason for your leave request..." required></textarea>
+                            <textarea name="reason" class="form-textarea" placeholder="Please brief reason for your leave request..." required></textarea>
                         </div>
 
                         <label class="section-label">Attach Supporting Document(s)</label>
                         <div class="drop-zone" id="dropZone">
-                            <input type="file" id="fileInput" hidden>
+                            <input type="file" name="attachment" id="fileInput" hidden>
                             <i class="fas fa-cloud-upload-alt"></i>
                             <p>Drag and Drop or <span>browse files</span></p>
                             <small>PDF, JPG, PNG - Max 10MB each</small>

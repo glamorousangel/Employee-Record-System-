@@ -2,73 +2,7 @@
 const hrName = "Tatsu"; 
 let activeRowId = null;
 
-// HARDCODED SAMPLE DATA
-let leaveData = [
-    {
-        id: 301,
-        name: "Tatsu", 
-        role: "HR Manager",
-        dateFiled: "March 30, 2026",
-        submitTime: "09:00 AM",
-        leaveType: "Vacation Leave",
-        startDate: "2026-04-10",
-        endDate: "2026-04-12",
-        numDays: 3,
-        status: "Pending",
-        reviewedBy: "---",
-        reason: "Personal rest and recreation.",
-        fileName: "No Document Attached",
-        reviewRemarks: "Awaiting review from School Director."
-    },
-    {
-        id: 302,
-        name: "Jose Brian Dela Peña", // FROM HEAD - HISTORY
-        role: "Department Head",
-        dateFiled: "March 25, 2026",
-        submitTime: "08:30 AM",
-        leaveType: "Sick Leave",
-        startDate: "2026-03-26",
-        endDate: "2026-03-27",
-        numDays: 2, // 2 DAYS
-        status: "Approved",
-        reviewedBy: "Tatsu (HR)",
-        reason: "Severe Migraine",
-        fileName: "Medical_Cert.pdf",
-        reviewRemarks: "Final approval granted by HR Department."
-    },
-    {
-        id: 303,
-        name: "Alice Johnson", 
-        role: "Senior Instructor",
-        dateFiled: "March 29, 2026",
-        submitTime: "10:15 AM",
-        leaveType: "Maternity Leave",
-        startDate: "2026-05-01",
-        endDate: "2026-07-30",
-        numDays: 90,
-        status: "Pending",
-        reviewedBy: "---",
-        reason: "Maternity leave application.",
-        fileName: "Doctor_Note.pdf",
-        reviewRemarks: "Awaiting HR validation of documents."
-    },
-    {
-        id: 304,
-        name: "Ricardo G. Dela Cruz", 
-        role: "School Director",
-        dateFiled: "March 20, 2026",
-        submitTime: "01:00 PM",
-        leaveType: "Emergency Leave",
-        startDate: "2026-03-21",
-        endDate: "2026-03-21",
-        numDays: 1,
-        status: "Rejected",
-        reviewedBy: "Board of Trustees",
-        reason: "Urgent family matter.",
-        fileName: "No Document Attached",
-        reviewRemarks: "Rejected due to conflict with the Annual Board Meeting."
-    }
-];
+let leaveData = [];
 
 document.addEventListener('DOMContentLoaded', () => {
     const sidebar = document.getElementById("sidebar");
@@ -96,7 +30,35 @@ document.addEventListener('DOMContentLoaded', () => {
         renderHRTable("History");
     };
 
-    renderHRTable("Active");
+    // Fetch real data from Django Backend
+    const table = document.getElementById('employeeTable');
+    const dataSourceUrl = table && table.dataset.sourceUrl ? table.dataset.sourceUrl : '/leaves/hr/history/?format=json';
+
+    fetch(dataSourceUrl, { headers: { 'Accept': 'application/json' }, cache: 'no-store' })
+        .then(response => response.json())
+        .then(data => {
+            leaveData = (data.history || []).map(item => ({
+                id: item.id,
+                name: item.name || "Unknown", 
+                role: item.user__role || "Employee",
+                dateFiled: item.dateFiled || "---",
+                submitTime: item.submitTime || "---",
+                leaveType: item.leave_type__name || "General Leave",
+                startDate: item.start_date,
+                endDate: item.end_date,
+                numDays: item.days_requested,
+                status: item.status.includes('PENDING') ? 'Pending' : item.status.charAt(0).toUpperCase() + item.status.slice(1).toLowerCase(),
+                reviewedBy: "---", 
+                reason: item.reason,
+                fileName: item.attachment ? "Document Attached" : "No Document Attached",
+                reviewRemarks: "Awaiting response"
+            }));
+            renderHRTable("Active");
+        })
+        .catch(error => {
+            console.error("Error fetching data:", error);
+            renderHRTable("Active");
+        });
 
     // Real-time Search
     document.getElementById('tableSearch').addEventListener('keyup', (e) => {
@@ -182,31 +144,52 @@ function openHRModal(id) {
 }
 
 function processRequest(status) {
-    const index = leaveData.findIndex(l => l.id === activeRowId);
-    if (index !== -1) {
-        // Instant Data Update
-        leaveData[index].status = status;
-        leaveData[index].reviewedBy = hrName;
-        leaveData[index].reviewRemarks = `Processed by HR Manager on ${new Date().toLocaleDateString()}`;
+    if (!activeRowId) return;
 
-        // Instant Modal Update
-        const statusClass = status.toLowerCase();
-        document.getElementById('modalStatusContainer').innerHTML = `<span class="status-pill ${statusClass}">${status}</span>`;
-        document.getElementById('modalRemarks').innerText = leaveData[index].reviewRemarks;
-        document.getElementById('modalActions').style.display = "none";
+    // Map status "Approved" or "Rejected" to the expected backend action
+    let actionStr = status.trim().toUpperCase(); 
+    if (actionStr === 'APPROVED') actionStr = 'APPROVE';
+    if (actionStr === 'REJECTED') actionStr = 'REJECT';
 
-        // Instant Table Update
-        const currentTab = document.getElementById('tab-requests').classList.contains('active') ? "Active" : "History";
-        renderHRTable(currentTab);
+    // Build a form dynamically to submit to the Django backend
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `/leaves/hr/approve/${activeRowId}/`;
 
+    // Grab CSRF Token from the hidden input in the main template
+    const csrfTokenInput = document.querySelector('input[name="csrfmiddlewaretoken"]');
+    if (!csrfTokenInput || !csrfTokenInput.value) {
+        console.error("CSRF token not found on the page. Make sure {% csrf_token %} is in your template.");
         Swal.fire({
-            icon: 'success',
-            title: `Request ${status}`,
-            text: `Data updated and moved to history instantly.`,
+            icon: 'error',
+            title: 'Security Error',
+            text: 'Could not find the required security token to process the request.',
             confirmButtonColor: '#4a1d1d',
-            timer: 2000
         });
+        return;
     }
+    const csrfToken = csrfTokenInput.value;
+
+    // Append required fields (csrf_token, action, and remarks) to the form
+    form.innerHTML = `
+        <input type="hidden" name="csrfmiddlewaretoken" value="${csrfToken}">
+        <input type="hidden" name="action" value="${actionStr}">
+        <input type="hidden" name="remarks" value="Processed by HR via Dashboard">
+    `;
+
+    document.body.appendChild(form);
+
+    // Show the notification, then actually submit to the database!
+    Swal.fire({
+        icon: 'success',
+        title: `Request ${status}`,
+        text: `Saving decision to database...`,
+        confirmButtonColor: '#4a1d1d',
+        timer: 1500,
+        showConfirmButton: false
+    }).then(() => {
+        form.submit();
+    });
 }
 
 function closeViewModal() { 

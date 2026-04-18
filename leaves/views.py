@@ -7,6 +7,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.db import transaction
 from django.urls import reverse
+from django.utils.timezone import localtime
 
 from .models import LeaveRequest, LeaveBalance
 from .forms import LeaveRequestForm, LeaveActionForm
@@ -114,7 +115,9 @@ def apply_leave(request):
             leave_request.save()
             _notify_pending_leave_approval(leave_request)
             messages.success(request, "Your leave request has been submitted successfully.")
-            return redirect('leaves:leave_history') 
+            return redirect('leaves:leave_history')
+        else:
+            messages.error(request, "Submission failed. Please review the form for errors.")
     else:
         form = LeaveRequestForm(user=request.user)
 
@@ -129,8 +132,13 @@ def leave_history(request):
     # Support JSON response if requested by frontend JS API calls
     if request.headers.get('Accept') == 'application/json' or request.GET.get('format') == 'json':
         history_data = list(leave_requests.values(
-            'id', 'leave_type__name', 'start_date', 'end_date', 'days_requested', 'status', 'reason'
+            'id', 'leave_type__name', 'start_date', 'end_date', 'days_requested', 'status', 'reason', 'created_at'
         ))
+        for item in history_data:
+            if item.get('created_at'):
+                local_dt = localtime(item['created_at'])
+                item['dateFiled'] = local_dt.strftime('%B %d, %Y')
+                item['submitTime'] = local_dt.strftime('%I:%M %p')
         return JsonResponse({'history': history_data})
         
     return render(request, 'employee/emp_leaverequest.html', {'leave_requests': leave_requests})
@@ -166,7 +174,9 @@ def head_apply_leave(request):
             leave_request.save()
             _notify_pending_leave_approval(leave_request)
             messages.success(request, "Your leave request has been submitted successfully.")
-            return redirect('leaves:head_leave_history') 
+            return redirect('leaves:head_leave_history')
+        else:
+            messages.error(request, "Submission failed. Please review the form for errors.")
     else:
         form = LeaveRequestForm(user=request.user)
 
@@ -199,8 +209,9 @@ def head_leave_history(request):
         ))
         for item in history_data:
             if item.get('created_at'):
-                item['dateFiled'] = item['created_at'].strftime('%B %d, %Y')
-                item['submitTime'] = item['created_at'].strftime('%I:%M %p')
+                local_dt = localtime(item['created_at'])
+                item['dateFiled'] = local_dt.strftime('%B %d, %Y')
+                item['submitTime'] = local_dt.strftime('%I:%M %p')
         return JsonResponse({'history': history_data})
 
     return render(request, 'head/head_leaverequest.html', {'leave_requests': leave_requests})
@@ -228,7 +239,9 @@ def hr_apply_leave(request):
             leave_request.save()
             _notify_pending_leave_approval(leave_request)
             messages.success(request, "Your leave request has been submitted successfully.")
-            return redirect('leaves:hr_leave_history') 
+            return redirect('leaves:hr_leave_history')
+        else:
+            messages.error(request, "Submission failed. Please review the form for errors.")
     else:
         form = LeaveRequestForm(user=request.user)
     return render(request, 'hr/hr_applicationleave.html', {'form': form})
@@ -238,7 +251,22 @@ def hr_apply_leave(request):
 @user_passes_test(is_hr)
 def hr_leave_history(request):
     """View for HR to see all leave requests for approval and history."""
-    leave_requests = LeaveRequest.objects.all().order_by('-created_at')
+    leave_requests = LeaveRequest.objects.all().select_related('user', 'leave_type').order_by('-created_at')
+    
+    # Return JSON if requested by the JavaScript fetch call
+    if request.headers.get('Accept') == 'application/json' or request.GET.get('format') == 'json':
+        history_data = list(leave_requests.values(
+            'id', 'user__first_name', 'user__last_name', 'user__role', 'leave_type__name', 
+            'start_date', 'end_date', 'days_requested', 'status', 'reason', 'created_at', 'attachment'
+        ))
+        for item in history_data:
+            if item.get('created_at'):
+                local_dt = localtime(item['created_at'])
+                item['dateFiled'] = local_dt.strftime('%B %d, %Y')
+                item['submitTime'] = local_dt.strftime('%I:%M %p')
+            item['name'] = f"{item.get('user__first_name', '')} {item.get('user__last_name', '')}".strip()
+        return JsonResponse({'history': history_data})
+
     return render(request, 'hr/hr_leaverequest.html', {'leave_requests': leave_requests})
 
 
@@ -264,7 +292,9 @@ def sd_apply_leave(request):
             leave_request.save()
             _notify_pending_leave_approval(leave_request)
             messages.success(request, "Your leave request has been submitted successfully.")
-            return redirect('leaves:sd_leave_history') 
+            return redirect('leaves:sd_leave_history')
+        else:
+            messages.error(request, "Submission failed. Please review the form for errors.")
     else:
         form = LeaveRequestForm(user=request.user)
     return render(request, 'sd/sd_applicationleave.html', {'form': form})
@@ -345,6 +375,7 @@ def sd_forward_leave(request, request_id):
 @login_required
 @user_passes_test(is_head)
 @require_POST
+@transaction.atomic
 def head_approve(request, request_id):
     """View for a Department Head to approve or reject a leave request."""
     leave_request = get_object_or_404(LeaveRequest, id=request_id, status=LeaveRequest.Status.PENDING_HEAD_APPROVAL)
@@ -359,6 +390,8 @@ def head_approve(request, request_id):
             _notify_pending_leave_approval(leave_request)
         else:
             _notify_leave_status_update(leave_request)
+    else:
+        messages.error(request, "Failed to process request: Invalid action submitted.")
     return redirect('leaves:head_leave_history')
 
 
@@ -368,7 +401,7 @@ def head_approve(request, request_id):
 @transaction.atomic
 def hr_final_approve(request, request_id):
     """View for HR to approve/reject and route leave requests for SD final approval."""
-    leave_request = get_object_or_404(LeaveRequest, id=request_id, status=LeaveRequest.Status.PENDING_HR_APPROVAL)
+    leave_request = get_object_or_404(LeaveRequest, id=request_id, status__in=[LeaveRequest.Status.PENDING_HR_APPROVAL, LeaveRequest.Status.PENDING_HEAD_APPROVAL])
     form = LeaveActionForm(request.POST)
     if form.is_valid():
         action = form.cleaned_data['action']
@@ -387,6 +420,8 @@ def hr_final_approve(request, request_id):
             _notify_pending_leave_approval(leave_request)
         else:
             _notify_leave_status_update(leave_request)
+    else:
+        messages.error(request, "Failed to process request: Invalid action submitted.")
     return redirect('leaves:hr_leave_history')
 
 
