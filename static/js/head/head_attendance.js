@@ -174,33 +174,42 @@ updateHeader();
 
 /* ── 5. HISTORY MODAL – DATA ─────────────────────────────── */
 
+const historySource = document.getElementById("headAttendanceHistoryData");
+let rawHistoryRows = [];
+
+if (historySource) {
+    try {
+        const parsedData = JSON.parse(historySource.textContent || "[]");
+        if (Array.isArray(parsedData)) {
+            rawHistoryRows = parsedData;
+        }
+    } catch (error) {
+        console.error("Unable to parse head attendance history data", error);
+    }
+}
+
+const historyRows = rawHistoryRows.map((row) => ({
+    date: row.date || "-",
+    day: row.day || "-",
+    employeeName: row.employee_name || "-",
+    timeIn: row.time_in || "--",
+    timeOut: row.time_out || "--",
+    hours: row.hours || "--",
+    status: normalizeStatus(row.status || "absent"),
+    statusDisplay: row.status_display || capitalize(normalizeStatus(row.status || "absent")),
+}));
+
+const visibleWeeklyRows = historyRows.slice(0, 14);
 const weeklyData = {
     0: {
-        label: "February 4 – 10, 2026",
-        rows: [
-            { date: "February 4, 2026",  day: "Tuesday",   timeIn: "8:03 AM", timeOut: "5:02 PM", hours: "8h 59m", status: "present" },
-            { date: "February 5, 2026",  day: "Wednesday", timeIn: "8:15 AM", timeOut: "5:10 PM", hours: "8h 55m", status: "present" },
-            { date: "February 6, 2026",  day: "Thursday",  timeIn: "8:00 AM", timeOut: "5:00 PM", hours: "9h 00m", status: "present" },
-            { date: "February 7, 2026",  day: "Friday",    timeIn: "8:45 AM", timeOut: "5:00 PM", hours: "8h 15m", status: "late"    },
-            { date: "February 8, 2026",  day: "Saturday",  timeIn: "--",      timeOut: "--",       hours: "--",     status: "leave"   },
-            { date: "February 9, 2026",  day: "Sunday",    timeIn: "--",      timeOut: "--",       hours: "--",     status: "holiday" },
-            { date: "February 10, 2026", day: "Monday",    timeIn: "8:03 AM", timeOut: "5:02 PM", hours: "8h 59m", status: "present" },
-        ],
-        total: "42h 15m"
+        label: buildWeeklyLabel(visibleWeeklyRows),
+        rows: visibleWeeklyRows,
+        total: sumDurationLabel(visibleWeeklyRows),
     }
 };
 
 const monthlyData = {
-    0: {
-        label: "February 2026",
-        firstDayOfWeek: 0,
-        daysInMonth: 28,
-        attendance: {
-            3:  { status: "present", hours: "8h 59m" },
-            4:  { status: "present", hours: "8h 55m" },
-        },
-        total: "152h 30m"
-    }
+    0: buildMonthlyData(historyRows)
 };
 
 let currentView = "weekly";
@@ -217,13 +226,17 @@ function renderWeekly() {
     const rows = data.rows.map(r => `
         <tr>
             <td>${r.date}</td>
-            <td>${r.day}</td>
+            <td>${r.day} (${escapeHtml(r.employeeName)})</td>
             <td>${r.timeIn}</td>
             <td>${r.timeOut}</td>
             <td>${r.hours}</td>
-            <td><span class="status-badge ${r.status}">${capitalize(r.status)}</span></td>
+            <td><span class="status-badge ${r.status}">${escapeHtml(r.statusDisplay)}</span></td>
         </tr>
     `).join("");
+    if (!rows) {
+        weeklyTableBody.innerHTML = '<tr><td colspan="6">No attendance records available.</td></tr>';
+        return;
+    }
     weeklyTableBody.innerHTML = rows + `<tr class="total-row"><td colspan="4">Total</td><td colspan="2">${data.total}</td></tr>`;
 }
 
@@ -348,6 +361,74 @@ if (tabLog && tabMonit) {
 /* ── 12. HELPERS & INIT ──────────────────────────────────── */
 
 function capitalize(str) { return str.charAt(0).toUpperCase() + str.slice(1); }
+
+function normalizeStatus(value) {
+    const normalized = String(value || '').toLowerCase();
+    if (['present', 'absent', 'late', 'undertime'].includes(normalized)) {
+        return normalized;
+    }
+    return 'absent';
+}
+
+function sumDurationLabel(rows) {
+    const totalMinutes = rows.reduce((acc, row) => {
+        const match = String(row.hours || '').match(/^(\d+)h\s+(\d+)m$/);
+        if (!match) {
+            return acc;
+        }
+        return acc + (Number(match[1]) * 60) + Number(match[2]);
+    }, 0);
+
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    return `${hours}h ${String(minutes).padStart(2, '0')}m`;
+}
+
+function buildWeeklyLabel(rows) {
+    if (!rows.length) {
+        return 'No Attendance Data';
+    }
+    const firstDate = rows[rows.length - 1].date;
+    const lastDate = rows[0].date;
+    return `${firstDate} – ${lastDate}`;
+}
+
+function buildMonthlyData(rows) {
+    const baseDate = rows.length ? new Date(rows[0].date) : new Date();
+    const month = baseDate.getMonth();
+    const year = baseDate.getFullYear();
+    const firstDayOfWeek = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    const attendance = {};
+    rows.forEach((row) => {
+        const recordDate = new Date(row.date);
+        if (recordDate.getFullYear() !== year || recordDate.getMonth() !== month) {
+            return;
+        }
+        attendance[recordDate.getDate()] = {
+            status: row.status,
+            hours: row.hours,
+        };
+    });
+
+    return {
+        label: baseDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+        firstDayOfWeek,
+        daysInMonth,
+        attendance,
+        total: sumDurationLabel(rows),
+    };
+}
+
+function escapeHtml(value) {
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
 
 // Initialize
 switchView("weekly");

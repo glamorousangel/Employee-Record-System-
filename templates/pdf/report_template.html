@@ -158,10 +158,11 @@
 				{% else %}
 					<tr>
 						<th>Employee</th>
-						<th>Period</th>
+						<th>Evaluation Period</th>
 						<th>Score</th>
 						<th>Rating</th>
 						<th>Status</th>
+						<th>Evaluated On</th>
 					</tr>
 				{% endif %}
 			</thead>
@@ -195,10 +196,27 @@
 					{% else %}
 						<tr>
 							<td>{{ item.employee.get_full_name|default:item.user.get_full_name|default:item.employee|default:item.user|default:"-" }}</td>
-							<td>{{ item.evaluation_period|default:item.period|default:item.year|default:"-" }}</td>
+							<td>
+								{% if item.evaluation_period %}
+									{{ item.evaluation_period }}
+								{% elif item.period_start or item.period_end %}
+									{{ item.period_start|date:"Y-m-d"|default:"-" }} to {{ item.period_end|date:"Y-m-d"|default:"-" }}
+								{% else %}
+									{{ item.period|default:item.year|default:"-" }}
+								{% endif %}
+							</td>
 							<td>{{ item.score|default:item.total_score|default:item.overall_score|default:"-" }}</td>
 							<td>{{ item.rating|default:item.final_rating|default:"-" }}</td>
 							<td>{{ item.get_status_display|default:item.status|default:"-" }}</td>
+							<td>
+								{% if item.evaluated_at %}
+									{{ item.evaluated_at|date:"Y-m-d" }}
+								{% elif item.created_at %}
+									{{ item.created_at|date:"Y-m-d" }}
+								{% else %}
+									-
+								{% endif %}
+							</td>
 						</tr>
 					{% endif %}
 				{% empty %}

@@ -18,10 +18,11 @@ from django.contrib.sessions.models import Session
 
 from audit.models import LoginLog
 from audit.utils import log_activity
-from .models import User, Department, EmployeeProfile, SystemConfig
+from .models import User, Department, EmployeeProfile, SystemConfig, ReportExportHistory
 from documents.models import Document
 from documents.forms import DocumentUploadForm
 from notifications.models import Notification
+from evaluations.models import EvaluationRecord
 from utils.pdf_generator import generate_pdf
 from utils.excel_generator import generate_excel
 
@@ -558,6 +559,17 @@ def sd_reports_summary_api(request):
     total_employees = User.objects.filter(role='EMP').count()
     attendance_logs = AttendanceLog.objects.count()
     leave_requests = LeaveRequest.objects.count()
+    evaluation_records = EvaluationRecord.objects.count()
+
+    recent_reports = [
+        {
+            'generated_on': timezone.localtime(entry.created_at).strftime('%Y-%m-%d %H:%M'),
+            'report_type': entry.report_type,
+            'format': entry.export_format,
+            'scope': entry.scope,
+        }
+        for entry in ReportExportHistory.objects.select_related('exported_by').all()[:10]
+    ]
 
     return JsonResponse(
         {
@@ -570,9 +582,9 @@ def sd_reports_summary_api(request):
                 'employee_list': total_employees,
                 'attendance_report': attendance_logs,
                 'leave_report': leave_requests,
-                'evaluation_summary': 0,
+                'evaluation_summary': evaluation_records,
             },
-            'recent_reports': [],
+            'recent_reports': recent_reports,
         }
     )
 
@@ -597,6 +609,46 @@ def _apply_department_filter(queryset, department_value, field_prefix):
     if department_value.isdigit():
         return queryset.filter(**{f'{field_prefix}__id': int(department_value)})
     return queryset.filter(**{f'{field_prefix}__name__iexact': department_value})
+
+
+def _get_allowed_status_values(report_type):
+    if report_type == 'Employee List':
+        return {'ACTIVE', 'INACTIVE', 'ON_LEAVE'}
+    if report_type == 'Attendance Report':
+        return {
+            AttendanceLog.Status.PRESENT,
+            AttendanceLog.Status.ABSENT,
+            AttendanceLog.Status.LATE,
+            AttendanceLog.Status.UNDERTIME,
+        }
+    if report_type == 'Leave Report':
+        return {
+            LeaveRequest.Status.PENDING_HEAD_APPROVAL,
+            LeaveRequest.Status.PENDING_HR_APPROVAL,
+            LeaveRequest.Status.PENDING_SD_APPROVAL,
+            LeaveRequest.Status.APPROVED,
+            LeaveRequest.Status.REJECTED,
+            LeaveRequest.Status.CANCELLED,
+        }
+    if report_type == 'Evaluation Summary':
+        return {
+            EvaluationRecord.Status.DRAFT,
+            EvaluationRecord.Status.COMPLETED,
+        }
+    return set()
+
+
+def _validate_report_status(report_type, raw_status):
+    status = (raw_status or '').strip().upper()
+    if not status:
+        return ''
+
+    allowed_statuses = _get_allowed_status_values(report_type)
+    if status not in allowed_statuses:
+        allowed_list = ', '.join(sorted(allowed_statuses)) if allowed_statuses else 'No statuses supported'
+        raise ValueError(f'Invalid status for {report_type}: {status}. Allowed values: {allowed_list}.')
+
+    return status
 
 
 def _build_report_queryset(report_type, start_date, end_date, department, status, institution_wide=True):
@@ -636,14 +688,8 @@ def _build_report_queryset(report_type, start_date, end_date, department, status
         queryset = AttendanceLog.objects.select_related('employee', 'employee__department').order_by('-date', 'employee__last_name')
         queryset = _apply_department_filter(queryset, department if institution_wide else None, 'employee__department')
 
-        status_value = (status or '').upper()
-        if status_value in {
-            AttendanceLog.Status.PRESENT,
-            AttendanceLog.Status.ABSENT,
-            AttendanceLog.Status.LATE,
-            AttendanceLog.Status.UNDERTIME,
-        }:
-            queryset = queryset.filter(status=status_value)
+        if status:
+            queryset = queryset.filter(status=status)
 
         if start_date:
             queryset = queryset.filter(date__gte=start_date)
@@ -655,15 +701,8 @@ def _build_report_queryset(report_type, start_date, end_date, department, status
         queryset = LeaveRequest.objects.select_related('user', 'user__department', 'leave_type').order_by('-created_at')
         queryset = _apply_department_filter(queryset, department if institution_wide else None, 'user__department')
 
-        status_value = (status or '').upper()
-        if status_value in {
-            LeaveRequest.Status.PENDING_HEAD_APPROVAL,
-            LeaveRequest.Status.PENDING_HR_APPROVAL,
-            LeaveRequest.Status.APPROVED,
-            LeaveRequest.Status.REJECTED,
-            LeaveRequest.Status.CANCELLED,
-        }:
-            queryset = queryset.filter(status=status_value)
+        if status:
+            queryset = queryset.filter(status=status)
 
         if start_date:
             queryset = queryset.filter(start_date__gte=start_date)
@@ -671,13 +710,24 @@ def _build_report_queryset(report_type, start_date, end_date, department, status
             queryset = queryset.filter(end_date__lte=end_date)
         return queryset
 
-    queryset = User.objects.filter(role='EMP').select_related('department').order_by('last_name', 'first_name')
-    queryset = _apply_department_filter(queryset, department if institution_wide else None, 'department')
-    if start_date:
-        queryset = queryset.filter(date_joined__date__gte=start_date)
-    if end_date:
-        queryset = queryset.filter(date_joined__date__lte=end_date)
-    return queryset
+    if report_type == 'Evaluation Summary':
+        queryset = (
+            EvaluationRecord.objects
+            .select_related('employee', 'employee__department', 'evaluated_by')
+            .order_by('-evaluated_at', '-created_at')
+        )
+        queryset = _apply_department_filter(queryset, department if institution_wide else None, 'employee__department')
+
+        if status:
+            queryset = queryset.filter(status=status)
+
+        if start_date:
+            queryset = queryset.filter(evaluated_at__gte=start_date)
+        if end_date:
+            queryset = queryset.filter(evaluated_at__lte=end_date)
+        return queryset
+
+    raise ValueError(f'Unsupported report type: {report_type}')
 
 
 def _build_report_request_data(request, allow_department_filter=True):
@@ -691,7 +741,7 @@ def _build_report_request_data(request, allow_department_filter=True):
         raise ValueError('start_date cannot be after end_date.')
 
     department = request.GET.get('department', '') if allow_department_filter else ''
-    status = request.GET.get('status', '')
+    status = _validate_report_status(report_type, request.GET.get('status', ''))
 
     queryset = _build_report_queryset(
         report_type=report_type,
@@ -711,6 +761,17 @@ def _build_report_request_data(request, allow_department_filter=True):
     return report_type, queryset, filters
 
 
+def _record_report_export(request, report_type, export_format, scope, filters):
+    ReportExportHistory.objects.create(
+        exported_by=request.user if request.user.is_authenticated else None,
+        role=getattr(request.user, 'role', ''),
+        report_type=report_type,
+        export_format=export_format,
+        scope=scope,
+        filters=filters or {},
+    )
+
+
 def _build_export_response(buffer, filename, content_type):
     response = HttpResponse(buffer.getvalue(), content_type=content_type)
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
@@ -721,6 +782,8 @@ def _export_pdf_for_hr(request):
     report_type, queryset, filters = _build_report_request_data(request, allow_department_filter=True)
     pdf_buffer = generate_pdf(report_type, queryset, filters)
     filename = f"hr_{report_type.lower().replace(' ', '_')}.pdf"
+    hr_scope = f"HR - {filters.get('department') or 'All Departments'}"
+    _record_report_export(request, report_type, ReportExportHistory.ExportFormat.PDF, hr_scope, filters)
     return _build_export_response(pdf_buffer, filename, 'application/pdf')
 
 
@@ -728,6 +791,8 @@ def _export_excel_for_hr(request):
     report_type, queryset, filters = _build_report_request_data(request, allow_department_filter=True)
     excel_buffer = generate_excel(report_type, queryset, filters)
     filename = f"hr_{report_type.lower().replace(' ', '_')}.xlsx"
+    hr_scope = f"HR - {filters.get('department') or 'All Departments'}"
+    _record_report_export(request, report_type, ReportExportHistory.ExportFormat.EXCEL, hr_scope, filters)
     return _build_export_response(
         excel_buffer,
         filename,
@@ -739,6 +804,13 @@ def _export_pdf_for_sd(request):
     report_type, queryset, filters = _build_report_request_data(request, allow_department_filter=False)
     pdf_buffer = generate_pdf(report_type, queryset, filters)
     filename = f"sd_{report_type.lower().replace(' ', '_')}.pdf"
+    _record_report_export(
+        request,
+        report_type,
+        ReportExportHistory.ExportFormat.PDF,
+        'Institution-wide',
+        filters,
+    )
     return _build_export_response(pdf_buffer, filename, 'application/pdf')
 
 
@@ -746,6 +818,13 @@ def _export_excel_for_sd(request):
     report_type, queryset, filters = _build_report_request_data(request, allow_department_filter=False)
     excel_buffer = generate_excel(report_type, queryset, filters)
     filename = f"sd_{report_type.lower().replace(' ', '_')}.xlsx"
+    _record_report_export(
+        request,
+        report_type,
+        ReportExportHistory.ExportFormat.EXCEL,
+        'Institution-wide',
+        filters,
+    )
     return _build_export_response(
         excel_buffer,
         filename,

@@ -164,3 +164,29 @@ class BackupSnapshot(models.Model):
 
     def __str__(self):
         return f"Backup: {self.file_name} on {self.created_at.strftime('%Y-%m-%d %H:%M')}"
+
+
+class ReportExportHistory(models.Model):
+    class ExportFormat(models.TextChoices):
+        PDF = 'PDF', 'PDF'
+        EXCEL = 'EXCEL', 'Excel'
+
+    exported_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='report_exports',
+    )
+    role = models.CharField(max_length=10, blank=True)
+    report_type = models.CharField(max_length=100)
+    export_format = models.CharField(max_length=10, choices=ExportFormat.choices)
+    scope = models.CharField(max_length=100, default='Institution-wide')
+    filters = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.report_type} ({self.export_format}) by {self.role or 'Unknown'}"

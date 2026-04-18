@@ -3,6 +3,36 @@ document.addEventListener('DOMContentLoaded', function () {
     setupReportForm();
 });
 
+const STATUS_OPTIONS_BY_REPORT = {
+    'Employee List': [
+        { value: '', label: 'All Statuses' },
+        { value: 'ACTIVE', label: 'Active' },
+        { value: 'INACTIVE', label: 'Inactive' },
+        { value: 'ON_LEAVE', label: 'On Leave' }
+    ],
+    'Attendance Report': [
+        { value: '', label: 'All Statuses' },
+        { value: 'PRESENT', label: 'Present' },
+        { value: 'ABSENT', label: 'Absent' },
+        { value: 'LATE', label: 'Late' },
+        { value: 'UNDERTIME', label: 'Undertime' }
+    ],
+    'Leave Report': [
+        { value: '', label: 'All Statuses' },
+        { value: 'PENDING_HEAD', label: 'Pending Head Approval' },
+        { value: 'PENDING_HR', label: 'Pending HR Approval' },
+        { value: 'PENDING_SD', label: 'Pending SD Approval' },
+        { value: 'APPROVED', label: 'Approved' },
+        { value: 'REJECTED', label: 'Rejected' },
+        { value: 'CANCELLED', label: 'Cancelled' }
+    ],
+    'Evaluation Summary': [
+        { value: '', label: 'All Statuses' },
+        { value: 'DRAFT', label: 'Draft' },
+        { value: 'COMPLETED', label: 'Completed' }
+    ]
+};
+
 function setupSidebar() {
     const sidebar = document.getElementById('sidebar');
     const logoToggle = document.getElementById('logoToggle');
@@ -42,9 +72,18 @@ function setupReportForm() {
     const form = document.getElementById('reportGeneratorForm');
     const pdfButton = document.getElementById('exportPdfBtn');
     const excelButton = document.getElementById('exportExcelBtn');
+    const reportTypeInput = form ? form.elements.report_type : null;
+    const statusInput = form ? form.elements.status : null;
 
     if (!form || !pdfButton || !excelButton) {
         return;
+    }
+
+    if (reportTypeInput && statusInput) {
+        syncStatusOptions(reportTypeInput, statusInput);
+        reportTypeInput.addEventListener('change', function () {
+            syncStatusOptions(reportTypeInput, statusInput);
+        });
     }
 
     form.addEventListener('submit', function (event) {
@@ -58,6 +97,23 @@ function setupReportForm() {
     excelButton.addEventListener('click', function () {
         submitExport(form, 'excel');
     });
+}
+
+function syncStatusOptions(reportTypeInput, statusInput) {
+    const reportType = reportTypeInput ? reportTypeInput.value : '';
+    const options = STATUS_OPTIONS_BY_REPORT[reportType] || [{ value: '', label: 'All Statuses' }];
+    const currentValue = statusInput.value;
+
+    statusInput.innerHTML = options
+        .map(function (option) {
+            return '<option value="' + option.value + '">' + option.label + '</option>';
+        })
+        .join('');
+
+    const hasCurrentOption = options.some(function (option) {
+        return option.value === currentValue;
+    });
+    statusInput.value = hasCurrentOption ? currentValue : '';
 }
 
 function submitExport(form, format) {

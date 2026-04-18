@@ -2,7 +2,8 @@ from django.test import TestCase
 from django.urls import reverse
 
 from audit.models import LoginLog
-from accounts.models import Department, User
+from accounts.models import Department, User, ReportExportHistory
+from evaluations.models import EvaluationRecord
 from notifications.models import Notification
 
 
@@ -104,3 +105,101 @@ class DashboardIntegrationTests(TestCase):
 
 		self.assertEqual(response.status_code, 200)
 		self.assertContains(response, reverse('notifications:mark_all_as_read'))
+
+
+class ReportIntegrationTests(TestCase):
+	def setUp(self):
+		self.department = Department.objects.create(name='IT')
+		self.hr_user = User.objects.create_user(
+			username='hr_reports',
+			password='pass12345',
+			role='HR',
+			department=self.department,
+			must_change_password=False,
+		)
+		self.sd_user = User.objects.create_user(
+			username='sd_reports',
+			password='pass12345',
+			role='SD',
+			must_change_password=False,
+		)
+		self.employee = User.objects.create_user(
+			username='emp_reports',
+			password='pass12345',
+			role='EMP',
+			department=self.department,
+			must_change_password=False,
+		)
+
+	def _login(self, username, password='pass12345'):
+		response = self.client.post(
+			reverse('login'),
+			{'username': username, 'password': password},
+			REMOTE_ADDR='127.0.0.1',
+		)
+		self.assertIn(response.status_code, [200, 302])
+
+	def test_hr_export_rejects_invalid_status_for_attendance_report(self):
+		self._login('hr_reports')
+
+		response = self.client.get(
+			reverse('hr_export_excel'),
+			{
+				'report_type': 'Attendance Report',
+				'status': 'ON_LEAVE',
+			}
+		)
+
+		self.assertEqual(response.status_code, 400)
+		self.assertIn('Invalid status', response.content.decode('utf-8'))
+
+	def test_hr_evaluation_summary_excel_export_uses_evaluation_records(self):
+		EvaluationRecord.objects.create(
+			employee=self.employee,
+			evaluation_period='Q1 2026',
+			score=92,
+			rating='Excellent',
+			status=EvaluationRecord.Status.COMPLETED,
+		)
+
+		self._login('hr_reports')
+		response = self.client.get(
+			reverse('hr_export_excel'),
+			{'report_type': 'Evaluation Summary'}
+		)
+
+		self.assertEqual(response.status_code, 200)
+		self.assertEqual(
+			response['Content-Type'],
+			'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+		)
+		self.assertEqual(ReportExportHistory.objects.count(), 1)
+		export_log = ReportExportHistory.objects.first()
+		self.assertEqual(export_log.report_type, 'Evaluation Summary')
+		self.assertEqual(export_log.export_format, ReportExportHistory.ExportFormat.EXCEL)
+
+	def test_sd_summary_api_includes_evaluation_counts_and_recent_reports(self):
+		EvaluationRecord.objects.create(
+			employee=self.employee,
+			evaluation_period='Q1 2026',
+			score=88,
+			rating='Very Good',
+			status=EvaluationRecord.Status.COMPLETED,
+		)
+		ReportExportHistory.objects.create(
+			exported_by=self.hr_user,
+			role='HR',
+			report_type='Evaluation Summary',
+			export_format=ReportExportHistory.ExportFormat.EXCEL,
+			scope='HR - IT',
+			filters={'department': 'IT'},
+		)
+
+		self._login('sd_reports')
+		response = self.client.get(reverse('sd_reports_summary'))
+
+		self.assertEqual(response.status_code, 200)
+		payload = response.json()
+		self.assertEqual(payload['report_counts']['evaluation_summary'], 1)
+		self.assertTrue(payload['recent_reports'])
+		self.assertEqual(payload['recent_reports'][0]['report_type'], 'Evaluation Summary')

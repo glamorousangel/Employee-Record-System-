@@ -129,39 +129,47 @@
                 <div class="summary-header">
                     <div class="summary-title-wrap">
                         <span class="card-icon-wrap card-icon-wrap--muted"><i class="fas fa-calendar-week"></i></span>
-                        <h2>Weekly summary</h2>
+                        <h2>Department attendance snapshot</h2>
                     </div>
                     <div class="week-picker">
-                        <button type="button" class="week-nav" aria-label="Previous week"><i class="fas fa-chevron-left"></i></button>
-                        <span>Week 5</span>
-                        <button type="button" class="week-nav" aria-label="Next week"><i class="fas fa-chevron-right"></i></button>
+                        <span>Latest 20 Records</span>
                     </div>
                 </div>
                 <div class="table-wrapper">
                     <table class="attendance-table">
                         <thead>
                             <tr>
-                                <th>Week</th>
-                                <th>Sunday</th>
-                                <th>Monday</th>
-                                <th>Tuesday</th>
-                                <th>Wednesday</th>
-                                <th>Thursday</th>
-                                <th>Friday</th>
-                                <th>Saturday</th>
+                                <th>Date</th>
+                                <th>Employee</th>
+                                <th>Time In</th>
+                                <th>Time Out</th>
+                                <th>Status</th>
                             </tr>
                         </thead>
                         <tbody>
+                            {% for log in attendance_logs|slice:":20" %}
                             <tr>
-                                <td class="week-label">Feb 3 — Feb 10</td>
-                                <td>2</td>
-                                <td><span class="pill pill-warning">4h 36m</span></td>
-                                <td><span class="pill pill-purple">Leave</span></td>
-                                <td><span class="pill pill-success-check">8h 39m</span></td>
-                                <td><span class="pill pill-success-check">8 hours</span></td>
-                                <td><span class="pill pill-active">Active</span></td>
-                                <td>8</td>
+                                <td>{{ log.date|date:"Y-m-d" }}</td>
+                                <td>{{ log.employee.get_full_name|default:log.employee.username }}</td>
+                                <td>{{ log.time_in|time:"H:i:s"|default:"--" }}</td>
+                                <td>{{ log.time_out|time:"H:i:s"|default:"--" }}</td>
+                                <td>
+                                    {% if log.status == 'LATE' %}
+                                    <span class="pill pill-warning">{{ log.get_status_display }}</span>
+                                    {% elif log.status == 'UNDERTIME' %}
+                                    <span class="pill pill-purple">{{ log.get_status_display }}</span>
+                                    {% elif log.status == 'PRESENT' %}
+                                    <span class="pill pill-success-check">{{ log.get_status_display }}</span>
+                                    {% else %}
+                                    <span class="pill pill-active">{{ log.get_status_display }}</span>
+                                    {% endif %}
+                                </td>
                             </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5">No attendance records found for this department.</td>
+                            </tr>
+                            {% endfor %}
                         </tbody>
                     </table>
                 </div>
@@ -194,7 +202,7 @@
         <div class="history-modal" id="historyModal">
             <div class="history-modal-content">
         <div class="history-modal-header">
-            <div class="employee-tab">Dela Cruz, Juan</div>
+                    <div class="employee-tab">{{ department.name|default:"Department" }} Attendance History</div>
             <div class="header-controls">
                 <div class="modal-view-toggle">
                     <button class="view-btn active" id="weeklyViewBtn">Weekly View</button>
@@ -202,7 +210,7 @@
                 </div>
                 <div class="date-navigator">
                     <i class="fas fa-chevron-left" id="prevPeriod"></i>
-                    <span id="historyDateRange">February 4 – 10, 2026</span>
+                            <span id="historyDateRange">Recent Department Attendance</span>
                     <i class="fas fa-chevron-right" id="nextPeriod"></i>
                 </div>
             </div>
@@ -228,18 +236,18 @@
                 </div>
                 <aside class="history-sidebar">
                     <div class="employee-details-card">
-                        <h3>Employee Details</h3>
+                        <h3>Department Details</h3>
                         <div class="profile-circle"><i class="fas fa-user"></i></div>
                         <div class="details-rows">
-                            <div class="detail-item"><strong>Employee ID</strong><span>001</span></div>
-                            <div class="detail-item"><strong>Position</strong><span>Instructor</span></div>
-                            <div class="detail-item"><strong>Department</strong><span>CCS</span></div>
-                            <div class="detail-item"><strong>Employment Type</strong><span>Full-Time</span></div>
+                            <div class="detail-item"><strong>Department</strong><span>{{ department.name|default:'Unassigned' }}</span></div>
+                            <div class="detail-item"><strong>Employees</strong><span>{{ department_employee_count }}</span></div>
+                            <div class="detail-item"><strong>Displayed Records</strong><span>{{ attendance_history_data|length }}</span></div>
+                            <div class="detail-item"><strong>Scope</strong><span>Department Only</span></div>
                         </div>
                     </div>
                     <div class="hours-summary-box">
-                        Total Hours This Week
-                        <span id="totalHoursCount">42h 15m</span>
+                        Total Hours (Visible Range)
+                        <span id="totalHoursCount">0h 00m</span>
                     </div>
                 </aside>
             </div>
@@ -269,6 +277,7 @@
         </div>
 
     </div> 
+    {{ attendance_history_data|json_script:"headAttendanceHistoryData" }}
     <script src="{% static 'js/head/head_attendance.js' %}"></script>
 </body>
 </html>

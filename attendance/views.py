@@ -7,10 +7,11 @@ from django.utils.dateparse import parse_date
 import calendar
 import csv
 from django.http import HttpResponse, HttpResponseForbidden
+from datetime import datetime
 
 from .models import AttendanceLog
 from .forms import AttendanceEditForm
-from accounts.models import User, Department
+from accounts.models import User, Department, ReportExportHistory
 from utils.pdf_generator import generate_pdf
 from utils.excel_generator import generate_excel
 
@@ -110,11 +111,47 @@ def head_attendance(request):
         )
     else:
         logs = AttendanceLog.objects.none()
+
+    attendance_history_data = []
+    for log in logs[:120]:
+        duration = '--'
+        if log.time_in and log.time_out:
+            start_dt = datetime.combine(log.date, log.time_in)
+            end_dt = datetime.combine(log.date, log.time_out)
+            if end_dt > start_dt:
+                duration_seconds = int((end_dt - start_dt).total_seconds())
+                duration_hours = duration_seconds // 3600
+                duration_minutes = (duration_seconds % 3600) // 60
+                duration = f'{duration_hours}h {duration_minutes:02d}m'
+
+        attendance_history_data.append(
+            {
+                'date': log.date.strftime('%Y-%m-%d'),
+                'day': log.date.strftime('%A'),
+                'employee_name': log.employee.get_full_name() or log.employee.username,
+                'time_in': log.time_in.strftime('%H:%M:%S') if log.time_in else '--',
+                'time_out': log.time_out.strftime('%H:%M:%S') if log.time_out else '--',
+                'hours': duration,
+                'status': (log.status or '').lower(),
+                'status_display': log.get_status_display(),
+            }
+        )
+
+    department_employee_count = 0
+    if department:
+        department_employee_count = (
+            User.objects
+            .filter(department=department)
+            .exclude(role__in=['ADMIN', 'HR', 'SD'])
+            .count()
+        )
     
     context = {
         'attendance_logs': logs,
         'department': department,
-        'page_title': f'{department.name} Department Attendance' if department else 'Department Attendance'
+        'page_title': f'{department.name} Department Attendance' if department else 'Department Attendance',
+        'attendance_history_data': attendance_history_data,
+        'department_employee_count': department_employee_count,
     }
     return render(request, 'head/head_attendance.html', context)
 
@@ -169,6 +206,15 @@ def head_export_attendance_pdf(request):
     }
     pdf_buffer = generate_pdf('Attendance Report', logs, filters)
 
+    ReportExportHistory.objects.create(
+        exported_by=request.user,
+        role=getattr(request.user, 'role', ''),
+        report_type='Attendance Report',
+        export_format=ReportExportHistory.ExportFormat.PDF,
+        scope=f'Department: {department.name}',
+        filters=filters,
+    )
+
     safe_department_name = department.name.lower().replace(' ', '_')
     filename = f'head_attendance_{safe_department_name}.pdf'
 
@@ -190,6 +236,15 @@ def head_export_attendance_excel(request):
         'status': request.GET.get('status', 'All Statuses'),
     }
     excel_buffer = generate_excel('Attendance Report', logs, filters)
+
+    ReportExportHistory.objects.create(
+        exported_by=request.user,
+        role=getattr(request.user, 'role', ''),
+        report_type='Attendance Report',
+        export_format=ReportExportHistory.ExportFormat.EXCEL,
+        scope=f'Department: {department.name}',
+        filters=filters,
+    )
 
     safe_department_name = department.name.lower().replace(' ', '_')
     filename = f'head_attendance_{safe_department_name}.xlsx'
