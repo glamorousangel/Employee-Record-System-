@@ -1223,7 +1223,10 @@ def edit_department(request, dept_id):
     print("--- DEBUG DATA ---")
     print(request.POST)
     dept = get_object_or_404(Department, pk=dept_id)
-    # This handles both general edits and the 'Assign Head' modal
+    
+    # Get the IP address from the request metadata
+    user_ip = request.META.get('REMOTE_ADDR')
+    
     form = DepartmentForm(request.POST, instance=dept)
     if form.is_valid():
         dept_obj = form.save()
@@ -1231,18 +1234,20 @@ def edit_department(request, dept_id):
             dept_obj.head.role = 'HEAD'
             dept_obj.head.department = dept_obj
             dept_obj.head.save()
+            
+            # Now passing ip_address to satisfy the NOT NULL constraint
             log_activity(
                 actor=request.user,
                 action="Assign Department Head",
                 target_user=dept_obj.head,
-                details=f"Assigned as head of {dept_obj.name}"
+                details=f"Assigned as head of {dept_obj.name}",
+                ip_address=user_ip  # Ensure this argument name matches your log_activity function
             )
         return JsonResponse({'status': 'success', 'message': 'Department updated successfully.'})
     else:
         print("--- FORM ERRORS ---")
-        print(form.errors.as_data()) # THIS WILL TELL YOU THE REAL REASON
-        from django.http import HttpResponseBadRequest
-        return HttpResponseBadRequest("Validation Failed")
+        print(form.errors.as_data())
+        return JsonResponse({'status': 'error', 'errors': form.errors.get_json_data()}, status=400)
 
 @login_required
 @user_passes_test(is_admin)
