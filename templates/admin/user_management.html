@@ -100,7 +100,7 @@
             </div>
         </div>
         <ul class="menu">
-            <li><a href="{% url 'admin_dashboard' %}" class="menu-item active"><i class="fas fa-users-cog"></i><span>User Management</span></a></li>
+                <li><a href="{% url 'user_management' %}" class="menu-item active"><i class="fas fa-users-cog"></i><span>User Management</span></a></li>
             <li><a href="{% url 'employee_list' %}" class="menu-item"><i class="fas fa-address-card"></i><span>Employee Records</span></a></li>
             <li><a href="{% url 'department_management' %}" class="menu-item"><i class="fas fa-sitemap"></i><span>Department Management</span></a></li>
             <li><a href="{% url 'audit_trails' %}" class="menu-item"><i class="fas fa-history"></i><span>Audit Trails</span></a></li>
@@ -116,9 +116,11 @@
         <div class="leave-card">
             <div class="header">
                 <h1>User Management</h1>
-                <button class="btn-primary add-btn" onclick="openUserModal()">
-                    <i class="fas fa-user-plus"></i> Create New User
-                </button>
+                <a href="{% url 'add_employee' %}" style="text-decoration: none;">
+                    <button class="btn-primary add-btn" type="button">
+                        <i class="fas fa-user-plus"></i> Create New User
+                    </button>
+                </a>
             </div>
             
             <div class="filters-container">
@@ -133,6 +135,12 @@
                     <option value="HEAD">Department Head</option>
                     <option value="EMP">Employee</option> 
                 </select>
+                <select id="departmentFilter" class="filter-select">
+                    <option value="">All Departments</option>
+                    {% for department in departments %}
+                    <option value="{{ department.id }}">{{ department.get_name_display|default:department.name }}</option>
+                    {% endfor %}
+                </select>
                 <select id="statusFilter" class="filter-select">
                     <option value="">All Status</option>
                     <option value="active">Active</option>
@@ -140,6 +148,15 @@
                 </select>
                 <button class="btn-secondary" id="applyFiltersBtn">Apply Filters</button>
                 <button class="btn-secondary" id="clearFiltersBtn" style="background: #cfd8dc; color: #455a64;">Clear</button>
+            </div>
+
+            <div id="bulkActions" style="display: none; align-items: center; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
+                <span id="selectedCount" style="font-size: 13px; color: #555; font-weight: 600;">0 selected</span>
+                <button class="btn-secondary" id="bulkActivate" type="button">Activate</button>
+                <button class="btn-secondary" id="bulkDeactivate" type="button">Deactivate</button>
+                <button class="btn-secondary" id="bulkLock" type="button">Lock</button>
+                <button class="btn-secondary" id="bulkUnlock" type="button">Unlock</button>
+                <button class="btn-secondary" id="bulkDelete" type="button" style="background: #b91c1c;">Delete</button>
             </div>
 
             <div class="form-body">
@@ -180,20 +197,36 @@
                                     <i class="fas fa-eye" style="color: #2563eb; width: 16px;"></i> View Profile
                                 </a>
 
-                                <a href="/hr/employees/edit/{{ user.id }}/" class="dropdown-item" style="display: flex; align-items: center; gap: 10px; padding: 12px 15px; color: #333; text-decoration: none; font-size: 13px; border-top: 1px solid #f5f5f5;">
+                                <a href="#" class="dropdown-item edit-user" data-user-id="{{ user.id }}" style="display: flex; align-items: center; gap: 10px; padding: 12px 15px; color: #333; text-decoration: none; font-size: 13px; border-top: 1px solid #f5f5f5;">
                                     <i class="fas fa-edit" style="color: #800000; width: 16px;"></i> Edit User
                                 </a>
 
-                                <a href="#" class="dropdown-item reset-password-btn" style="display: flex; align-items: center; gap: 10px; padding: 12px 15px; color: #333; text-decoration: none; font-size: 13px; border-top: 1px solid #f5f5f5;">
+                                <a href="#" class="dropdown-item assign-role" data-user-id="{{ user.id }}" data-user-name="{{ user.get_full_name|default:user.username }}" data-current-role="{{ user.role }}" data-current-department="{{ user.department_id|default:'' }}" style="display: flex; align-items: center; gap: 10px; padding: 12px 15px; color: #333; text-decoration: none; font-size: 13px; border-top: 1px solid #f5f5f5;">
+                                    <i class="fas fa-user-tag" style="color: #0891b2; width: 16px;"></i> Assign Role
+                                </a>
+
+                                <a href="#" class="dropdown-item reset-password reset-password-btn" data-user-id="{{ user.id }}" data-user-name="{{ user.get_full_name|default:user.username }}" style="display: flex; align-items: center; gap: 10px; padding: 12px 15px; color: #333; text-decoration: none; font-size: 13px; border-top: 1px solid #f5f5f5;">
                                     <i class="fas fa-key" style="color: #f59e0b; width: 16px;"></i> Reset Password
                                 </a>
 
-                                <a href="#" class="dropdown-item toggle-status-btn" style="display: flex; align-items: center; gap: 10px; padding: 12px 15px; color: #333; text-decoration: none; font-size: 13px; border-top: 1px solid #f5f5f5;">
+                                <a href="#" class="dropdown-item toggle-status-btn {% if user.is_active %}deactivate-user{% else %}activate-user{% endif %}" data-user-id="{{ user.id }}" style="display: flex; align-items: center; gap: 10px; padding: 12px 15px; color: #333; text-decoration: none; font-size: 13px; border-top: 1px solid #f5f5f5;">
                                     {% if user.is_active %}
                                     <i class="fas fa-user-slash" style="color: #ef4444; width: 16px;"></i> Deactivate
                                     {% else %}
                                     <i class="fas fa-user-check" style="color: #10b981; width: 16px;"></i> Activate
                                     {% endif %}
+                                </a>
+
+                                <a href="#" class="dropdown-item {% if user.is_locked %}unlock-user{% else %}lock-user{% endif %}" data-user-id="{{ user.id }}" style="display: flex; align-items: center; gap: 10px; padding: 12px 15px; color: #333; text-decoration: none; font-size: 13px; border-top: 1px solid #f5f5f5;">
+                                    {% if user.is_locked %}
+                                    <i class="fas fa-lock-open" style="color: #2563eb; width: 16px;"></i> Unlock
+                                    {% else %}
+                                    <i class="fas fa-lock" style="color: #9333ea; width: 16px;"></i> Lock
+                                    {% endif %}
+                                </a>
+
+                                <a href="#" class="dropdown-item delete-user" data-user-id="{{ user.id }}" style="display: flex; align-items: center; gap: 10px; padding: 12px 15px; color: #333; text-decoration: none; font-size: 13px; border-top: 1px solid #f5f5f5;">
+                                    <i class="fas fa-trash" style="color: #b91c1c; width: 16px;"></i> Delete
                                 </a>
                             </div>
                         </td>
@@ -208,15 +241,16 @@
 
 <div id="userModal">
     <div class="modal-content" style="background: white; padding: 40px; border-radius: 25px; width: 480px;">
-        <h2 style="color: #800000; margin-bottom: 20px;">Create New User</h2>
+        <h2 id="modalTitle" style="color: #800000; margin-bottom: 20px;">Create New User</h2>
         <form id="userForm" method="POST" action="{% url 'create_user' %}">
             {% csrf_token %}
+            <input type="hidden" id="userIdForEdit" name="user_id" value="">
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                <input type="text" name="first_name" placeholder="First Name" required style="padding: 10px; border-radius: 8px; border: 1px solid #ddd;">
-                <input type="text" name="last_name" placeholder="Last Name" required style="padding: 10px; border-radius: 8px; border: 1px solid #ddd;">
+                <input type="text" id="id_first_name" name="first_name" placeholder="First Name" required style="padding: 10px; border-radius: 8px; border: 1px solid #ddd;">
+                <input type="text" id="id_last_name" name="last_name" placeholder="Last Name" required style="padding: 10px; border-radius: 8px; border: 1px solid #ddd;">
             </div>
-            <input type="text" name="username" placeholder="Username" required style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #ddd;">
-            <input type="email" name="email" placeholder="Email" required style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #ddd;">
+            <input type="text" id="id_username" name="username" placeholder="Username" required style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #ddd;">
+            <input type="email" id="id_email" name="email" placeholder="Email" required style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #ddd;">
             
             <select name="role" id="userRole" required style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 8px;">
                 <option value="ADMIN">Admin</option>
@@ -225,8 +259,17 @@
                 <option value="EMP">Employee</option>
             </select>
 
-            <input type="password" name="password1" placeholder="Password" required style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #ddd;">
-            <input type="password" name="password2" placeholder="Confirm Password" required style="width: 100%; padding: 10px; margin-bottom: 20px; border-radius: 8px; border: 1px solid #ddd;">
+            <div id="departmentSelectGroupUserModal" style="display: none; margin-bottom: 15px;">
+                <select id="departmentUserModal" name="department" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd;">
+                    <option value="">Select Department</option>
+                    {% for department in departments %}
+                    <option value="{{ department.id }}">{{ department.get_name_display|default:department.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <input type="password" id="password1" name="password1" placeholder="Password" required style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #ddd;">
+            <input type="password" id="password2" name="password2" placeholder="Confirm Password" required style="width: 100%; padding: 10px; margin-bottom: 20px; border-radius: 8px; border: 1px solid #ddd;">
             
             <div style="display: flex; justify-content: flex-end; gap: 10px;">
                 <button type="button" onclick="closeUserModal()" style="padding: 10px 20px; border-radius: 8px; border: 1px solid #ccc;">Cancel</button>
@@ -236,29 +279,68 @@
     </div>
 </div>
 
+<div id="assignRoleModal" class="modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 10000; align-items: center; justify-content: center;">
+    <div style="background: #fff; width: min(480px, calc(100vw - 30px)); border-radius: 14px; padding: 20px;">
+        <h3 style="margin-bottom: 10px; color: #800000;">Assign Role</h3>
+        <p id="userNameDisplay" style="margin-bottom: 12px; color: #475569;"></p>
+        <form id="assignRoleForm">
+            {% csrf_token %}
+            <input type="hidden" id="assignRoleUserId" name="user_id">
+            <select id="newRole" name="role" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 10px;">
+                <option value="ADMIN">Admin</option>
+                <option value="HR">HR</option>
+                <option value="HEAD">Department Head</option>
+                <option value="EMP">Employee</option>
+            </select>
+            <div id="departmentSelectGroup" style="display: none; margin-bottom: 10px;">
+                <select id="newDepartment" name="department" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+                    <option value="">Select Department</option>
+                    {% for department in departments %}
+                    <option value="{{ department.id }}">{{ department.get_name_display|default:department.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 8px;">
+                <button type="button" class="btn-secondary" onclick="closeAssignRoleModal()" style="background: #94a3b8;">Cancel</button>
+                <button type="submit" class="btn-primary">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="resetPasswordModal" class="modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 10000; align-items: center; justify-content: center;">
+    <div style="background: #fff; width: min(500px, calc(100vw - 30px)); border-radius: 14px; padding: 20px;">
+        <h3 style="margin-bottom: 10px; color: #800000;">Reset Password</h3>
+        <p id="resetUserDisplay" style="margin-bottom: 12px; color: #475569;"></p>
+        <form id="resetPasswordForm">
+            {% csrf_token %}
+            <input type="hidden" id="resetUserId" name="user_id">
+            <input type="password" id="newPassword" name="new_password1" placeholder="New password" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 8px;" required>
+            <div style="font-size: 12px; margin-bottom: 10px; color: #64748b;">Strength: <span id="strengthIndicator" class="weak">Weak</span></div>
+            <input type="password" name="new_password2" placeholder="Confirm new password" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 12px;" required>
+            <div style="display: flex; justify-content: flex-end; gap: 8px;">
+                <button type="button" class="btn-secondary" onclick="closeResetPasswordModal()" style="background: #94a3b8;">Cancel</button>
+                <button type="submit" class="btn-primary">Reset</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="confirmModal" class="modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 10000; align-items: center; justify-content: center;">
+    <div style="background: #fff; width: min(420px, calc(100vw - 30px)); border-radius: 14px; padding: 20px;">
+        <h3 style="margin-bottom: 8px; color: #800000;">Please Confirm</h3>
+        <p id="confirmMessage" style="margin-bottom: 14px; color: #475569;">Are you sure?</p>
+        <div style="display: flex; justify-content: flex-end; gap: 8px;">
+            <button type="button" class="btn-secondary" onclick="closeConfirmModal()" style="background: #94a3b8;">Cancel</button>
+            <button type="button" class="btn-primary" id="confirmBtn" style="background: #b91c1c;">Confirm</button>
+        </div>
+    </div>
+</div>
+
 <script src="{% static 'js/admin/sidebar.js' %}"></script>
 <script src="{% static 'js/admin/user_management.js' %}"></script>
 <script>
     function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
-    function openUserModal() { document.getElementById('userModal').style.display = 'flex'; }
-    function closeUserModal() { document.getElementById('userModal').style.display = 'none'; }
-    
-    function toggleDropdown(element) {
-        if (window.event) window.event.stopPropagation();
-        const parentCell = element.closest('.action-cell');
-        document.querySelectorAll('.action-cell').forEach(cell => {
-            if (cell !== parentCell) cell.classList.remove('open');
-        });
-        parentCell.classList.toggle('open');
-    }
-
-    document.addEventListener('click', function(e) {
-        if (!e.target.closest('.action-cell')) {
-            document.querySelectorAll('.action-cell').forEach(cell => {
-                cell.classList.remove('open');
-            });
-        }
-    });
 </script>
 </body>
 </html>

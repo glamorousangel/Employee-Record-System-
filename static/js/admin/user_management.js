@@ -171,10 +171,14 @@ function updateSelectedUsers() {
     );
 
     const bulkActionsDiv = document.getElementById('bulkActions');
+    const selectedCountEl = document.getElementById('selectedCount');
+    if (!bulkActionsDiv || !selectedCountEl) {
+        return;
+    }
+
     if (selectedUsers.length > 0) {
         bulkActionsDiv.style.display = 'flex';
-        document.getElementById('selectedCount').textContent = 
-            `${selectedUsers.length} selected`;
+        selectedCountEl.textContent = `${selectedUsers.length} selected`;
     } else {
         bulkActionsDiv.style.display = 'none';
     }
@@ -237,7 +241,7 @@ async function editUser(userId) {
         if (document.getElementById('id_last_name')) document.getElementById('id_last_name').value = userData.last_name || '';
         if (document.getElementById('id_email')) document.getElementById('id_email').value = userData.email || '';
         if (document.getElementById('id_username')) document.getElementById('id_username').value = userData.username || '';
-        if (document.getElementById('role')) document.getElementById('role').value = userData.role || '';
+        if (document.getElementById('userRole')) document.getElementById('userRole').value = userData.role || '';
         if (document.getElementById('userIdForEdit')) document.getElementById('userIdForEdit').value = userId;
 
         // Password fields are not required for edit unless explicitly changing
@@ -312,7 +316,12 @@ function closeResetPasswordModal() {
 }
 
 function closeConfirmModal() {
-    document.getElementById('confirmModal').classList.remove('show');
+    const modal = document.getElementById('confirmModal');
+    if (!modal) {
+        return;
+    }
+    modal.classList.remove('show');
+    modal.style.display = 'none';
     confirmedAction = null; // Clear the stored action
 }
 
@@ -544,6 +553,10 @@ function clearFilters() {
 function confirmUserStatusChange(userId, action) {
     const modal = document.getElementById('confirmModal');
     const message = document.getElementById('confirmMessage');
+    if (!modal || !message) {
+        showAlert('Confirmation dialog is unavailable.', 'danger');
+        return;
+    }
     
     let actionText = '';
     if (action === 'deactivate') actionText = 'deactivate';
@@ -595,6 +608,10 @@ async function performSingleAction(action, userId) {
 function confirmDeleteUser(userId) {
     const modal = document.getElementById('confirmModal');
     const message = document.getElementById('confirmMessage');
+    if (!modal || !message) {
+        showAlert('Confirmation dialog is unavailable.', 'danger');
+        return;
+    }
     
     message.textContent = 'Are you sure you want to delete this user? This action cannot be undone.';
     
@@ -638,6 +655,7 @@ function bulkDeactivateUsers() {
     message.textContent = `Are you sure you want to deactivate ${selectedUsers.length} user(s)?`;
     confirmedAction = { type: 'bulk', action: 'deactivate', userIds: selectedUsers };
     modal.classList.add('show');
+    modal.style.display = 'flex';
 }
 
 function bulkActivateUsers() {
@@ -649,6 +667,7 @@ function bulkActivateUsers() {
     message.textContent = `Are you sure you want to activate ${selectedUsers.length} user(s)?`;
     confirmedAction = { type: 'bulk', action: 'activate', userIds: selectedUsers };
     modal.classList.add('show');
+    modal.style.display = 'flex';
 }
 
 function bulkLockUsers() {
@@ -660,6 +679,7 @@ function bulkLockUsers() {
     message.textContent = `Are you sure you want to lock ${selectedUsers.length} user(s)?`;
     confirmedAction = { type: 'bulk', action: 'lock', userIds: selectedUsers };
     modal.classList.add('show');
+    modal.style.display = 'flex';
 }
 
 function bulkUnlockUsers() {
@@ -671,6 +691,7 @@ function bulkUnlockUsers() {
     message.textContent = `Are you sure you want to unlock ${selectedUsers.length} user(s)?`;
     confirmedAction = { type: 'bulk', action: 'unlock', userIds: selectedUsers };
     modal.classList.add('show');
+    modal.style.display = 'flex';
 }
 
 function bulkDeleteUsers() {
@@ -682,6 +703,7 @@ function bulkDeleteUsers() {
     message.textContent = `Are you sure you want to delete ${selectedUsers.length} user(s)? This action cannot be undone.`;
     confirmedAction = { type: 'bulk', action: 'delete', userIds: selectedUsers };
     modal.classList.add('show');
+    modal.style.display = 'flex';
 }
 
 async function performBulkAction(action, userIds) {

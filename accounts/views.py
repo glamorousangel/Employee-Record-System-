@@ -226,7 +226,7 @@ def admin_dashboard(request):
             'role_summary': role_summary,
         },
         'quick_action_urls': {
-            'manage_users': reverse('employee_list'),
+            'manage_users': reverse('user_management'),
             'manage_departments': reverse('department_management'),
             'audit_trails': reverse('audit_trails'),
             'export_report': reverse('audit_trails'),
@@ -923,6 +923,50 @@ def employee_documents(request):
 
 @login_required
 @user_passes_test(is_admin)
+def user_management(request):
+    search_term = (request.GET.get('search') or '').strip()
+    role_filter = (request.GET.get('role') or '').strip().upper()
+    status_filter = (request.GET.get('status') or '').strip().lower()
+    department_filter = (request.GET.get('department') or '').strip()
+
+    users = User.objects.select_related('department').all().order_by('-date_joined')
+
+    if search_term:
+        users = users.filter(
+            Q(first_name__icontains=search_term)
+            | Q(last_name__icontains=search_term)
+            | Q(username__icontains=search_term)
+            | Q(email__icontains=search_term)
+        )
+
+    if role_filter and role_filter in dict(User.ROLE_CHOICES):
+        users = users.filter(role=role_filter)
+
+    if status_filter == 'active':
+        users = users.filter(is_active=True)
+    elif status_filter == 'inactive':
+        users = users.filter(is_active=False)
+
+    if department_filter.isdigit():
+        users = users.filter(department_id=int(department_filter))
+
+    departments = Department.objects.filter(is_active=True).order_by('name')
+
+    context = {
+        'users': users,
+        'departments': departments,
+        'filters': {
+            'search': search_term,
+            'role': role_filter,
+            'status': status_filter,
+            'department': department_filter,
+        },
+    }
+    return render(request, 'admin/user_management.html', context)
+
+
+@login_required
+@user_passes_test(is_admin)
 @require_POST
 def create_user(request):
     # This matches the form data sent by your JS
@@ -1179,7 +1223,10 @@ def edit_department(request, dept_id):
     print("--- DEBUG DATA ---")
     print(request.POST)
     dept = get_object_or_404(Department, pk=dept_id)
-    # This handles both general edits and the 'Assign Head' modal
+    
+    # Get the IP address from the request metadata
+    user_ip = request.META.get('REMOTE_ADDR')
+    
     form = DepartmentForm(request.POST, instance=dept)
     if form.is_valid():
         dept_obj = form.save()
@@ -1187,18 +1234,20 @@ def edit_department(request, dept_id):
             dept_obj.head.role = 'HEAD'
             dept_obj.head.department = dept_obj
             dept_obj.head.save()
+            
+            # Now passing ip_address to satisfy the NOT NULL constraint
             log_activity(
                 actor=request.user,
                 action="Assign Department Head",
                 target_user=dept_obj.head,
-                details=f"Assigned as head of {dept_obj.name}"
+                details=f"Assigned as head of {dept_obj.name}",
+                ip_address=user_ip  # Ensure this argument name matches your log_activity function
             )
         return JsonResponse({'status': 'success', 'message': 'Department updated successfully.'})
     else:
         print("--- FORM ERRORS ---")
-        print(form.errors.as_data()) # THIS WILL TELL YOU THE REAL REASON
-        from django.http import HttpResponseBadRequest
-        return HttpResponseBadRequest("Validation Failed")
+        print(form.errors.as_data())
+        return JsonResponse({'status': 'error', 'errors': form.errors.get_json_data()}, status=400)
 
 @login_required
 @user_passes_test(is_admin)

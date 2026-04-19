@@ -139,20 +139,38 @@ async function editDepartment(deptId) {
     currentEditingDeptId = deptId;
     try {
         const response = await fetch(`/accounts/get-department-data/${deptId}/`);
-        if (!response.ok) throw new Error('Failed to fetch department data.');
-        const data = await response.json();
-
-        document.getElementById('deptModalTitle').textContent = 'Edit Department';
-        document.getElementById('deptId').value = deptId;
-        document.getElementById('deptName').value = data.name;
-        document.getElementById('deptCollege').value = data.college || '';
-        if (document.getElementById('deptHead')) {
-            document.getElementById('deptHead').value = data.head_id || '';
+        
+        if (!response.ok) {
+            console.error("Server Error:", response.status);
+            throw new Error('Failed to fetch department data.');
         }
+        
+        const data = await response.json();
+        console.log("Success! Data received:", data);
+
+        // 2. The ACTUAL Null-Safe DOM checks
+        const titleLabel = document.getElementById('deptModalTitle');
+        if (titleLabel) titleLabel.textContent = 'Edit Department';
+        
+        const idField = document.getElementById('deptId');
+        if (idField) idField.value = deptId;
+        
+        const nameField = document.getElementById('deptName');
+        if (nameField) nameField.value = data.name || '';
+        
+        // This fixes your teammate's buggy patch
+        const collegeField = document.getElementById('deptCollege');
+        if (collegeField) collegeField.value = data.college || '';
+        
+        const headField = document.getElementById('deptHead');
+        if (headField) headField.value = data.head_id || '';
 
         document.getElementById('departmentModal').classList.add('show');
+        
     } catch (error) {
-        showAlert('Error fetching department details.', 'danger');
+        // Now it will actually tell us WHY it failed in the console
+        console.error("Edit Department Error:", error);
+        showAlert('Error opening edit modal. Check console.', 'danger');
     }
 }
 

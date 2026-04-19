@@ -92,7 +92,7 @@
                 </div>
             </div>
             <ul class="menu">
-                <li><a href="{% url 'admin_dashboard' %}" class="menu-item"><i class="fas fa-users-cog"></i><span>User Management</span></a></li>
+                <li><a href="{% url 'user_management' %}" class="menu-item"><i class="fas fa-users-cog"></i><span>User Management</span></a></li>
                 <li><a href="{% url 'employee_list' %}" class="menu-item"><i class="fas fa-address-card"></i><span>Employee Records</span></a></li>
                 <li><a href="{% url 'department_management' %}" class="menu-item active"><i class="fas fa-sitemap"></i><span>Department Management</span></a></li>
                 <li><a href="{% url 'audit_trails' %}" class="menu-item"><i class="fas fa-history"></i><span>Audit Trails</span></a></li>
@@ -286,11 +286,23 @@
                 <small style="color: rgba(255,255,255,0.6);">College will be assigned automatically.</small>
             </div>
 
+            <input type="hidden" id="deptCollege" name="college">
+
             <div class="form-group" id="statusGroup" style="display:none;">
                 <label>
                     <input type="checkbox" name="is_active" id="deptStatus" checked>
                     Department is Active
                 </label>
+            </div>
+
+            <div class="form-group" id="headGroup">
+                <label for="deptHead">Department Head</label>
+                <select id="deptHead" name="head" class="form-control glass-input">
+                    <option value="">-- Select Department Head --</option>
+                    {% for user in users %}
+                        <option value="{{ user.id }}">{{ user.get_full_name|default:user.username }}</option>
+                    {% endfor %}
+                </select>
             </div>
             
             <div class="form-actions">
@@ -356,7 +368,7 @@
     </div>
 
     <script src="{% static 'js/admin/sidebar.js' %}"></script>
-    <script src="{% static 'js/admin/department_management.js' %}"></script>
+    <script src="{% static 'js/admin/department_management.js' %}?v=1"></script>
     <script>
         // Added this tiny helper back in case sidebar.js expects the button to trigger it manually
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }

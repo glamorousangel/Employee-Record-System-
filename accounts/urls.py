@@ -37,6 +37,7 @@ urlpatterns = [
     path('employee-dashboard/documents/', views.employee_documents, name='employee_documents'),
 
     # User Management (Task 02 - Verified Working)
+    path('accounts/user-management/', views.user_management, name='user_management'),
     path('accounts/create-user/', views.create_user, name='create_user'),
     path('accounts/edit-user/<int:user_id>/', views.edit_user, name='edit_user'),
     path('accounts/get-user-data/<int:user_id>/', views.get_user_data, name='get_user_data'),
