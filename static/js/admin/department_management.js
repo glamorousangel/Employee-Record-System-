@@ -36,12 +36,13 @@ function setupEventListeners() {
         });
     });
 
-    // Delete Department
-    document.querySelectorAll('.delete-dept').forEach(btn => {
+    // Activate/Deactivate Department
+    document.querySelectorAll('.delete-dept, .deactivate-dept, .activate-dept').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
             const deptId = this.dataset.deptId;
-            confirmDeleteDepartment(deptId);
+            const action = this.dataset.action || (this.classList.contains('activate-dept') ? 'activate' : 'deactivate');
+            confirmDepartmentStatusChange(deptId, action);
         });
     });
 
@@ -305,21 +306,24 @@ function filterDepartmentsByHead(filterValue) {
     });
 }
 
-function confirmDeleteDepartment(deptId) {
+function confirmDepartmentStatusChange(deptId, action = 'deactivate') {
     const modal = document.getElementById('confirmModal');
     const message = document.getElementById('confirmMessage');
-    
-    message.textContent = 'Are you sure you want to deactivate this department? This will preserve existing records but prevent new assignments.';
-    
+
+    const isActivate = action === 'activate';
+    message.textContent = isActivate
+        ? 'Are you sure you want to activate this department? It will be available for new assignments again.'
+        : 'Are you sure you want to deactivate this department? This will preserve existing records but prevent new assignments.';
+
     document.getElementById('confirmBtn').onclick = function() {
-        deactivateDepartment(deptId);
+        toggleDepartmentStatus(deptId);
         closeConfirmModal();
     };
 
     modal.classList.add('show');
 }
 
-async function deactivateDepartment(deptId) {
+async function toggleDepartmentStatus(deptId) {
     try {
         const response = await fetch(`/accounts/deactivate-department/${deptId}/`, {
             method: 'POST',
@@ -330,11 +334,16 @@ async function deactivateDepartment(deptId) {
             showAlert(data.message, 'success');
             location.reload();
         } else {
-            showAlert('Error deactivating department.', 'danger');
+            showAlert('Error updating department status.', 'danger');
         }
     } catch (error) {
         showAlert('An unexpected error occurred.', 'danger');
     }
+}
+
+// Backward-compatible wrapper for any older calls
+function confirmDeleteDepartment(deptId) {
+    confirmDepartmentStatusChange(deptId, 'deactivate');
 }
 
 function getCookie(name) {
@@ -351,6 +360,7 @@ function getCookie(name) {
     }
     return cookieValue;
 }
+
 
 function executeConfirmedAction() {
     if (typeof confirmedAction !== 'undefined' && confirmedAction) {

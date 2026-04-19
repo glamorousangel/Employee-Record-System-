@@ -1183,12 +1183,19 @@ def password_change(request):
             messages.success(request, 'Password updated successfully. Welcome back!')
             if user.role == 'ADMIN':
                 return redirect('admin_dashboard')
+            if user.role == 'HR':
+                return redirect('hr_dashboard')
+            if user.role == 'HEAD':
+                return redirect('head_dashboard')
+            if user.role == 'SD':
+                return redirect('sd_dashboard')
             return redirect('employee_dashboard')
         else:
             messages.error(request, 'Please correct the error below.')
     else:
         form = PasswordChangeForm(request.user)
     return render(request, 'accounts/password_change.html', {'form': form})
+
 
 @login_required
 @user_passes_test(is_admin)
