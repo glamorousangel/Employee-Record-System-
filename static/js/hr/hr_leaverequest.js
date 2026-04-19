@@ -1,8 +1,8 @@
 /* hr_leaverequest.js */
-const hrName = "Tatsu"; 
 let activeRowId = null;
 
 let leaveData = [];
+let currentUserId = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     const sidebar = document.getElementById("sidebar");
@@ -37,22 +37,44 @@ document.addEventListener('DOMContentLoaded', () => {
     fetch(dataSourceUrl, { headers: { 'Accept': 'application/json' }, cache: 'no-store' })
         .then(response => response.json())
         .then(data => {
-            leaveData = (data.history || []).map(item => ({
-                id: item.id,
-                name: item.name || "Unknown", 
-                role: item.user__role || "Employee",
-                dateFiled: item.dateFiled || "---",
-                submitTime: item.submitTime || "---",
-                leaveType: item.leave_type__name || "General Leave",
-                startDate: item.start_date,
-                endDate: item.end_date,
-                numDays: item.days_requested,
-                status: item.status.includes('PENDING') ? 'Pending' : item.status.charAt(0).toUpperCase() + item.status.slice(1).toLowerCase(),
-                reviewedBy: "---", 
-                reason: item.reason,
-                fileName: item.attachment ? "Document Attached" : "No Document Attached",
-                reviewRemarks: "Awaiting response"
-            }));
+            if (data.current_user_id) {
+                currentUserId = data.current_user_id;
+            }
+            leaveData = (data.history || []).map(item => {
+                let displayStatus = item.status;
+                if (item.status === 'APPROVED') displayStatus = 'Approved';
+                else if (item.status === 'REJECTED') displayStatus = 'Rejected';
+                else if (item.status === 'CANCELLED') displayStatus = 'Cancelled';
+                else if (item.status && item.status.includes('PENDING_SD')) displayStatus = 'Pending SD Approval';
+                else displayStatus = 'Pending';
+                
+                let dynamicRemarks = item.hr_remarks;
+                if (!dynamicRemarks) {
+                    if (item.status && item.status.includes('PENDING_HEAD')) dynamicRemarks = "Awaiting Department Head review";
+                    else if (item.status && item.status.includes('PENDING_HR')) dynamicRemarks = "Awaiting HR review";
+                    else if (item.status && item.status.includes('PENDING_SD')) dynamicRemarks = "Awaiting School Director review";
+                    else dynamicRemarks = "Awaiting response";
+                }
+
+                return {
+                    id: item.id,
+                    userId: item.user__id,
+                    name: item.name || "Unknown", 
+                    role: item.user__role || "Employee",
+                    dateFiled: item.dateFiled || "---",
+                    submitTime: item.submitTime || "---",
+                    leaveType: item.leave_type__name || "General Leave",
+                    startDate: item.start_date,
+                    endDate: item.end_date,
+                    numDays: item.days_requested,
+                    status: displayStatus,
+                    rawStatus: item.status,
+                    reviewedBy: item.reviewed_by_hr__first_name ? `${item.reviewed_by_hr__first_name} ${item.reviewed_by_hr__last_name}` : "---", 
+                    reason: item.reason,
+                    fileName: item.attachment ? "Document Attached" : "No Document Attached",
+                    reviewRemarks: dynamicRemarks
+                };
+            });
             renderHRTable("Active");
         })
         .catch(error => {
@@ -76,12 +98,15 @@ function renderHRTable(mode) {
     body.innerHTML = "";
 
     leaveData.forEach((leave) => {
-        const isFinal = leave.status === "Approved" || leave.status === "Rejected";
-        let shouldShow = (mode === "Active") ? !isFinal : isFinal;
+        // HR's "Final Approval" queue processes PENDING_HR.
+        // It also catches PENDING_HEAD requests from HEAD/HR users since they don't have a standard Head approver.
+        const isActionable = leave.rawStatus && (leave.rawStatus.includes("PENDING_HR") || (leave.rawStatus.includes("PENDING_HEAD") && leave.role !== "EMP" && leave.role !== "Employee"));
+        let shouldShow = (mode === "Active") ? isActionable : !isActionable;
 
         if (shouldShow) {
             const clone = template.content.cloneNode(true);
-            const statusClass = leave.status.toLowerCase().replace(/\s+/g, '-');
+            let statusClass = leave.status.toLowerCase().replace(/\s+/g, '-');
+            if (statusClass.includes('pending')) statusClass = 'pending';
             
             clone.querySelector('.col-emp').innerHTML = `<strong>${leave.name}</strong><br><small>${leave.role}</small>`;
             clone.querySelector('.col-type').innerText = leave.leaveType;
@@ -106,10 +131,11 @@ function openHRModal(id) {
     const data = leaveData.find(l => l.id === id);
     if (!data) return;
 
-    const isOwnRequest = (data.name === hrName);
-    const isSDRequest = (data.role === "School Director");
-    const isFinal = (data.status === "Approved" || data.status === "Rejected");
-    const statusClass = data.status.toLowerCase().replace(/\s+/g, '-');
+    const isOwnRequest = (data.userId === currentUserId);
+    const isSDRequest = (data.role === "SD" || data.role === "School Director");
+    const isActionable = data.rawStatus && (data.rawStatus.includes("PENDING_HR") || (data.rawStatus.includes("PENDING_HEAD") && data.role !== "EMP" && data.role !== "Employee"));
+    let statusClass = data.status.toLowerCase().replace(/\s+/g, '-');
+    if (statusClass.includes('pending')) statusClass = 'pending';
 
     document.getElementById('modalFileName').innerText = data.fileName;
     document.getElementById('modalSubmitDate').innerText = `${data.dateFiled} at ${data.submitTime}`;
@@ -131,7 +157,7 @@ function openHRModal(id) {
 
     // Toggle Action Buttons
     const actions = document.getElementById('modalActions');
-    if (isFinal || isOwnRequest || isSDRequest) {
+    if (!isActionable || isOwnRequest || isSDRequest) {
         actions.style.display = "none";
     } else {
         actions.style.display = "flex";
@@ -156,19 +182,29 @@ function processRequest(status) {
     form.method = 'POST';
     form.action = `/leaves/hr/approve/${activeRowId}/`;
 
-    // Grab CSRF Token from the hidden input in the main template
+    let csrfToken = '';
     const csrfTokenInput = document.querySelector('input[name="csrfmiddlewaretoken"]');
-    if (!csrfTokenInput || !csrfTokenInput.value) {
-        console.error("CSRF token not found on the page. Make sure {% csrf_token %} is in your template.");
-        Swal.fire({
-            icon: 'error',
-            title: 'Security Error',
-            text: 'Could not find the required security token to process the request.',
-            confirmButtonColor: '#4a1d1d',
-        });
+    if (csrfTokenInput && csrfTokenInput.value) {
+        csrfToken = csrfTokenInput.value;
+    } else {
+        const name = 'csrftoken';
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    csrfToken = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+    }
+
+    if (!csrfToken) {
+        console.error("CSRF token not found.");
+        Swal.fire({ icon: 'error', title: 'Security Error', text: 'CSRF token missing.', confirmButtonColor: '#4a1d1d' });
         return;
     }
-    const csrfToken = csrfTokenInput.value;
 
     // Append required fields (csrf_token, action, and remarks) to the form
     form.innerHTML = `

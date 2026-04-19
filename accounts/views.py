@@ -1056,7 +1056,7 @@ def assign_role(request):
         user = get_object_or_404(User, pk=user_id)
         old_role = user.role
         user.role = new_role
-        user.department = department if new_role == 'HEAD' else None # Only assign department if role is HEAD
+        user.department = department if new_role in ['HEAD', 'EMP'] else None # Allow both Heads and Employees to retain department bindings
         user.save()
         log_activity(
             actor=request.user,
@@ -1558,4 +1558,3 @@ def forgot_password_page(request):
         pass
         
     return render(request, 'login/forpass.html')
-

@@ -8,6 +8,7 @@ from django.views.decorators.http import require_POST
 from django.db import transaction
 from django.urls import reverse
 from django.utils.timezone import localtime
+from datetime import datetime
 
 from .models import LeaveRequest, LeaveBalance
 from .forms import LeaveRequestForm, LeaveActionForm
@@ -26,6 +27,17 @@ def is_hr(user):
 
 ADMINISTRATIVE_LEAVE_ROLES = {'ADMIN', 'HR', 'HEAD'}
 User = get_user_model()
+
+def _inject_days_requested(post_data):
+    """Calculates days_requested if missing to prevent Django form validation bypass."""
+    if not post_data.get('days_requested') and post_data.get('start_date') and post_data.get('end_date'):
+        try:
+            start = datetime.strptime(post_data['start_date'], '%Y-%m-%d').date()
+            end = datetime.strptime(post_data['end_date'], '%Y-%m-%d').date()
+            post_data['days_requested'] = max((end - start).days + 1, 1)
+        except ValueError:
+            pass
+    return post_data
 
 
 def _notify_recipients(recipients, message, notification_type, target_url=None):
@@ -107,11 +119,14 @@ def leave_select_view(request):
 def apply_leave(request):
     """View for an employee to apply for leave."""
     if request.method == 'POST':
-        form = LeaveRequestForm(request.POST, request.FILES, user=request.user)
+        # Secure injection to guarantee `days_requested` saves successfully
+        post_data = _inject_days_requested(request.POST.copy())
+        form = LeaveRequestForm(post_data, request.FILES, user=request.user)
         if form.is_valid():
             leave_request = form.save(commit=False)
             leave_request.user = request.user
             leave_request.days_requested = form.cleaned_data['days_requested']
+            leave_request.status = LeaveRequest.Status.PENDING_HEAD_APPROVAL
             leave_request.save()
             _notify_pending_leave_approval(leave_request)
             messages.success(request, "Your leave request has been submitted successfully.")
@@ -166,11 +181,13 @@ def head_leave_select(request):
 def head_apply_leave(request):
     """View for a Department Head to apply for personal leave."""
     if request.method == 'POST':
-        form = LeaveRequestForm(request.POST, request.FILES, user=request.user)
+        post_data = _inject_days_requested(request.POST.copy())
+        form = LeaveRequestForm(post_data, request.FILES, user=request.user)
         if form.is_valid():
             leave_request = form.save(commit=False)
             leave_request.user = request.user
             leave_request.days_requested = form.cleaned_data['days_requested']
+            leave_request.status = LeaveRequest.Status.PENDING_HEAD_APPROVAL
             leave_request.save()
             _notify_pending_leave_approval(leave_request)
             messages.success(request, "Your leave request has been submitted successfully.")
@@ -205,14 +222,21 @@ def head_leave_history(request):
     # Return JSON if requested by the JavaScript fetch call
     if request.headers.get('Accept') == 'application/json' or request.GET.get('format') == 'json':
         history_data = list(leave_requests.values(
-            'id', 'leave_type__name', 'start_date', 'end_date', 'days_requested', 'status', 'reason', 'created_at'
+            'id', 'user__id', 'user__username', 'user__first_name', 'user__last_name', 'user__role', 'leave_type__name', 
+            'start_date', 'end_date', 'days_requested', 'status', 'reason', 'created_at', 'attachment',
+            'reviewed_by_head__first_name', 'reviewed_by_head__last_name', 'head_remarks'
         ))
         for item in history_data:
             if item.get('created_at'):
                 local_dt = localtime(item['created_at'])
                 item['dateFiled'] = local_dt.strftime('%B %d, %Y')
                 item['submitTime'] = local_dt.strftime('%I:%M %p')
-        return JsonResponse({'history': history_data})
+                
+            fname = item.get('user__first_name', '').strip()
+            lname = item.get('user__last_name', '').strip()
+            full_name = f"{fname} {lname}".strip()
+            item['name'] = full_name if full_name else item.get('user__username', 'Unknown')
+        return JsonResponse({'history': history_data, 'current_user_id': request.user.id})
 
     return render(request, 'head/head_leaverequest.html', {'leave_requests': leave_requests})
 
@@ -231,11 +255,13 @@ def hr_leave_select(request):
 def hr_apply_leave(request):
     """View for HR to apply for personal leave."""
     if request.method == 'POST':
-        form = LeaveRequestForm(request.POST, request.FILES, user=request.user)
+        post_data = _inject_days_requested(request.POST.copy())
+        form = LeaveRequestForm(post_data, request.FILES, user=request.user)
         if form.is_valid():
             leave_request = form.save(commit=False)
             leave_request.user = request.user
             leave_request.days_requested = form.cleaned_data['days_requested']
+            leave_request.status = LeaveRequest.Status.PENDING_HEAD_APPROVAL
             leave_request.save()
             _notify_pending_leave_approval(leave_request)
             messages.success(request, "Your leave request has been submitted successfully.")
@@ -256,16 +282,21 @@ def hr_leave_history(request):
     # Return JSON if requested by the JavaScript fetch call
     if request.headers.get('Accept') == 'application/json' or request.GET.get('format') == 'json':
         history_data = list(leave_requests.values(
-            'id', 'user__first_name', 'user__last_name', 'user__role', 'leave_type__name', 
-            'start_date', 'end_date', 'days_requested', 'status', 'reason', 'created_at', 'attachment'
+            'id', 'user__id', 'user__username', 'user__first_name', 'user__last_name', 'user__role', 'leave_type__name', 
+            'start_date', 'end_date', 'days_requested', 'status', 'reason', 'created_at', 'attachment',
+            'reviewed_by_hr__first_name', 'reviewed_by_hr__last_name', 'hr_remarks'
         ))
         for item in history_data:
             if item.get('created_at'):
                 local_dt = localtime(item['created_at'])
                 item['dateFiled'] = local_dt.strftime('%B %d, %Y')
                 item['submitTime'] = local_dt.strftime('%I:%M %p')
-            item['name'] = f"{item.get('user__first_name', '')} {item.get('user__last_name', '')}".strip()
-        return JsonResponse({'history': history_data})
+                
+            fname = item.get('user__first_name', '').strip()
+            lname = item.get('user__last_name', '').strip()
+            full_name = f"{fname} {lname}".strip()
+            item['name'] = full_name if full_name else item.get('user__username', 'Unknown')
+        return JsonResponse({'history': history_data, 'current_user_id': request.user.id})
 
     return render(request, 'hr/hr_leaverequest.html', {'leave_requests': leave_requests})
 
@@ -284,11 +315,13 @@ def sd_leave_select(request):
 def sd_apply_leave(request):
     """View for SD to apply for personal leave."""
     if request.method == 'POST':
-        form = LeaveRequestForm(request.POST, request.FILES, user=request.user)
+        post_data = _inject_days_requested(request.POST.copy())
+        form = LeaveRequestForm(post_data, request.FILES, user=request.user)
         if form.is_valid():
             leave_request = form.save(commit=False)
             leave_request.user = request.user
             leave_request.days_requested = form.cleaned_data['days_requested']
+            leave_request.status = LeaveRequest.Status.PENDING_HEAD_APPROVAL
             leave_request.save()
             _notify_pending_leave_approval(leave_request)
             messages.success(request, "Your leave request has been submitted successfully.")
@@ -401,7 +434,17 @@ def head_approve(request, request_id):
 @transaction.atomic
 def hr_final_approve(request, request_id):
     """View for HR to approve/reject and route leave requests for SD final approval."""
-    leave_request = get_object_or_404(LeaveRequest, id=request_id, status__in=[LeaveRequest.Status.PENDING_HR_APPROVAL, LeaveRequest.Status.PENDING_HEAD_APPROVAL])
+    leave_request = get_object_or_404(LeaveRequest, id=request_id)
+    
+    # Enforce workflow sequence: HR sees the request only after the Head has forwarded it
+    if leave_request.user.role in ['EMP', 'Employee'] and leave_request.status == LeaveRequest.Status.PENDING_HEAD_APPROVAL:
+        messages.error(request, "This request must be approved by the Department Head first.")
+        return redirect('leaves:hr_leave_history')
+        
+    if leave_request.status not in [LeaveRequest.Status.PENDING_HR_APPROVAL, LeaveRequest.Status.PENDING_HEAD_APPROVAL]:
+        messages.error(request, "Failed to process request: Invalid state for HR approval.")
+        return redirect('leaves:hr_leave_history')
+        
     form = LeaveActionForm(request.POST)
     if form.is_valid():
         action = form.cleaned_data['action']

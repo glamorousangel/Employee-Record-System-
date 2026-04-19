@@ -51,53 +51,24 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Form Submission Logic ---
     if (leaveForm) {
         leaveForm.onsubmit = (e) => {
-            e.preventDefault();
-
-            const TOTAL_SICK_CREDITS = 15;
-            const activeBtn = document.querySelector('.type-btn.active');
-            const leaveType = activeBtn ? activeBtn.innerText : "General Leave";
             const startDateVal = document.getElementsByName('start_date')[0].value;
             const endDateVal = document.getElementsByName('end_date')[0].value;
             const reasonVal = document.getElementById('leaveReason').value;
 
-            // Simple validation
             if (!startDateVal || !endDateVal || !reasonVal) {
+                e.preventDefault();
                 Swal.fire({
                     icon: 'error',
                     title: 'Missing Info',
                     text: 'Please fill in all required fields.',
                     confirmButtonColor: '#4a1d1d'
                 });
-                return;
+                return false;
             }
 
-            // Calculate duration (inclusive)
-            const start = new Date(startDateVal);
-            const end = new Date(endDateVal);
-            const diffTime = Math.abs(end - start);
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-
-            // Prepare Notification Message
-            let finalMessage = "Leave request submitted successfully!";
-            if (leaveType.toLowerCase().includes("sick")) {
-                const remaining = TOTAL_SICK_CREDITS - diffDays;
-                finalMessage = `Success! You have ${remaining} sick leave credits remaining.`;
-            }
-
-            // Fire SweetAlert
-            Swal.fire({
-                icon: 'success',
-                title: 'Request Sent',
-                text: finalMessage,
-                confirmButtonColor: '#4a1d1d',
-                timer: 3500,
-                timerProgressBar: true
-            }).then(() => {
-                // Redirecting without saving to LocalStorage
-                const historyUrl = leaveForm.dataset.historyUrl || '/leaves/hr/history/';
-                window.location.href = historyUrl;
-
-            });
+            // DO NOT preventDefault if valid. Allow native HTML form to save via Django.
+            const submitBtn = leaveForm.querySelector('button[type="submit"]');
+            if (submitBtn) submitBtn.disabled = true;
         };
     }
 });
