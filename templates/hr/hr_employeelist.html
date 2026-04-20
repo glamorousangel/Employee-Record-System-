@@ -24,7 +24,7 @@
         </div>
         <ul class="menu">
             <li><a href="{% if request.user.role == 'ADMIN' %}{% url 'admin_dashboard' %}{% elif request.user.role == 'HEAD' %}{% url 'head_dashboard' %}{% elif request.user.role == 'SD' %}{% url 'sd_dashboard' %}{% else %}{% url 'hr_dashboard' %}{% endif %}" class="menu-item"><i class="fas fa-border-all"></i><span>Dashboard</span></a></li>
-            <li><a href="{% if request.user.role == 'ADMIN' %}{% url 'history:sd_profile' %}{% elif request.user.role == 'HEAD' %}{% url 'history:head_profile' %}{% elif request.user.role == 'SD' %}{% url 'history:sd_profile' %}{% else %}{% url 'history:hr_profile' %}{% endif %}" class="menu-item"><i class="fas fa-user"></i><span>Profile</span></a></li>
+            <li><a href="{% if request.user.role == 'ADMIN' %}{% url 'admin_dashboard' %}{% elif request.user.role == 'HEAD' %}{% url 'history:head_profile' %}{% elif request.user.role == 'SD' %}{% url 'history:sd_profile' %}{% else %}{% url 'history:hr_profile' %}{% endif %}" class="menu-item"><i class="fas fa-user"></i><span>Profile</span></a></li>
             <hr>
             <li><a href="{% url 'application_list' %}" class="menu-item"><i class="fas fa-file"></i><span>Application Management</span></a></li>
             <li><a href="{% url 'employee_list' %}" class="menu-item active"><i class="fas fa-database"></i><span>Employee Records</span></a></li>

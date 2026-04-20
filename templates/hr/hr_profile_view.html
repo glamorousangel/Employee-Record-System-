@@ -25,16 +25,24 @@
         </div>
 
             <ul class="menu">
-        <li><a href="{% url 'hr_dashboard' %}" class="menu-item"><i class="fas fa-border-all"></i><span>Dashboard</span></a></li>
-        <li><a href="{% url 'history:hr_profile' %}" class="menu-item active"><i class="fas fa-user"></i><span>Profile</span></a></li>
+        <li><a href="{% if request.user.role == 'ADMIN' %}{% url 'admin_dashboard' %}{% elif request.user.role == 'HEAD' %}{% url 'head_dashboard' %}{% elif request.user.role == 'SD' %}{% url 'sd_dashboard' %}{% else %}{% url 'hr_dashboard' %}{% endif %}" class="menu-item"><i class="fas fa-border-all"></i><span>Dashboard</span></a></li>
+        <li><a href="{% if request.user.role == 'ADMIN' %}{% url 'admin_dashboard' %}{% elif request.user.role == 'HEAD' %}{% url 'history:head_profile' %}{% elif request.user.role == 'SD' %}{% url 'history:sd_profile' %}{% else %}{% url 'history:hr_profile' %}{% endif %}" class="menu-item active"><i class="fas fa-user"></i><span>Profile</span></a></li>
         <hr>
-        <li><a href="{% url 'application_list' %}" class="menu-item"><i class="fas fa-file"></i><span>Application Management</span></a></li>
+        <li><a href="{% if request.user.role == 'SD' %}{% url 'sd_application_overview' %}{% else %}{% url 'application_list' %}{% endif %}" class="menu-item"><i class="fas fa-file"></i><span>Application Management</span></a></li>
         <li><a href="{% url 'employee_list' %}" class="menu-item"><i class="fas fa-database"></i><span>Employee Records</span></a></li>
-        <li><a href="{% url 'attendance:hr_attendance_monitoring' %}" class="menu-item"><i class="fas fa-calendar"></i><span>Attendance Monitoring</span></a></li>
-        <li><a href="{% url 'leaves:hr_leave_select' %}" class="menu-item"><i class="fas fa-briefcase"></i><span>Leave Management</span></a></li>
+        <li><a href="{% if request.user.role == 'ADMIN' or request.user.role == 'SD' %}{% url 'attendance:sd_attendance_monitoring' %}{% elif request.user.role == 'HEAD' %}{% url 'attendance:head_attendance_monitoring' %}{% else %}{% url 'attendance:hr_attendance_monitoring' %}{% endif %}" class="menu-item"><i class="fas fa-calendar"></i><span>Attendance Monitoring</span></a></li>
+        <li><a href="{% if request.user.role == 'ADMIN' or request.user.role == 'SD' %}{% url 'leaves:sd_leave_select' %}{% elif request.user.role == 'HEAD' %}{% url 'leaves:head_leave_select' %}{% else %}{% url 'leaves:hr_leave_select' %}{% endif %}" class="menu-item"><i class="fas fa-briefcase"></i><span>Leave Management</span></a></li>
         <li><a href="#" class="menu-item"><i class="fas fa-star"></i><span>Performance Evaluation</span></a></li>
+        {% if request.user.role == 'HEAD' %}
+        <li><a href="{% url 'trainings:head_training_overview' %}" class="menu-item"><i class="fas fa-chalkboard-teacher"></i><span>Trainings</span></a></li>
+        {% elif request.user.role == 'HR' %}
         <li><a href="{% url 'trainings:hr_training_list' %}" class="menu-item"><i class="fas fa-chalkboard-teacher"></i><span>Trainings</span></a></li>
+        {% endif %}
+        {% if request.user.role == 'SD' %}
+        <li><a href="{% url 'sd_reports' %}" class="menu-item"><i class="fas fa-chart-line"></i><span>Reports / Analytics</span></a></li>
+        {% elif request.user.role != 'HEAD' %}
         <li><a href="{% url 'hr_reports' %}" class="menu-item"><i class="fas fa-chart-line"></i><span>Reports / Analytics</span></a></li>
+        {% endif %}
     </ul>
 
             <div class="bottom-section">
@@ -70,7 +78,9 @@
                 </div>
 
                 <div class="profile-right">
+                    {% if request.user.role == 'HR' or request.user.role == 'ADMIN' %}
                     <a href="{% url 'edit_employee' employee.id %}"><button class="edit-btn">Edit Profile</button></a>
+                    {% endif %}
                     <div class="contact-info">
                         <h4>Contact Information</h4>
                         <p><i class="fas fa-envelope"></i> {{ employee.email }}</p>
