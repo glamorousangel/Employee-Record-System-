@@ -1321,8 +1321,11 @@ def employee_list(request):
 
     # 3. If Department Head: See ONLY their department
     elif user.role == 'HEAD' or user.role == 'Department Head':
-        employees = User.objects.select_related('department', 'profile').filter(department=user.department).order_by('-date_joined')
-        template_name = 'hr/hr_employeelist.html'
+        if user.department:
+            employees = User.objects.select_related('department', 'profile').filter(department=user.department).order_by('-date_joined')
+        else:
+            employees = User.objects.none()
+        template_name = 'head/head_employeelist.html'
 
     # 4. Regular employees see only themselves
     else:
