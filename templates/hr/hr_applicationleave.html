@@ -107,9 +107,22 @@
             <div id="modalReviewerText" style="margin-bottom: 15px;"></div>
 
             <!-- Target Container for Dynamic JS Buttons -->
-            <div class="modal-footer mt-4" id="modalActions" style="display: flex; justify-content: flex-end; gap: 10px;">
+            <div class="modal-footer mt-4" id="modalActions" style="display: flex; justify-content: flex-end; gap: 10px; align-items: center;">
                 <button type="button" class="btn btn-secondary" onclick="closeViewModal()">Close View</button>
-                <!-- hr_leaverequest.js will inject Accept/Reject buttons conditionally here -->
+                
+                <!-- Django Template Logic for Action Buttons -->
+                {% if leave and leave.status == 'PENDING_HR_APPROVAL' or leave and leave.status == 'PENDING_HEAD_APPROVAL' and leave.user.role != 'EMP' %}
+                <form method="POST" action="{% if leave %}{% url 'leaves:hr_final_approve' leave.id %}{% else %}#{% endif %}" style="display: flex; gap: 10px; margin: 0;">
+                    {% csrf_token %}
+                    <!-- Hidden remarks field (can be changed to a visible textarea if needed) -->
+                    <input type="hidden" name="remarks" value="Processed by HR via View Modal">
+                    
+                    <button type="submit" name="action" value="REJECT" class="btn btn-danger" style="background-color: #dc3545; color: white; padding: 8px 16px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">Reject</button>
+                    <button type="submit" name="action" value="APPROVE" class="btn btn-success" style="background-color: #28a745; color: white; padding: 8px 16px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">Approve</button>
+                </form>
+                {% elif leave %}
+                <!-- View-only state: No action buttons available -->
+                {% endif %}
             </div>
         </div>
     </div>

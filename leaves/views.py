@@ -308,11 +308,8 @@ def hr_leave_history(request):
     leave_requests = LeaveRequest.objects.all().select_related('user', 'leave_type').order_by('-created_at')
     
     if queue_mode:
-        # Filter for requests already approved by Head (PENDING_HR),
-        # plus requests from HEAD/HR users that go straight to HR
         leave_requests = leave_requests.filter(
-            Q(status=LeaveRequest.Status.PENDING_HR_APPROVAL) |
-            Q(status=LeaveRequest.Status.PENDING_HEAD_APPROVAL, user__role__in=['HEAD', 'HR', 'ADMIN'])
+            status=LeaveRequest.Status.PENDING_HR_APPROVAL
         ).exclude(user=request.user)
     
     is_json = (
@@ -483,13 +480,9 @@ def hr_final_approve(request, request_id):
     """View for HR to approve/reject and route leave requests for SD final approval."""
     leave_request = get_object_or_404(LeaveRequest, id=request_id)
     
-    # Enforce workflow sequence: HR sees the request only after the Head has forwarded it
-    if leave_request.user.role in ['EMP', 'Employee'] and leave_request.status == LeaveRequest.Status.PENDING_HEAD_APPROVAL:
-        messages.error(request, "This request must be approved by the Department Head first.")
-        return redirect('leaves:hr_leave_history')
-        
-    if leave_request.status not in [LeaveRequest.Status.PENDING_HR_APPROVAL, LeaveRequest.Status.PENDING_HEAD_APPROVAL]:
-        messages.error(request, "Failed to process request: Invalid state for HR approval.")
+    # Strictly enforce workflow sequence: HR sees the request only after the Head has approved it
+    if leave_request.status != LeaveRequest.Status.PENDING_HR_APPROVAL:
+        messages.error(request, f"Failed to process request: Application is already marked as {leave_request.get_status_display()}.")
         return redirect('leaves:hr_leave_history')
         
     form = LeaveActionForm(request.POST)
@@ -527,7 +520,7 @@ def hr_final_approve(request, request_id):
             leave_request.status = LeaveRequest.Status.REJECTED
             messages.success(request, f"Leave request for {leave_request.user.get_full_name() or leave_request.user.username} has been Rejected by HR.")
         
-        leave_request.save() # Database persist, explicitly triggers post_save deduction signal in signals.py
+        leave_request.save() # Persist to DB -> triggers post_save deduction signal in leaves/signals.py if status is APPROVED
         
         if leave_request.status in {LeaveRequest.Status.PENDING_SD_APPROVAL, LeaveRequest.Status.PENDING_HR_APPROVAL, LeaveRequest.Status.PENDING_HEAD_APPROVAL}:
             _notify_pending_leave_approval(leave_request)
@@ -595,6 +588,7 @@ def process_leave_action(request, leave_id):
     try:
         data = json.loads(request.body)
         action = data.get('action')
+        remarks = data.get('remarks', '')
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Invalid JSON data payload.'}, status=400)
 
@@ -608,31 +602,54 @@ def process_leave_action(request, leave_id):
         
         if action == 'Approve':
             leave_request.status = LeaveRequest.Status.PENDING_HR_APPROVAL
+            leave_request.head_remarks = remarks or 'Approved by Head'
         elif action == 'Reject':
             leave_request.status = LeaveRequest.Status.REJECTED
-            leave_request.head_remarks = 'Rejected by Head'
+            leave_request.head_remarks = remarks or 'Rejected by Head'
         else:
             return JsonResponse({'error': 'Invalid action.'}, status=400)
             
         leave_request.reviewed_by_head = request.user
+        leave_request.save()
+        
+        # Trigger notifications based on decision
+        if action == 'Approve':
+            _notify_pending_leave_approval(leave_request)
+        else:
+            _notify_leave_status_update(leave_request)
 
-    elif role == 'HR':
+    elif role in ['HR', 'ADMIN']:
         if leave_request.status != LeaveRequest.Status.PENDING_HR_APPROVAL:
             return JsonResponse({'error': 'Application is not pending HR approval.'}, status=400)
             
         if action == 'Approve':
-            leave_request.status = LeaveRequest.Status.APPROVED
+            # Pre-check balance to prevent the transaction from failing silently
+            try:
+                balance = LeaveBalance.objects.get(user=leave_request.user, leave_type=leave_request.leave_type)
+                if balance.remaining_days < leave_request.days_requested:
+                    return JsonResponse({'error': f'Insufficient leave balance. Remaining: {balance.remaining_days} days.'}, status=400)
+            except LeaveBalance.DoesNotExist:
+                pass
+                
+            leave_request.status = LeaveRequest.Status.PENDING_SD_APPROVAL if _requires_sd_final_review(leave_request) else LeaveRequest.Status.APPROVED
+            leave_request.hr_remarks = remarks or 'Approved by HR'
         elif action == 'Reject':
             leave_request.status = LeaveRequest.Status.REJECTED
-            leave_request.hr_remarks = 'Rejected by HR'
+            leave_request.hr_remarks = remarks or 'Rejected by HR'
         else:
             return JsonResponse({'error': 'Invalid action.'}, status=400)
             
         leave_request.reviewed_by_hr = request.user
+        leave_request.save()
+        
+        # Trigger notifications based on decision
+        if leave_request.status in {LeaveRequest.Status.PENDING_SD_APPROVAL}:
+            _notify_pending_leave_approval(leave_request)
+        else:
+            _notify_leave_status_update(leave_request)
+            
     else:
         return JsonResponse({'error': 'Unauthorized role for this action.'}, status=403)
-
-    leave_request.save()
 
     return JsonResponse({
         'success': True,
@@ -654,7 +671,7 @@ def hr_process_leave_action(request, request_id):
     leave_request = get_object_or_404(LeaveRequest, id=request_id)
     
     if leave_request.status != LeaveRequest.Status.PENDING_HR_APPROVAL:
-        return JsonResponse({'error': 'Application is not pending HR approval.'}, status=400)
+        return JsonResponse({'error': f'Application is currently {leave_request.get_status_display()} and cannot be modified.'}, status=400)
     
     import json
     try:

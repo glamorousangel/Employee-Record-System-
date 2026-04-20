@@ -90,7 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function renderHeadTable(mode) {
     const body = document.getElementById('leaveTableBody');
-    const template = document.getElementById('headRowTemplate');
+    const template = document.getElementById('leaveRowTemplate');
 
     if (!body || !template) {
         console.error("Critical rendering error: Required HTML structure is missing.");

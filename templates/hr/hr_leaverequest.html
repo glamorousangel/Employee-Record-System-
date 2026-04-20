@@ -67,7 +67,26 @@
                                 <th>Actions</th>
                             </tr>
                         </thead>
-                        <tbody id="leaveTableBody"></tbody>
+                            <tbody id="leaveTableBody">
+                                {% for leave in leave_requests %}
+                                <tr class="leave-row" data-status="{{ leave.status }}" data-role="{{ leave.user.role }}" data-search="{{ leave.user.get_full_name|default:leave.user.username|lower }} {{ leave.leave_type.name|lower }} {{ leave.status|lower }}">
+                                    <td class="col-emp"><strong>{{ leave.user.get_full_name|default:leave.user.username }}</strong><br><small>{{ leave.user.role }}</small></td>
+                                    <td class="col-type">{{ leave.leave_type.name }}</td>
+                                    <td class="col-start">{{ leave.start_date|date:"Y-m-d" }}</td>
+                                    <td class="col-end">{{ leave.end_date|date:"Y-m-d" }}</td>
+                                    <td class="col-days">{{ leave.days_requested }}</td>
+                                    <td class="col-status">
+                                        <span class="status-pill {{ leave.status|lower }}">{{ leave.get_status_display }}</span>
+                                    </td>
+                                    <td class="col-reviewer">{{ leave.reviewed_by_hr.get_full_name|default:"---" }}</td>
+                                    <td><span class="action-link" style="cursor:pointer; color:blue; text-decoration:underline;" onclick="openHRModal('{{ leave.id }}', '{{ leave.status }}', '{{ leave.get_status_display }}', '{{ leave.created_at|date:'F d, Y' }}', '{{ leave.created_at|time:'h:i A' }}', '{{ leave.reason|escapejs }}', '{{ leave.hr_remarks|default:''|escapejs }}', '{{ leave.attachment.name|default:'No Document Attached'|escapejs }}', '{{ leave.reviewed_by_hr.get_full_name|default:''|escapejs }}', '{{ leave.leave_type.name }}', '{{ leave.days_requested }}', '{{ leave.user.id }}', '{{ request.user.id }}', '{{ leave.user.role }}')">View Details</span></td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="8" style="text-align: center; color: #888; padding: 40px;">No leave requests found.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
                     </table>
                 </div>
             </div>
