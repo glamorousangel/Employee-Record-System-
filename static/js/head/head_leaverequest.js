@@ -30,6 +30,17 @@ document.addEventListener('DOMContentLoaded', () => {
         renderHeadTable("History");
     };
 
+    // Search Logic
+    const tableSearch = document.getElementById('tableSearch');
+    if (tableSearch) {
+        tableSearch.addEventListener('keyup', (e) => {
+            const val = e.target.value.toLowerCase();
+            document.querySelectorAll('#leaveTableBody tr').forEach(row => {
+                row.style.display = row.innerText.toLowerCase().includes(val) ? "" : "none";
+            });
+        });
+    }
+
     // Fetch real data from Django Backend
     const table = document.getElementById('employeeTable');
     const dataSourceUrl = table && table.dataset.sourceUrl ? table.dataset.sourceUrl : '/leaves/head/history/?format=json';
@@ -40,8 +51,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.current_user_id) {
                 currentUserId = data.current_user_id;
             }
-            // Map Django's JSON format to match our table logic
-            headSampleData = (data.history || []).map(item => {
+            // Map Django's JSON format to match our table logic (handle both Array and Object responses)
+            const rawList = Array.isArray(data) ? data : (data.history || []);
+            headSampleData = rawList.map(item => {
                 let rawStatusUpper = (item.status || "").toUpperCase().replace(/_/g, ' ');
                 let displayStatus = item.status;
                 
@@ -90,7 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function renderHeadTable(mode) {
     const body = document.getElementById('leaveTableBody');
-    const template = document.getElementById('leaveRowTemplate');
+    const template = document.getElementById('headRowTemplate');
 
     if (!body || !template) {
         console.error("Critical rendering error: Required HTML structure is missing.");
@@ -142,15 +154,26 @@ function openHeadModal(id) {
 
     const isActionable = data.rawStatus && data.rawStatus.includes("PENDING HEAD");
     
-    document.getElementById('modalFileName').innerText = data.fileName;
-    document.getElementById('modalSubmitDate').innerText = `${data.dateFiled} at ${data.submitTime}`;
-    document.getElementById('modalReason').innerText = data.reason;
-    document.getElementById('modalRemarks').innerText = data.reviewRemarks;
+    const fileNameEl = document.getElementById('modalFileName');
+    if (fileNameEl) fileNameEl.innerText = data.fileName;
+    
+    const submitDateEl = document.getElementById('modalSubmitDate');
+    if (submitDateEl) submitDateEl.innerText = `${data.dateFiled} at ${data.submitTime}`;
+    
+    const reasonEl = document.getElementById('modalReason');
+    if (reasonEl) reasonEl.innerText = data.reason;
+    
+    const remarksEl = document.getElementById('modalRemarks');
+    if (remarksEl) remarksEl.innerText = data.reviewRemarks;
     
     let statusClass = data.status.toLowerCase().replace(/\s+/g, '-');
     if (statusClass.includes('pending')) statusClass = 'pending';
-    document.getElementById('modalStatusContainer').innerHTML = `<span class="status-pill ${statusClass}">${data.status}</span>`;
-    document.getElementById('modalReviewerText').innerHTML = `<small>Reviewed by: ${data.reviewedBy}</small>`;
+    
+    const statusContainerEl = document.getElementById('modalStatusContainer');
+    if (statusContainerEl) statusContainerEl.innerHTML = `<span class="status-pill ${statusClass}">${data.status}</span>`;
+    
+    const reviewerTextEl = document.getElementById('modalReviewerText');
+    if (reviewerTextEl) reviewerTextEl.innerHTML = `<small>Reviewed by: ${data.reviewedBy}</small>`;
 
     // Toggle Action Buttons
     const actions = document.getElementById('modalActions');
@@ -181,7 +204,8 @@ function openHeadModal(id) {
             rejectBtn.style.setProperty('display', 'none', 'important');
         }
     }
-    document.getElementById('viewModal').style.display = 'flex';
+    const viewModal = document.getElementById('viewModal');
+    if (viewModal) viewModal.style.display = 'flex';
 }
 
 function processHeadRequest(decision) {
@@ -282,5 +306,6 @@ function processHeadRequest(decision) {
 }
 
 function closeViewModal() { 
-    document.getElementById('viewModal').style.display = 'none'; 
+    const viewModal = document.getElementById('viewModal');
+    if (viewModal) viewModal.style.display = 'none'; 
 }

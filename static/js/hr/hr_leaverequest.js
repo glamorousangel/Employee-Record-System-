@@ -27,7 +27,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const status = row.getAttribute('data-status') || '';
             const searchData = row.getAttribute('data-search') || '';
             
-            const isPending = status.toUpperCase().includes('PENDING_HR');
+            const normalizedStatus = status.toUpperCase().replace(/\s+/g, '_');
+            const isPending = normalizedStatus.includes('PENDING_HR');
             
             let tabMatch = false;
             if (showHistory) {
@@ -83,7 +84,8 @@ window.openHRModal = function(id, status, statusDisplay, dateFiled, submitTime, 
     
     // Check if the status is pending HR approval, matching raw DB or display strings robustly
     // Enforce strict workflow: HR can only action requests that are 'PENDING_HR'
-    const isActionable = safeStatus.includes('PENDING_HR');
+    const safeStatusDisplay = String(statusDisplay || '').toUpperCase().replace(/\s+/g, '_');
+    const isActionable = safeStatus.includes('PENDING_HR') || safeStatusDisplay.includes('PENDING_HR');
 
     document.getElementById('modalFileName').innerText = fileName || 'No Document Attached';
     document.getElementById('modalSubmitDate').innerText = `${dateFiled} at ${submitTime}`;
@@ -115,8 +117,8 @@ window.openHRModal = function(id, status, statusDisplay, dateFiled, submitTime, 
     if (actions) {
         actions.style.display = "flex"; // Ensure container is visible for the Close button
         
-        let acceptBtn = document.getElementById('hrAcceptBtn') || document.querySelector('.btn-approve');
-        let rejectBtn = document.getElementById('hrRejectBtn') || document.querySelector('.btn-reject');
+        let acceptBtn = document.getElementById('hrAcceptBtn') || actions.querySelector('.btn-approve');
+        let rejectBtn = document.getElementById('hrRejectBtn') || actions.querySelector('.btn-reject');
         
         if (!acceptBtn) {
             actions.insertAdjacentHTML('afterbegin', `
@@ -132,8 +134,8 @@ window.openHRModal = function(id, status, statusDisplay, dateFiled, submitTime, 
         rejectBtn.onclick = (e) => { e.preventDefault(); processRequest('REJECT'); };
 
         if (isActionable && !isOwnRequest && !isSDRequest) {
-            acceptBtn.style.display = 'inline-block';
-            rejectBtn.style.display = 'inline-block';
+            acceptBtn.style.setProperty('display', 'inline-block', 'important');
+            rejectBtn.style.setProperty('display', 'inline-block', 'important');
         } else {
             acceptBtn.style.setProperty('display', 'none', 'important');
             rejectBtn.style.setProperty('display', 'none', 'important');
@@ -181,21 +183,21 @@ window.processRequest = function(decision) {
         const modal = document.getElementById('viewModal');
         let approveUrl = modal.getAttribute('data-approve-url').replace('0', currentLeaveId);
         
-        const formData = new URLSearchParams();
-        formData.append('action', actionStr);
-        formData.append('remarks', remarks);
-
         fetch(approveUrl, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
+                'Content-Type': 'application/json',
                 'X-CSRFToken': csrfToken,
                 'X-Requested-With': 'XMLHttpRequest'
             },
-            body: formData.toString()
+            body: JSON.stringify({
+                action: actionStr === 'APPROVE' ? 'Approve' : 'Reject',
+                remarks: remarks
+            })
         })
-        .then(response => {
-            if (response.ok || response.redirected) {
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
                 if (typeof Swal !== 'undefined') {
                     Swal.fire('Success!', `Request has been ${actionStr === 'APPROVE' ? 'approved' : 'rejected'}.`, 'success').then(() => {
                         window.location.reload();
@@ -205,8 +207,9 @@ window.processRequest = function(decision) {
                     window.location.reload();
                 }
             } else {
-                if (typeof Swal !== 'undefined') Swal.fire('Error', 'Failed to process request.', 'error');
-                else alert('Failed to process request.');
+                const errorMsg = data.error || 'Failed to process request.';
+                if (typeof Swal !== 'undefined') Swal.fire('Error', errorMsg, 'error');
+                else alert('Error: ' + errorMsg);
                 
                 if (acceptBtn) acceptBtn.disabled = false;
                 if (rejectBtn) rejectBtn.disabled = false;

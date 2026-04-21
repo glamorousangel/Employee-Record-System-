@@ -18,9 +18,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Leave Type Selection ---
     typeButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault(); // Prevent accidental form submission
             typeButtons.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
+
+            let hiddenInput = document.querySelector('input[name="leave_type"]');
+            if (!hiddenInput && leaveForm) {
+                hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = 'leave_type';
+                leaveForm.appendChild(hiddenInput);
+            }
+            if (hiddenInput) {
+                hiddenInput.value = btn.innerText.trim();
+            }
         });
     });
 
@@ -41,6 +53,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Submit Logic (Notification with Credits) ---
     if (leaveForm) {
-        // Form intercepts removed to ensure standard Django native database save occurs.
+        leaveForm.addEventListener('submit', (e) => {
+            const activeBtn = document.querySelector('.type-btn.active');
+            if (activeBtn) {
+                let hiddenInput = document.querySelector('input[name="leave_type"]');
+                if (!hiddenInput) {
+                    hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'hidden';
+                    hiddenInput.name = 'leave_type';
+                    hiddenInput.value = activeBtn.innerText.trim();
+                    leaveForm.appendChild(hiddenInput);
+                }
+            } else {
+                e.preventDefault();
+                alert('Please select a leave type.');
+            }
+        });
     }
 });

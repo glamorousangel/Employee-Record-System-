@@ -50,7 +50,8 @@
                 </div>
 
                 <div class="form-body">
-                    <table id="employeeTable">
+                    {% csrf_token %}
+                    <table id="leaveTable">
                         <thead>
                             <tr>
                                 <th>Date Filed</th>

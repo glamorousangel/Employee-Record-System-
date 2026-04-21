@@ -1,6 +1,4 @@
 /* emp_leaverequest.js */
-const empInfo = { name: "John Smith" };
-
 let leaveData = [];
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -25,20 +23,52 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(response => response.json())
         .then(data => {
             console.log("Database Response:", data); // Check your browser console!
-            leaveData = (data.history || []).map(item => ({
-                id: item.id,
-                dateFiled: item.dateFiled || "---",
-                submitTime: item.submitTime || "---",
-                leaveType: item.leave_type__name || "General Leave",
-                startDate: item.start_date,
-                endDate: item.end_date,
-                numDays: item.days_requested,
-                status: (item.status || '').includes('PENDING') ? 'Pending' : (item.status ? item.status.charAt(0).toUpperCase() + item.status.slice(1).toLowerCase() : 'Unknown'),
-                reviewedBy: "---",
-                reason: item.reason,
-                fileName: item.attachment ? "Document Attached" : "No Document Attached",
-                reviewRemarks: "Awaiting response"
-            }));
+            // The backend API should be responsible for providing clean, display-ready data.
+            // The frontend mapping logic should be as simple as possible.
+            leaveData = (data.history || []).map(item => {
+                let rawStatusUpper = (item.status || "").toUpperCase().replace(/_/g, ' ');
+                let displayStatus = item.status;
+                
+                if (rawStatusUpper === 'APPROVED') displayStatus = 'Approved';
+                else if (rawStatusUpper === 'REJECTED') displayStatus = 'Rejected';
+                else if (rawStatusUpper === 'CANCELLED') displayStatus = 'Cancelled';
+                else if (rawStatusUpper.includes('PENDING HR')) displayStatus = 'Pending HR Approval';
+                else if (rawStatusUpper.includes('PENDING SD')) displayStatus = 'Pending SD Approval';
+                else if (rawStatusUpper.includes('PENDING HEAD')) displayStatus = 'Pending Head Approval';
+                else displayStatus = 'Pending';
+
+                let reviewer = "---";
+                if (item.reviewed_by_sd__first_name) {
+                    reviewer = `${item.reviewed_by_sd__first_name} ${item.reviewed_by_sd__last_name}`;
+                } else if (item.reviewed_by_hr__first_name) {
+                    reviewer = `${item.reviewed_by_hr__first_name} ${item.reviewed_by_hr__last_name}`;
+                } else if (item.reviewed_by_head__first_name) {
+                    reviewer = `${item.reviewed_by_head__first_name} ${item.reviewed_by_head__last_name}`;
+                }
+
+                let remarks = "Awaiting response";
+                if (item.sd_remarks) remarks = item.sd_remarks;
+                else if (item.hr_remarks) remarks = item.hr_remarks;
+                else if (item.head_remarks) remarks = item.head_remarks;
+                else if (rawStatusUpper.includes('PENDING HEAD')) remarks = "Awaiting Department Head review";
+                else if (rawStatusUpper.includes('PENDING HR')) remarks = "Awaiting HR review";
+                else if (rawStatusUpper.includes('PENDING SD')) remarks = "Awaiting School Director review";
+
+                return {
+                    id: item.id,
+                    dateFiled: item.dateFiled || "---",
+                    submitTime: item.submitTime || "---",
+                    leaveType: item.leave_type__name || "General Leave",
+                    startDate: item.start_date,
+                    endDate: item.end_date,
+                    numDays: item.days_requested,
+                    status: displayStatus,
+                    reviewedBy: reviewer,
+                    reason: item.reason,
+                    fileName: item.attachment ? "Document Attached" : "No Document Attached",
+                    reviewRemarks: remarks
+                };
+            });
             renderLeaveTable("Active");
         })
         .catch(error => {
@@ -81,7 +111,8 @@ function renderLeaveTable(filter) {
         // Logic: Active tab shows Pending. History tab shows Approved/Rejected.
         if ((filter === "Active" && !isFinal) || (filter === "History" && isFinal)) {
             const clone = template.content.cloneNode(true);
-            const statusClass = leave.status.toLowerCase();
+            let statusClass = leave.status.toLowerCase().replace(/\s+/g, '-');
+            if (statusClass.includes('pending')) statusClass = 'pending';
 
             clone.querySelector('.col-filed').innerText = leave.dateFiled;
             clone.querySelector('.col-type').innerHTML = `<strong>${leave.leaveType}</strong>`;
@@ -113,7 +144,8 @@ function openViewModalByID(id) {
     document.getElementById('modalReason').innerText = data.reason;
     document.getElementById('modalRemarks').innerText = data.reviewRemarks;
     
-    const statusClass = data.status.toLowerCase();
+    let statusClass = data.status.toLowerCase().replace(/\s+/g, '-');
+    if (statusClass.includes('pending')) statusClass = 'pending';
     document.getElementById('modalStatusContainer').innerHTML = `<span class="status-pill ${statusClass}">${data.status}</span>`;
     
     // Preview Placeholder Logic

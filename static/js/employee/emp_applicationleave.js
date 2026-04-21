@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Pass the selected leave type to the Django form
             const hiddenType = document.getElementById('hiddenLeaveType');
-            if (hiddenType) hiddenType.value = btn.innerText;
+            if (hiddenType) hiddenType.value = btn.innerText.trim();
         });
     });
 
@@ -44,6 +44,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Submit & Credits Calculation ---
     if (leaveForm) {
-        // Form intercepts removed to ensure standard Django native database save occurs.
+        leaveForm.addEventListener('submit', (e) => {
+            const hiddenType = document.getElementById('hiddenLeaveType');
+            // Only intercept the submission if the user forgot to select a leave type
+            if (!hiddenType || !hiddenType.value.trim()) {
+                e.preventDefault(); 
+                alert("Please select a Leave Type before submitting your request.");
+                return;
+            }
+            
+            // Disable the submit button to prevent duplicate submissions while Django processes the POST request
+            const submitBtn = leaveForm.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+            }
+        });
     }
 });
