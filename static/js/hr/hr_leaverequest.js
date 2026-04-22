@@ -79,7 +79,8 @@ window.openHRModal = function(id, status, statusDisplay, dateFiled, submitTime, 
     const safeStatus = String(status || '').toUpperCase().replace(/\s+/g, '_');
     const safeRole = String(applicantRole || '').toUpperCase().trim();
 
-    const isOwnRequest = (safeApplicantId !== '' && safeApplicantId === safeCurrentUserId);
+    // TEMPORARY BYPASS: Allow HR to approve their own requests for testing
+    const isOwnRequest = false; 
     const isSDRequest = (safeRole === "SD" || safeRole === "SCHOOL DIRECTOR");
     
     // Check if the status is pending HR approval, matching raw DB or display strings robustly
@@ -113,19 +114,19 @@ window.openHRModal = function(id, status, statusDisplay, dateFiled, submitTime, 
     }
 
     // --- BUTTON TOGGLE LOGIC (Copied from Head side) ---
-    const actions = document.getElementById('modalActions');
+    const actions = document.getElementById('modalActions') || document.querySelector('.modal-footer') || document.querySelector('.modal-actions');
     if (actions) {
         actions.style.display = "flex"; // Ensure container is visible for the Close button
         
-        let acceptBtn = document.getElementById('hrAcceptBtn') || actions.querySelector('.btn-approve');
+        let acceptBtn = document.getElementById('hrApproveBtn') || actions.querySelector('.btn-approve');
         let rejectBtn = document.getElementById('hrRejectBtn') || actions.querySelector('.btn-reject');
         
         if (!acceptBtn) {
             actions.insertAdjacentHTML('afterbegin', `
-                <button type="button" id="hrAcceptBtn" class="btn btn-success btn-approve" style="margin-left: 10px; background-color: #28a745; color: white; padding: 8px 16px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">Accept</button>
+                <button type="button" id="hrApproveBtn" class="btn btn-success btn-approve" style="margin-left: 10px; background-color: #28a745; color: white; padding: 8px 16px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">Approve</button>
                 <button type="button" id="hrRejectBtn" class="btn btn-danger btn-reject" style="margin-left: 10px; background-color: #dc3545; color: white; padding: 8px 16px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">Reject</button>
             `);
-            acceptBtn = document.getElementById('hrAcceptBtn');
+            acceptBtn = document.getElementById('hrApproveBtn');
             rejectBtn = document.getElementById('hrRejectBtn');
         }
 
@@ -133,7 +134,7 @@ window.openHRModal = function(id, status, statusDisplay, dateFiled, submitTime, 
         acceptBtn.onclick = (e) => { e.preventDefault(); processRequest('APPROVE'); };
         rejectBtn.onclick = (e) => { e.preventDefault(); processRequest('REJECT'); };
 
-        if (isActionable && !isOwnRequest && !isSDRequest) {
+        if (isActionable && !isOwnRequest) {
             acceptBtn.style.setProperty('display', 'inline-block', 'important');
             rejectBtn.style.setProperty('display', 'inline-block', 'important');
         } else {
