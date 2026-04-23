@@ -27,6 +27,8 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.onclick = () => {
             typeButtons.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
+            // Capture the selected leave type in the hidden field
+            document.getElementById('leave_type_hidden').value = btn.textContent.trim();
         };
     });
 
@@ -50,13 +52,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Form Submission Logic ---
     if (leaveForm) {
-        leaveForm.onsubmit = (e) => {
+        leaveForm.onsubmit = async (e) => {
+            e.preventDefault();
+            
             const startDateVal = document.getElementsByName('start_date')[0].value;
             const endDateVal = document.getElementsByName('end_date')[0].value;
             const reasonVal = document.getElementById('leaveReason').value;
 
             if (!startDateVal || !endDateVal || !reasonVal) {
-                e.preventDefault();
                 Swal.fire({
                     icon: 'error',
                     title: 'Missing Info',
@@ -66,9 +69,59 @@ document.addEventListener('DOMContentLoaded', () => {
                 return false;
             }
 
-            // DO NOT preventDefault if valid. Allow native HTML form to save via Django.
             const submitBtn = leaveForm.querySelector('button[type="submit"]');
             if (submitBtn) submitBtn.disabled = true;
+
+            // Use FormData to handle file upload and other fields
+            const formData = new FormData(leaveForm);
+            
+            try {
+                const response = await fetch(leaveForm.action || '{% url "leaves:hr_apply_leave" %}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: 'Your leave request has been submitted successfully!',
+                        confirmButtonColor: '#4a1d1d'
+                    }).then(() => {
+                        // Redirect to history page
+                        window.location.href = result.redirect || result.redirect_url;
+                    });
+                } else {
+                    let errorMsg = result.message || 'Submission failed. Please review the form for errors.';
+                    if (result.errors) {
+                        const errorFields = Object.entries(result.errors)
+                            .map(([field, errs]) => `${field}: ${errs.join(', ')}`)
+                            .join('\n');
+                        errorMsg = `Submission failed:\n${errorFields}`;
+                    }
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Submission Failed',
+                        text: errorMsg,
+                        confirmButtonColor: '#4a1d1d'
+                    });
+                    if (submitBtn) submitBtn.disabled = false;
+                }
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Network Error',
+                    text: 'An error occurred while submitting your request. Please try again.',
+                    confirmButtonColor: '#4a1d1d'
+                });
+                if (submitBtn) submitBtn.disabled = false;
+                console.error('Form submission error:', error);
+            }
         };
     }
 });

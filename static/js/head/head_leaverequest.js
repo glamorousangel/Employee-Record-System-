@@ -9,6 +9,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const tabHistory = document.getElementById('tab-history');
     const menuItems = document.querySelectorAll('.menu-item');
 
+    const urlParams = new URLSearchParams(window.location.search);
+    const initialTab = urlParams.get('tab') === 'history' ? 'History' : 'Active';
+
+    if (initialTab === 'History' && tabHistory && tabRequests) {
+        tabHistory.classList.add('active');
+        tabRequests.classList.remove('active');
+    }
+
     // --- TOOLTIP LABEL INITIALIZATION ---
     menuItems.forEach(item => {
         const span = item.querySelector('span');
@@ -92,11 +100,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     reviewRemarks: dynamicRemarks
                 };
             });
-            renderHeadTable("Active");
+            renderHeadTable(initialTab);
         })
         .catch(error => {
             console.error("Error fetching data:", error);
-            renderHeadTable("Active");
+            renderHeadTable(initialTab);
         });
 });
 

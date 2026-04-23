@@ -55,6 +55,7 @@
                             <button type="button" class="type-btn">Maternity Leave</button>
                             <button type="button" class="type-btn">Bereavement Leave</button>
                         </div>
+                        <input type="hidden" id="leave_type_hidden" name="leave_type" value="Sick Leave">
 
                         <div class="date-container">
                             <div class="input-group">
@@ -69,12 +70,12 @@
 
                         <div class="input-group">
                             <label>Reason for Leave</label>
-                            <textarea id="leaveReason" class="form-textarea" placeholder="Please brief reason for your leave request..." required></textarea>
+                            <textarea id="leaveReason" name="reason" class="form-textarea" placeholder="Please brief reason for your leave request..." required></textarea>
                         </div>
 
                         <label class="section-label">Attach Supporting Document(s)</label>
                         <div class="drop-zone" id="dropZone">
-                            <input type="file" id="fileInput" hidden>
+                            <input type="file" id="fileInput" name="attachment" hidden>
                             <div id="dropZoneContent">
                                 <i class="fas fa-cloud-upload-alt"></i>
                                 <p>Drag and Drop or <span>browse files</span></p>

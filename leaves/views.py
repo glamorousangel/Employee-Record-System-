@@ -9,6 +9,7 @@ from django.db import transaction
 from django.urls import reverse
 from django.utils.timezone import localtime
 from datetime import datetime
+import json
 from django.db.models import Q
 
 from .models import LeaveRequest, LeaveBalance
@@ -123,10 +124,29 @@ def leave_select_view(request):
 @login_required
 def apply_leave(request):
     """View for an employee to apply for leave."""
+    # Fail-safe: Auto-route administrative roles to their correct application endpoints
+    role = (request.user.role or '').upper()
+    if role == 'HEAD':
+        return redirect('leaves:head_apply_leave')
+    elif role == 'HR':
+        return redirect('leaves:hr_apply_leave')
+    elif role == 'SD':
+        return redirect('leaves:sd_apply_leave')
+        
     if request.method == 'POST':
-        # Secure injection to guarantee `days_requested` saves successfully
-        post_data = _inject_days_requested(request.POST.copy())
-        form = LeaveRequestForm(post_data, request.FILES, user=request.user)
+        is_json_req = request.content_type == 'application/json'
+        if is_json_req:
+            try:
+                data = json.loads(request.body)
+            except json.JSONDecodeError:
+                data = {}
+            post_data = _inject_days_requested(data)
+            form = LeaveRequestForm(post_data, user=request.user)
+        else:
+            # Secure injection to guarantee `days_requested` saves successfully
+            post_data = _inject_days_requested(request.POST.copy())
+            form = LeaveRequestForm(post_data, request.FILES, user=request.user)
+            
         if form.is_valid():
             leave_request = form.save(commit=False)
             leave_request.user = request.user
@@ -135,9 +155,28 @@ def apply_leave(request):
             leave_request.save()
             _notify_pending_leave_approval(leave_request)
             messages.success(request, "Your leave request has been submitted successfully.")
-            return redirect('leaves:leave_history')
+            
+            is_ajax = (
+                is_json_req or
+                'application/json' in request.headers.get('Accept', '') or
+                request.GET.get('format') == 'json' or
+                request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+            )
+            target = reverse('leaves:leave_history')
+            if is_ajax:
+                return JsonResponse({'success': True, 'redirect': target, 'redirect_url': target})
+            return redirect(target)
         else:
-            messages.error(request, "Submission failed. Please review the form for errors.")
+            error_msgs = " ".join([f"{field.title()}: {', '.join(errs)}" for field, errs in form.errors.items()]) if form.errors else "Please review the form for errors."
+            messages.error(request, f"Submission failed. {error_msgs}")
+            is_ajax = (
+                is_json_req or
+                'application/json' in request.headers.get('Accept', '') or
+                request.GET.get('format') == 'json' or
+                request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+            )
+            if is_ajax:
+                return JsonResponse({'success': False, 'errors': form.errors}, status=400)
     else:
         form = LeaveRequestForm(user=request.user)
 
@@ -198,19 +237,50 @@ def head_leave_select(request):
 def head_apply_leave(request):
     """View for a Department Head to apply for personal leave."""
     if request.method == 'POST':
-        post_data = _inject_days_requested(request.POST.copy())
-        form = LeaveRequestForm(post_data, request.FILES, user=request.user)
+        is_json_req = request.content_type == 'application/json'
+        if is_json_req:
+            try:
+                data = json.loads(request.body)
+            except json.JSONDecodeError:
+                data = {}
+            post_data = _inject_days_requested(data)
+            form = LeaveRequestForm(post_data, user=request.user)
+        else:
+            post_data = _inject_days_requested(request.POST.copy())
+            form = LeaveRequestForm(post_data, request.FILES, user=request.user)
+            
         if form.is_valid():
             leave_request = form.save(commit=False)
             leave_request.user = request.user
             leave_request.days_requested = form.cleaned_data['days_requested']
-            leave_request.status = LeaveRequest.Status.PENDING_HEAD_APPROVAL
+            # Head applications require HR approval
+            leave_request.status = LeaveRequest.Status.PENDING_HR_APPROVAL
             leave_request.save()
             _notify_pending_leave_approval(leave_request)
             messages.success(request, "Your leave request has been submitted successfully.")
-            return redirect('leaves:head_leave_history')
+
+            # Determine if this is an AJAX/JSON request and respond accordingly
+            is_ajax = (
+                is_json_req or
+                'application/json' in request.headers.get('Accept', '') or
+                request.GET.get('format') == 'json' or
+                request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+            )
+            target = f"{reverse('leaves:head_leave_history')}?tab=history"
+            if is_ajax:
+                return JsonResponse({'success': True, 'redirect': target, 'redirect_url': target})
+            return redirect(target)
         else:
-            messages.error(request, "Submission failed. Please review the form for errors.")
+            error_msgs = " ".join([f"{field.title()}: {', '.join(errs)}" for field, errs in form.errors.items()]) if form.errors else "Please review the form for errors."
+            messages.error(request, f"Submission failed. {error_msgs}")
+            is_ajax = (
+                is_json_req or
+                'application/json' in request.headers.get('Accept', '') or
+                request.GET.get('format') == 'json' or
+                request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+            )
+            if is_ajax:
+                return JsonResponse({'success': False, 'errors': form.errors}, status=400)
     else:
         form = LeaveRequestForm(user=request.user)
 
@@ -228,11 +298,11 @@ def head_leave_history(request):
     if department_scope_ids:
         leave_requests = LeaveRequest.objects.filter(
             Q(user__department_id__in=department_scope_ids) | Q(user=request.user)
-        ).select_related('user', 'leave_type').order_by('-created_at')
+        ).select_related('user', 'leave_type', 'reviewed_by_head', 'reviewed_by_hr', 'reviewed_by_sd').order_by('-created_at')
     else:
         leave_requests = LeaveRequest.objects.filter(
             user=request.user
-        ).select_related('user', 'leave_type').order_by('-created_at')
+        ).select_related('user', 'leave_type', 'reviewed_by_head', 'reviewed_by_hr', 'reviewed_by_sd').order_by('-created_at')
 
     if queue_mode:
         leave_requests = leave_requests.filter(
@@ -281,19 +351,49 @@ def hr_leave_select(request):
 def hr_apply_leave(request):
     """View for HR to apply for personal leave."""
     if request.method == 'POST':
-        post_data = _inject_days_requested(request.POST.copy())
-        form = LeaveRequestForm(post_data, request.FILES, user=request.user)
+        is_json_req = request.content_type == 'application/json'
+        if is_json_req:
+            try:
+                data = json.loads(request.body)
+            except json.JSONDecodeError:
+                data = {}
+            post_data = _inject_days_requested(data)
+            form = LeaveRequestForm(post_data, user=request.user)
+        else:
+            post_data = _inject_days_requested(request.POST.copy())
+            form = LeaveRequestForm(post_data, request.FILES, user=request.user)
+            
         if form.is_valid():
             leave_request = form.save(commit=False)
             leave_request.user = request.user
             leave_request.days_requested = form.cleaned_data['days_requested']
-            leave_request.status = LeaveRequest.Status.PENDING_HEAD_APPROVAL
+            leave_request.status = LeaveRequest.Status.PENDING_SD_APPROVAL
             leave_request.save()
             _notify_pending_leave_approval(leave_request)
             messages.success(request, "Your leave request has been submitted successfully.")
-            return redirect('leaves:hr_leave_history')
+            
+            # Determine if this is an AJAX/JSON request and respond accordingly
+            is_ajax = (
+                is_json_req or
+                'application/json' in request.headers.get('Accept', '') or
+                request.GET.get('format') == 'json' or
+                request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+            )
+            target = f"{reverse('leaves:hr_leave_history')}?tab=history"
+            if is_ajax:
+                return JsonResponse({'success': True, 'redirect': target, 'redirect_url': target})
+            return redirect(target)
         else:
-            messages.error(request, "Submission failed. Please review the form for errors.")
+            error_msgs = " ".join([f"{field.title()}: {', '.join(errs)}" for field, errs in form.errors.items()]) if form.errors else "Please review the form for errors."
+            messages.error(request, f"Submission failed. {error_msgs}")
+            is_ajax = (
+                is_json_req or
+                'application/json' in request.headers.get('Accept', '') or
+                request.GET.get('format') == 'json' or
+                request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+            )
+            if is_ajax:
+                return JsonResponse({'success': False, 'errors': form.errors}, status=400)
     else:
         form = LeaveRequestForm(user=request.user)
     return render(request, 'hr/hr_applicationleave.html', {'form': form})
@@ -354,19 +454,48 @@ def sd_leave_select(request):
 def sd_apply_leave(request):
     """View for SD to apply for personal leave."""
     if request.method == 'POST':
-        post_data = _inject_days_requested(request.POST.copy())
-        form = LeaveRequestForm(post_data, request.FILES, user=request.user)
+        is_json_req = request.content_type == 'application/json'
+        if is_json_req:
+            try:
+                data = json.loads(request.body)
+            except json.JSONDecodeError:
+                data = {}
+            post_data = _inject_days_requested(data)
+            form = LeaveRequestForm(post_data, user=request.user)
+        else:
+            post_data = _inject_days_requested(request.POST.copy())
+            form = LeaveRequestForm(post_data, request.FILES, user=request.user)
+            
         if form.is_valid():
             leave_request = form.save(commit=False)
             leave_request.user = request.user
             leave_request.days_requested = form.cleaned_data['days_requested']
-            leave_request.status = LeaveRequest.Status.PENDING_HEAD_APPROVAL
+            leave_request.status = LeaveRequest.Status.PENDING_HR_APPROVAL
             leave_request.save()
             _notify_pending_leave_approval(leave_request)
             messages.success(request, "Your leave request has been submitted successfully.")
-            return redirect('leaves:sd_leave_history')
+            
+            is_ajax = (
+                is_json_req or
+                'application/json' in request.headers.get('Accept', '') or
+                request.GET.get('format') == 'json' or
+                request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+            )
+            target = reverse('leaves:sd_leave_history')
+            if is_ajax:
+                return JsonResponse({'success': True, 'redirect': target, 'redirect_url': target})
+            return redirect(target)
         else:
-            messages.error(request, "Submission failed. Please review the form for errors.")
+            error_msgs = " ".join([f"{field.title()}: {', '.join(errs)}" for field, errs in form.errors.items()]) if form.errors else "Please review the form for errors."
+            messages.error(request, f"Submission failed. {error_msgs}")
+            is_ajax = (
+                is_json_req or
+                'application/json' in request.headers.get('Accept', '') or
+                request.GET.get('format') == 'json' or
+                request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+            )
+            if is_ajax:
+                return JsonResponse({'success': False, 'errors': form.errors}, status=400)
     else:
         form = LeaveRequestForm(user=request.user)
     return render(request, 'sd/sd_applicationleave.html', {'form': form})
@@ -452,7 +581,28 @@ def head_approve(request, request_id):
         status=LeaveRequest.Status.PENDING_HEAD_APPROVAL,
         user__department_id__in=department_scope_ids
     )
-    form = LeaveActionForm(request.POST)
+    
+    is_json_req = request.content_type == 'application/json'
+    if is_json_req:
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            data = {}
+    else:
+        data = request.POST.copy()
+        
+    # Normalize action to uppercase to guarantee LeaveActionForm validation passes
+    if 'action' in data:
+        data['action'] = str(data.get('action', '')).strip().upper()
+
+    is_ajax = (
+        is_json_req or
+        'application/json' in request.headers.get('Accept', '') or
+        request.GET.get('format') == 'json' or
+        request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+    )
+
+    form = LeaveActionForm(data)
     if form.is_valid():
         action = form.cleaned_data['action']
         
@@ -467,8 +617,14 @@ def head_approve(request, request_id):
         else:
             _notify_leave_status_update(leave_request)
             messages.success(request, f"Leave request for {leave_request.user.get_full_name()} has been Rejected by Head.")
+            
+        if is_ajax:
+            target = reverse('leaves:head_leave_history')
+            return JsonResponse({'success': True, 'redirect': target, 'redirect_url': target})
     else:
         messages.error(request, "Failed to process request: Invalid action submitted.")
+        if is_ajax:
+            return JsonResponse({'success': False, 'errors': form.errors}, status=400)
     return redirect('leaves:head_leave_history')
 
 
@@ -480,12 +636,35 @@ def hr_final_approve(request, request_id):
     """View for HR to approve/reject and route leave requests for SD final approval."""
     leave_request = get_object_or_404(LeaveRequest, id=request_id)
     
+    is_json_req = request.content_type == 'application/json'
+    if is_json_req:
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            data = {}
+    else:
+        data = request.POST.copy()
+        
+    # Normalize action to uppercase to guarantee LeaveActionForm validation passes
+    if 'action' in data:
+        data['action'] = str(data.get('action', '')).strip().upper()
+
+    is_ajax = (
+        is_json_req or
+        'application/json' in request.headers.get('Accept', '') or
+        request.GET.get('format') == 'json' or
+        request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+    )
+
     # Strictly enforce workflow sequence: HR sees the request only after the Head has approved it
     if leave_request.status != LeaveRequest.Status.PENDING_HR_APPROVAL:
-        messages.error(request, f"Failed to process request: Application is already marked as {leave_request.get_status_display()}.")
+        error_msg = f"Failed to process request: Application is already marked as {leave_request.get_status_display()}."
+        messages.error(request, error_msg)
+        if is_ajax:
+            return JsonResponse({'success': False, 'error': error_msg}, status=400)
         return redirect('leaves:hr_leave_history')
         
-    form = LeaveActionForm(request.POST)
+    form = LeaveActionForm(data)
     if form.is_valid():
         action = form.cleaned_data['action']
         
@@ -497,24 +676,31 @@ def hr_final_approve(request, request_id):
                     leave_type=leave_request.leave_type
                 )
                 if balance.remaining_days < leave_request.days_requested:
-                    messages.error(
-                        request, 
-                        f"Failed to process request: Insufficient leave balance. "
-                        f"Remaining: {balance.remaining_days} days. Requested: {leave_request.days_requested} days."
-                    )
+                    error_msg = f"Failed to process request: Insufficient leave balance. Remaining: {balance.remaining_days} days. Requested: {leave_request.days_requested} days."
+                    messages.error(request, error_msg)
+                    if is_ajax:
+                        return JsonResponse({'success': False, 'error': error_msg}, status=400)
                     return redirect('leaves:hr_leave_history')
             except LeaveBalance.DoesNotExist:
-                messages.error(request, "Failed to process request: Leave balance not found.")
+                error_msg = "Failed to process request: Leave balance not found."
+                messages.error(request, error_msg)
+                if is_ajax:
+                    return JsonResponse({'success': False, 'error': error_msg}, status=400)
                 return redirect('leaves:hr_leave_history')
                 
         leave_request.reviewed_by_hr = request.user
         leave_request.hr_remarks = form.cleaned_data['remarks']
         if action == 'APPROVE':
-            leave_request.status = (
-                LeaveRequest.Status.PENDING_SD_APPROVAL
-                if _requires_sd_final_review(leave_request)
-                else LeaveRequest.Status.APPROVED
-            )
+            # Explicit role-based routing after HR approval
+            # HEAD and HR leaves proceed to SD; EMPLOYEE and SD leaves are finalized
+            requester_role = (leave_request.user.role or '').upper()
+            if requester_role == 'HEAD':
+                leave_request.status = LeaveRequest.Status.PENDING_SD_APPROVAL
+            elif requester_role == 'HR':
+                leave_request.status = LeaveRequest.Status.PENDING_SD_APPROVAL
+            else:
+                # EMPLOYEE and SD leaves end at HR approval
+                leave_request.status = LeaveRequest.Status.APPROVED
             messages.success(request, f"Leave request for {leave_request.user.get_full_name() or leave_request.user.username} has been Approved.")
         else:
             leave_request.status = LeaveRequest.Status.REJECTED
@@ -526,9 +712,15 @@ def hr_final_approve(request, request_id):
             _notify_pending_leave_approval(leave_request)
         else:
             _notify_leave_status_update(leave_request)
+            
+        if is_ajax:
+            target = reverse('leaves:hr_leave_history')
+            return JsonResponse({'success': True, 'redirect': target, 'redirect_url': target})
     else:
         # Surface exact form errors so HR knows if a field (like remarks) was missing
         messages.error(request, f"Failed to process request: {form.errors.as_text()}")
+        if is_ajax:
+            return JsonResponse({'success': False, 'errors': form.errors}, status=400)
     return redirect('leaves:hr_leave_history')
 
 
@@ -544,7 +736,45 @@ def sd_approve(request, request_id):
         id=request_id,
         status=LeaveRequest.Status.PENDING_SD_APPROVAL,
     )
-    form = LeaveActionForm(request.POST)
+    
+    # Defensive validation: HEAD, HR, and ADMIN leaves should reach SD for approval
+    requester_role = (leave_request.user.role or '').upper()
+    if requester_role not in ['HEAD', 'HR', 'ADMIN']:
+        error_msg = f"SD approval is not applicable for {requester_role} leave requests."
+        messages.error(request, error_msg)
+        if 'application/json' in request.headers.get('Accept', ''):
+            return JsonResponse({'success': False, 'error': error_msg}, status=400)
+        return redirect('leaves:sd_leave_overview')
+    
+    # Prevent self-approval: SD user cannot approve their own leave
+    if leave_request.user == request.user:
+        error_msg = "You cannot approve your own leave request."
+        messages.error(request, error_msg)
+        if 'application/json' in request.headers.get('Accept', ''):
+            return JsonResponse({'success': False, 'error': error_msg}, status=400)
+        return redirect('leaves:sd_leave_overview')
+    
+    is_json_req = request.content_type == 'application/json'
+    if is_json_req:
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            data = {}
+    else:
+        data = request.POST.copy()
+        
+    # Normalize action to uppercase to guarantee LeaveActionForm validation passes
+    if 'action' in data:
+        data['action'] = str(data.get('action', '')).strip().upper()
+
+    is_ajax = (
+        is_json_req or
+        'application/json' in request.headers.get('Accept', '') or
+        request.GET.get('format') == 'json' or
+        request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+    )
+
+    form = LeaveActionForm(data)
     if form.is_valid():
         action = form.cleaned_data['action']
         leave_request.reviewed_by_sd = request.user
@@ -560,8 +790,13 @@ def sd_approve(request, request_id):
             request,
             f"Leave request for {leave_request.user.get_full_name()} was {'approved' if action == 'APPROVE' else 'rejected'} by SD.",
         )
+        if is_ajax:
+            target = reverse('leaves:sd_leave_overview')
+            return JsonResponse({'success': True, 'redirect': target, 'redirect_url': target})
     else:
         messages.error(request, "Invalid action submitted.")
+        if is_ajax:
+            return JsonResponse({'success': False, 'errors': form.errors}, status=400)
     return redirect('leaves:sd_leave_overview')
 
 # --- SD View ---
@@ -587,7 +822,7 @@ def process_leave_action(request, leave_id):
     import json
     try:
         data = json.loads(request.body)
-        action = data.get('action')
+        action = str(data.get('action', '')).strip().upper()
         remarks = data.get('remarks', '')
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Invalid JSON data payload.'}, status=400)
@@ -600,10 +835,10 @@ def process_leave_action(request, leave_id):
         if leave_request.status != LeaveRequest.Status.PENDING_HEAD_APPROVAL:
             return JsonResponse({'error': 'Application is not pending Head approval.'}, status=400)
         
-        if action == 'Approve':
+        if action in ['APPROVE', 'APPROVED']:
             leave_request.status = LeaveRequest.Status.PENDING_HR_APPROVAL
             leave_request.head_remarks = remarks or 'Approved by Head'
-        elif action == 'Reject':
+        elif action in ['REJECT', 'REJECTED']:
             leave_request.status = LeaveRequest.Status.REJECTED
             leave_request.head_remarks = remarks or 'Rejected by Head'
         else:
@@ -613,7 +848,7 @@ def process_leave_action(request, leave_id):
         leave_request.save()
         
         # Trigger notifications based on decision
-        if action == 'Approve':
+        if action in ['APPROVE', 'APPROVED']:
             _notify_pending_leave_approval(leave_request)
         else:
             _notify_leave_status_update(leave_request)
@@ -622,7 +857,7 @@ def process_leave_action(request, leave_id):
         if leave_request.status != LeaveRequest.Status.PENDING_HR_APPROVAL:
             return JsonResponse({'error': 'Application is not pending HR approval.'}, status=400)
             
-        if action == 'Approve':
+        if action in ['APPROVE', 'APPROVED']:
             # Pre-check balance to prevent the transaction from failing silently
             try:
                 balance = LeaveBalance.objects.get(user=leave_request.user, leave_type=leave_request.leave_type)
@@ -633,7 +868,7 @@ def process_leave_action(request, leave_id):
                 
             leave_request.status = LeaveRequest.Status.PENDING_SD_APPROVAL if _requires_sd_final_review(leave_request) else LeaveRequest.Status.APPROVED
             leave_request.hr_remarks = remarks or 'Approved by HR'
-        elif action == 'Reject':
+        elif action in ['REJECT', 'REJECTED']:
             leave_request.status = LeaveRequest.Status.REJECTED
             leave_request.hr_remarks = remarks or 'Rejected by HR'
         else:
@@ -648,6 +883,24 @@ def process_leave_action(request, leave_id):
         else:
             _notify_leave_status_update(leave_request)
             
+    elif role == 'SD':
+        if leave_request.status != LeaveRequest.Status.PENDING_SD_APPROVAL:
+            return JsonResponse({'error': 'Application is not pending SD approval.'}, status=400)
+            
+        if action in ['APPROVE', 'APPROVED']:
+            leave_request.status = LeaveRequest.Status.APPROVED
+            leave_request.sd_remarks = remarks or 'Approved by SD'
+        elif action in ['REJECT', 'REJECTED']:
+            leave_request.status = LeaveRequest.Status.REJECTED
+            leave_request.sd_remarks = remarks or 'Rejected by SD'
+        else:
+            return JsonResponse({'error': 'Invalid action.'}, status=400)
+            
+        leave_request.reviewed_by_sd = request.user
+        leave_request.save()
+        
+        _notify_leave_status_update(leave_request)
+        
     else:
         return JsonResponse({'error': 'Unauthorized role for this action.'}, status=403)
 
@@ -676,14 +929,14 @@ def hr_process_leave_action(request, request_id):
     import json
     try:
         data = json.loads(request.body)
-        action = data.get('action')
+        action = str(data.get('action', '')).strip().upper()
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Invalid JSON data payload.'}, status=400)
 
-    if action == 'Approve':
-        leave_request.status = LeaveRequest.Status.APPROVED
+    if action in ['APPROVE', 'APPROVED']:
+        leave_request.status = LeaveRequest.Status.PENDING_SD_APPROVAL if _requires_sd_final_review(leave_request) else LeaveRequest.Status.APPROVED
         leave_request.hr_remarks = data.get('remarks', 'Approved by HR')
-    elif action == 'Reject':
+    elif action in ['REJECT', 'REJECTED']:
         leave_request.status = LeaveRequest.Status.REJECTED
         leave_request.hr_remarks = data.get('remarks', 'Rejected by HR')
     else:
@@ -691,6 +944,12 @@ def hr_process_leave_action(request, request_id):
 
     leave_request.reviewed_by_hr = request.user
     leave_request.save()
+
+    # Trigger notifications based on decision and next routing step
+    if leave_request.status == LeaveRequest.Status.PENDING_SD_APPROVAL:
+        _notify_pending_leave_approval(leave_request)
+    else:
+        _notify_leave_status_update(leave_request)
 
     reviewer_name = request.user.get_full_name() or request.user.username
     return JsonResponse({'success': True, 'new_status': leave_request.get_status_display() if hasattr(leave_request, 'get_status_display') else leave_request.status, 'reviewed_by': reviewer_name})

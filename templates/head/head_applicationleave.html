@@ -45,7 +45,7 @@
                 <h1>Leave Management</h1>
                 
                 <div class="form-body">
-                    <form id="leaveRequestForm" data-history-url="{% url 'leaves:head_leave_history' %}">
+                    <form id="leaveRequestForm" action="{% url 'leaves:head_apply_leave' %}" method="POST" enctype="multipart/form-data" data-history-url="{% url 'leaves:head_leave_history' %}">
                         {% csrf_token %}
                         <label class="section-label">Select Leave</label>
                         <div class="leave-type-grid">
@@ -56,6 +56,8 @@
                             <button type="button" class="type-btn">Maternity Leave</button>
                             <button type="button" class="type-btn">Bereavement Leave</button>
                         </div>
+                        <!-- Hidden field to store the selected leave type ID for backend submission -->
+                        <input type="hidden" name="leave_type" id="hiddenLeaveType" required>
 
                         <div class="date-container">
                             <div class="input-group">
@@ -70,7 +72,7 @@
 
                         <div class="input-group">
                             <label>Reason for Leave</label>
-                            <textarea class="form-textarea" placeholder="Please brief reason for your leave request..." required></textarea>
+                            <textarea name="reason" class="form-textarea" placeholder="Please brief reason for your leave request..." required></textarea>
                         </div>
                     </form>
                 </div>
