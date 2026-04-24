@@ -261,6 +261,16 @@ hr { border: 0.5px solid rgba(255,255,255,0.2); margin: 10px 0; }
     color: #4a1d1d;
 }
 
-.small-swal-text {
-    font-size: 14px !important;
+
+.full-width-item textarea {
+    width: 100%;
+    padding: 6px 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: inherit;
+    resize: none;
+
+    min-height: 20px;
+    max-height: 40px;
 }
