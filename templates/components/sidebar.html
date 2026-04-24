@@ -100,8 +100,13 @@
             </a>
         </li>
         <li>
-            <a href="{% url 'create_position_change' %}" class="menu-item {% if request.resolver_match.url_name == 'create_position_change' %}active{% endif %}">
-                <i class="fas fa-user-edit"></i> <span>Position Change Request</span>
+            <a href="{% url 'application_list' %}" class="menu-item {% if request.resolver_match.url_name == 'application_list' %}active{% endif %}">
+                <i class="fas fa-file"></i> <span>Application Management</span>
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'employee_list' %}" class="menu-item {% if request.resolver_match.url_name == 'employee_list' %}active{% endif %}">
+                <i class="fas fa-database"></i> <span>Employee Records</span>
             </a>
         </li>
         <li>
@@ -117,6 +122,12 @@
         <li>
             <a href="{% url 'trainings:head_training_overview' %}" class="menu-item {% if request.resolver_match.url_name == 'head_training_overview' %}active{% endif %}">
                 <i class="fas fa-chalkboard-teacher"></i> <span>Trainings</span>
+            </a>
+        </li>
+        <li>
+            <a href="javascript:void(0);" class="menu-item" onclick="alert('This module is currently under development.'); return false;" aria-disabled="true">
+                <i class="fas fa-star"></i>
+                <span>Performance Evaluation</span>
             </a>
         </li>
         {% elif request.user.role == 'SD' %}
