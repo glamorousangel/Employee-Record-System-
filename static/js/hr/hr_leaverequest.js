@@ -16,8 +16,22 @@ document.addEventListener('DOMContentLoaded', () => {
         if (span) item.setAttribute("data-text", span.textContent.trim());
     });
 
-    if (closeBtn) closeBtn.onclick = () => sidebar.classList.add("collapsed");
-    if (logoToggle) logoToggle.onclick = () => sidebar.classList.toggle("collapsed");
+    const viewport = document.querySelector(".dashboard-viewport");
+
+if (closeBtn) {
+    closeBtn.onclick = () => {
+        sidebar.classList.add("collapsed");
+        viewport.classList.add("sidebar-collapsed");
+    };
+}
+
+if (logoToggle) {
+    logoToggle.onclick = () => {
+        sidebar.classList.toggle("collapsed");
+        viewport.classList.toggle("sidebar-collapsed");
+    };
+}
+
 
     function filterTable() {
         const query = searchInput ? searchInput.value.toLowerCase() : '';

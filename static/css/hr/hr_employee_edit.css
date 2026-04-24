@@ -162,13 +162,42 @@ body, html {
 .photo-container { text-align: center; margin-bottom: 20px; }
 .photo-circle { width: 80px; height: 80px; background: #4a1d1d; border-radius: 50%; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
 .photo-circle img { width: 100%; height: 100%; object-fit: cover; }
-.inputs-row { 
-    display: grid; 
-    /* Replace 1fr 1fr with this: */
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); 
-    gap: 15px; 
+.inputs-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
 }
-.input-item, .full-width-item { margin-bottom: 12px; }
+
+.input-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0; /* IMPORTANT: remove flex spacing conflict */
+    width: 100%;
+}
+
+.input-item label {
+    margin-bottom: 6px;
+}
+.input-item select {
+    width: 100%;
+    height: 38px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: 'Segoe UI', sans-serif;
+    box-sizing: border-box;
+    background: #fff;
+}
+
+
+
+
+.input-item input {
+    height: 38px; /* forces all inputs same height */
+    box-sizing: border-box;
+}
+
 label { display: block; margin-bottom: 6px; font-weight: 600; color: #555; font-size: 13px; }
 input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 13px; }
 input[readonly] { background-color: #f0f0f0; cursor: not-allowed; color: #888; }

@@ -198,16 +198,17 @@ hr {
 .main-content {
     flex: 1;
     height: 100%;
-    margin-left: 320px; /* 300 sidebar + 20 gap */
+    margin-left: 320px;
     display: flex;
     min-width: 0;
     transition: margin-left 0.35s ease;
 }
 
 /* WHEN SIDEBAR COLLAPSED */
-.sidebar.collapsed ~ .dashboard-viewport .main-content {
-    margin-left: 110px; /* 90 sidebar + 20 gap */
+.dashboard-viewport.sidebar-collapsed .main-content {
+    margin-left: 110px;
 }
+
 
 /* Leave Card (FULL WIDTH ALWAYS) */
 .leave-card {
